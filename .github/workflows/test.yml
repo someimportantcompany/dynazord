@@ -9,6 +9,7 @@ jobs:
       AWS_SECRET_ACCESS_KEY: some-important-secret-key
       AWS_REGION: us-east-1
       AWS_DYNAMODB_ENDPOINT: http://localhost:4566
+      NODE_ENV: testing
     services:
       localstack:
         image: localstack/localstack

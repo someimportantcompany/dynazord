@@ -5,7 +5,7 @@
   "main": "src/index.js",
   "scripts": {
     "lint": "eslint --ext .js .",
-    "test": "NODE_ENV=testing nyc --reporter=lcov --reporter=text mocha --exit --recursive --require dotenv/config test/**/*.test.js",
+    "test": "nyc --reporter=lcov --reporter=text mocha --exit --recursive --require dotenv/config test/**/*.test.js",
     "test:create-tables": "node -r dotenv/config test/dev-create-tables"
   },
   "author": "James D <james@jdrydn.com> (https://jdrydn.com)",
