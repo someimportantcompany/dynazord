@@ -1,0 +1,23 @@
+Resources:
+  UsersTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: dynamodel-test-users
+      BillingMode: PAY_PER_REQUEST
+      KeySchema:
+        - AttributeName: email
+          KeyType: HASH
+      AttributeDefinitions:
+        - AttributeName: email
+          AttributeType: S
+Outputs:
+  UsersTableName:
+    Export:
+      Name: test-UsersTableName
+    Value:
+      Ref: UsersTable
+  UsersTableArn:
+    Export:
+      Name: test-UsersTableArn
+    Value:
+      Fn::GetAtt: [UsersTable, Arn]

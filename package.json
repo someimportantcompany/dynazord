@@ -1,0 +1,42 @@
+{
+  "name": "dynamodel",
+  "description": "DynamoDB NodeJS ORM",
+  "version": "1.0.0",
+  "main": "src/index.js",
+  "scripts": {
+    "lint": "eslint --ext .js .",
+    "test": "NODE_ENV=testing nyc --reporter=lcov --reporter=text mocha --exit --recursive --require dotenv/config test/**/*.test.js",
+    "test:create-tables": "node -r dotenv/config test/dev-create-tables"
+  },
+  "author": "James D <james@jdrydn.com> (https://jdrydn.com)",
+  "license": "SEE LICENSE IN ./LICENSE",
+  "homepage": "https://github.com/jdrydn/dynamodel#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jdrydn/dynamodel.git"
+  },
+  "bugs": {
+    "url": "https://github.com/jdrydn/dynamodel/issues"
+  },
+  "dependencies": {
+    "aws-sdk": "^2.802.0",
+    "lodash": "^4.17.20"
+  },
+  "devDependencies": {
+    "babel-eslint": "^10.1.0",
+    "dotenv": "^6.2.0",
+    "eslint": "^5.16.0",
+    "eslint-plugin-mocha": "^5.3.0",
+    "eslint-plugin-sort-requires": "^2.1.0",
+    "js-yaml": "^3.14.1",
+    "mocha": "^6.2.3",
+    "module-alias": "^2.2.2",
+    "nock": "^13.0.5",
+    "nodemon": "^2.0.6",
+    "nyc": "^15.1.0"
+  },
+  "engines": {
+    "node": ">= 12.0.0",
+    "npm": ">= 6.0.0"
+  }
+}

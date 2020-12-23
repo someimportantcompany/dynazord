@@ -1,0 +1,8 @@
+*.nyc_output/
+*.serverless/
+*.webpack/
+*coverage/
+*node_modules/
+*npm-*.log
+*.DS_Store
+*.env
