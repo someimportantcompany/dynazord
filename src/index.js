@@ -1,6 +1,5 @@
 const AWS = require('aws-sdk');
 const methods = require('./methods');
-const types = require('./types');
 const { assert, isPlainObject } = require('./utils');
 const { assertValidProperties } = require('./validate');
 
