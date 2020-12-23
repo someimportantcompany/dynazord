@@ -1,7 +1,8 @@
 const { assert, isPlainObject, marshall } = require('../utils');
+const { assertValidCreateProperties, appendCreateDefaultProps } = require('../helpers/create');
 
 module.exports = async function createDocument(create) {
-  const { client, log, tableName: TableName, keySchema, properties, options } = this;
+  const { client, tableName: TableName, keySchema, log, options } = this;
   assert(client && typeof client.putItem === 'function', new TypeError('Expected client to be a DynamoDB client'));
   assert(typeof TableName === 'string', new TypeError('Invalid tableName to be a string'));
   assert(isPlainObject(keySchema), new TypeError('Expected keySchema to be a plain object'));
@@ -12,35 +13,14 @@ module.exports = async function createDocument(create) {
   assert(create[hash], new Error(`Missing ${hash} property from argument`));
   assert(!range || create[range], new Error(`Missing ${range} property from argument`));
 
-  const missingProps = Object.keys(properties).filter(key => {
-    const { [key]: property } = properties;
-    return property.required === true && !property.hasOwnProperty('default') && !create.hasOwnProperty(key);
-  });
-  assert(missingProps.length === 0, new Error('Expected all required fields to be set'), {
-    code: 'DYNAMODEL_MISSING_REQUIRED_FIELDS',
-    fields: missingProps,
-  });
-
-  const additionalProps = Object.keys(create).filter(key => !properties.hasOwnProperty(key));
-  assert(additionalProps.length === 0, new Error('Unexpected properties on argument'), {
-    code: 'DYNAMODEL_FOUND_ADDITIONAL_FIELDS',
-    fields: additionalProps,
-  });
-
-  const fillDefaultProps = Object.keys(properties).filter(key => {
-    const { [key]: property } = properties;
-    return property.hasOwnProperty('default') && !create.hasOwnProperty(key);
-  });
-  await Promise.all(fillDefaultProps.map(async key => {
-    const { [key]: { default: defaultValue } } = properties;
-    create[key] = typeof defaultValue === 'function' ? (await defaultValue()) : defaultValue;
-  }));
+  await assertValidCreateProperties.call(this, create);
+  await appendCreateDefaultProps.call(this, create);
 
   if (options.createdAtTimestamp === true) {
-    create.createdAt = new Date();
+    create.createdAt = Date.now();
   }
   if (options.updatedAtTimestamp === true) {
-    create.updatedAt = new Date();
+    create.updatedAt = Date.now();
   }
 
   const params = {
@@ -49,9 +29,12 @@ module.exports = async function createDocument(create) {
     Item: marshall(create),
     // Specify a condition to ensure this doesn't write an item that already exists
     ConditionExpression: hash && range
-      ? `attribute_not_exists(${hash}) && attribute_not_exists(${range})`
-      : `attribute_not_exists(${hash})`,
-    // Reject all return values
+      ? 'attribute_not_exists(#_hash_key) && attribute_not_exists(#_range_key)'
+      : 'attribute_not_exists(#_hash_key)',
+    ExpressionAttributeNames: hash && range
+      ? { '#_hash_key': hash, '#_range_key': range }
+      : { '#_hash_key': hash },
+    // Reject all return values, since we have a complete copy of the object
     ReturnValues: 'NONE',
   };
 

@@ -1,7 +1,7 @@
 const AWS = require('aws-sdk');
-const methods = require('./methods');
-const { assert, isPlainObject } = require('./utils');
+const { assert, createLogger, isPlainObject } = require('./utils');
 const { assertValidProperties } = require('./validate');
+const { transaction: transactionMethods, ...methods } = require('./methods');
 
 const defaultOptions = {
   createdAtTimestamp: true,
@@ -41,7 +41,7 @@ function createModel(opts) {
       value: new AWS.DynamoDB({ region }),
     },
     log: {
-      value: opts.log || { debug: () => null, info: () => null, warn: () => null, error: () => null },
+      value: opts.log || createLogger({ level: (options || {}).logLevel }),
     },
     tableName: {
       enumerable: true,
@@ -58,6 +58,12 @@ function createModel(opts) {
     properties: {
       enumerable: true,
       value: Object.freeze(opts.properties),
+    },
+    transaction: {
+      enumerable: true,
+      get() {
+        return Object.keys(transactionMethods).reduce((r, k) => ({ ...r, [k]: transactionMethods[k].bind(this) }), {});
+      },
     },
     options: {
       enumerable: true,

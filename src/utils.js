@@ -16,8 +16,8 @@ function assert(value, err, additional = {}) {
       if (additional.hasOwnProperty(key) && key !== 'message' && key !== 'stack') {
         try {
           err[key] = typeof additional[key] === 'function' ? additional[key].call() : additional[key];
-        } catch (err2) {
-          err[key] = `ERR: ${err2.message}`;
+        } catch (e) {
+          err[key] = `ERR: ${e.message}`;
         }
       }
     }
@@ -26,17 +26,22 @@ function assert(value, err, additional = {}) {
   }
 }
 
-const log = {
-  debug: () => null,
-  info: () => null,
-  warn: () => null,
-  error: () => null,
-};
+function createLogger({ level }) {
+  level = level || process.env.DYNAMODEL_LOG_LEVEL || (process.env.NODE_ENV === 'production' ? 'warn' : 'debug');
+  const make = (log, allowed) => allowed.includes(level) ? args => log(JSON.stringify(args, null, 2)) : () => null;
+  /* eslint-disable no-console */
+  return {
+    debug: make(console.log, [ 'debug' ]),
+    info: make(console.log, [ 'debug', 'info' ]),
+    warn: make(console.warn, [ 'debug', 'info', 'warn' ]),
+    error: make(console.error, [ 'debug', 'info', 'warn', 'error' ]),
+  };
+}
 
 module.exports = {
   assert,
+  createLogger,
   isPlainObject,
-  log,
   marshall,
   unmarshall,
 };
