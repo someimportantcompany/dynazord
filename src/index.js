@@ -1,7 +1,8 @@
 const AWS = require('aws-sdk');
 const { assert, createLogger, isPlainObject } = require('./utils');
-const { assertValidProperties } = require('./validate');
+const { assertValidProperties } = require('./helpers/validate');
 const { transaction: transactionMethods, ...methods } = require('./methods');
+const { types } = require('../types');
 
 const defaultOptions = {
   createdAtTimestamp: true,
@@ -30,6 +31,24 @@ function createModel(opts) {
   assert(!region || typeof region === 'string', new TypeError('Expected { region } to be a string'));
 
   try {
+    if (options && options.createdAtTimestamp === true) {
+      assert(properties.createdAt, new TypeError('Property "createdAt" already exists - set createdAtTimestamp to false!'));
+      properties.createdAt = {
+        type: Date,
+        required: true,
+        onCreate: () => new Date(),
+      };
+    }
+    if (options && options.updatedAtTimestamp === true) {
+      assert(properties.updatedAt, new TypeError('Property "updatedAt" already exists - set updatedAtTimestamp to false!'));
+      properties.updatedAt = {
+        type: Date,
+        required: true,
+        onCreate: () => new Date(),
+        onUpdate: () => new Date(),
+      };
+    }
+
     assertValidProperties(properties);
   } catch (err) {
     err.message = `[${tableName}] ${err.message}`;
@@ -78,6 +97,7 @@ function createModel(opts) {
 
 module.exports = {
   createModel,
+  fieldTypes: Object.keys(types).reduce((r, t) => ({ ...r, [t]: t }), {}),
   setOptions(overwrite) {
     assert(isPlainObject(overwrite), new TypeError('Expected argument to be a plain object'));
     overwriteOptions = overwrite;
