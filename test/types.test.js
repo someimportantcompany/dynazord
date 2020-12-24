@@ -1,7 +1,7 @@
 const _forEach = require('lodash/forEach');
 const _isPlainObject = require('lodash/isPlainObject');
 const assert = require('assert');
-const types = require('../src/types');
+const { types } = require('../src/types');
 
 describe('dynamodel/types', () => {
 
