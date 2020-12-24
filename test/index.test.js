@@ -4,23 +4,52 @@ const dynamodel = require('../src');
 const { v4: uuid } = require('uuid');
 
 describe('dynamodel', () => {
-  const dynamodb = new AWS.DynamoDB({
-    endpoint: process.env.AWS_DYNAMODB_ENDPOINT,
-    region: 'us-east-1',
-  });
-
   describe('createModel', () => {
     const { createModel } = dynamodel;
+    let dynamodb = null;
+
+    const tableName = `dynamodel-test-users-${Date.now()}`;
+
+    before(async () => {
+      dynamodb = new AWS.DynamoDB({
+        endpoint: process.env.AWS_DYNAMODB_ENDPOINT,
+        region: 'us-east-1',
+      });
+
+      const deleteTableParams = {
+        TableName: tableName,
+      };
+      const createTableParams = {
+        TableName: tableName,
+        BillingMode: 'PAY_PER_REQUEST',
+        KeySchema: [
+          { AttributeName: 'id', KeyType: 'HASH' },
+        ],
+        AttributeDefinitions: [
+          { AttributeName: 'id', AttributeType: 'S' },
+        ],
+      };
+
+      try {
+        await dynamodb.deleteTable(deleteTableParams).promise();
+      } catch (err) {
+        if (!`${err.message}`.includes('Cannot do operations on a non-existent table')) {
+          throw err;
+        }
+      }
+
+      await dynamodb.createTable(createTableParams).promise();
+    });
 
     const id = uuid();
-    const email = `james+${Date.now()}@jdrydn.com`;
+    const email = 'james@jdrydn.com';
     const name = 'James D';
     const avatar = 'http://github.com/jdrydn.png';
 
     it('should return a valid model', async () => {
       const model = createModel({
         dynamodb,
-        tableName: 'dynamodel-test-users',
+        tableName,
         keySchema: {
           hash: 'id',
         },
@@ -58,7 +87,7 @@ describe('dynamodel', () => {
 
       try {
         const doc = await model.get({ id });
-        assert.deepStrictEqual(doc, { id, email, name, avatar: undefined }, 'Expected model.get to return the document');
+        assert.deepStrictEqual(doc, { id, email, name }, 'Expected model.get to return the document');
       } catch (err) {
         err.message = `Failed to get document: ${err.message}`;
         throw err;

@@ -2,5 +2,5 @@
 module.exports = {
   bulkDelete: require('./bulkDelete'),
   create: require('./create'),
-  // get: require('./get'),
+  get: require('./get'),
 };

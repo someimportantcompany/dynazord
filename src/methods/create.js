@@ -13,22 +13,15 @@ module.exports = async function createDocument(create) {
 
   const { hash, range } = keySchema;
   const { [hash]: hashProp, [range]: rangeProp } = properties;
-  assert(hashProp.hasOwnProperty('default') || create.hasOwnProperty('hash'),
+  assert(hashProp.hasOwnProperty('default') || create.hasOwnProperty(hash),
     new Error(`Missing ${hash} hash property from argument`));
-  assert(!range || rangeProp.hasOwnProperty('default') || create.hasOwnProperty('range'),
+  assert(!range || rangeProp.hasOwnProperty('default') || create.hasOwnProperty(range),
     new Error(`Missing ${range} range property from argument`));
 
   await assertRequiredCreateProps.call(this, create);
   await appendCreateDefaultProps.call(this, create);
   await validateData.call(this, properties, create);
   await formatCreateData.call(this, properties, create);
-
-  if (options.createdAtTimestamp === true) {
-    create.createdAt = Date.now();
-  }
-  if (options.updatedAtTimestamp === true) {
-    create.updatedAt = Date.now();
-  }
 
   const params = {
     // Specify the name & item to be created
@@ -46,8 +39,8 @@ module.exports = async function createDocument(create) {
   };
 
   log.debug({ putItem: params });
-
-  await client.putItem(params).promise();
+  const results = await client.putItem(params).promise();
+  log.debug({ putItem: results });
 
   return create;
 };
