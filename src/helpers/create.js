@@ -17,7 +17,7 @@ function assertRequiredCreateProps(create) {
       const { [key]: prop } = properties;
       assert(prop.onCreate !== false, new Error(`Field ${key} cannot be created`));
 
-      if (required.find(r => r === key) && !create.hasOwnProperty(key)) {
+      if (required.find(r => r === key) && create.hasOwnProperty(key)) {
         required.splice(required.indexOf(key), 1);
       }
     }
@@ -60,13 +60,13 @@ async function formatCreateData(properties, data) {
       let value = data.hasOwnProperty(key) ? data[key] : undefined;
 
       if (typeof property.onCreate === 'function') {
-        value = await property.onCreate(value);
+        value = await property.onCreate.call(property, value); // eslint-disable-line no-useless-call
       }
       if (typeof property.set === 'function') {
-        value = await property.set(value);
+        value = await property.set.call(property, value); // eslint-disable-line no-useless-call
       }
       if (type && typeof type.set === 'function') {
-        value = await type.set(value);
+        value = await type.set.call(type, value, property); // eslint-disable-line no-useless-call
       }
 
       if (data.hasOwnProperty(key)) {

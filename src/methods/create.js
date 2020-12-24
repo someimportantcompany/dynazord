@@ -1,6 +1,5 @@
 const { assert, isPlainObject, marshall } = require('../utils');
-const { assertRequiredCreateProps, appendCreateDefaultProps } = require('../helpers/create');
-const { formatData } = require('../helpers/data');
+const { assertRequiredCreateProps, appendCreateDefaultProps, formatCreateData } = require('../helpers/create');
 const { validateData } = require('../helpers/validate');
 
 module.exports = async function createDocument(create) {
@@ -13,13 +12,16 @@ module.exports = async function createDocument(create) {
   assert(isPlainObject(create), new TypeError('Expected argument to be a plain object'));
 
   const { hash, range } = keySchema;
-  assert(create[hash], new Error(`Missing ${hash} property from argument`));
-  assert(!range || create[range], new Error(`Missing ${range} property from argument`));
+  const { [hash]: hashProp, [range]: rangeProp } = properties;
+  assert(hashProp.hasOwnProperty('default') || create.hasOwnProperty('hash'),
+    new Error(`Missing ${hash} hash property from argument`));
+  assert(!range || rangeProp.hasOwnProperty('default') || create.hasOwnProperty('range'),
+    new Error(`Missing ${range} range property from argument`));
 
   await assertRequiredCreateProps.call(this, create);
   await appendCreateDefaultProps.call(this, create);
   await validateData.call(this, properties, create);
-  await formatData.call(this, properties, create);
+  await formatCreateData.call(this, properties, create);
 
   if (options.createdAtTimestamp === true) {
     create.createdAt = Date.now();

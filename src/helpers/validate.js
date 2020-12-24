@@ -24,7 +24,7 @@ function assertValidProperties(properties, prefix = '') {
             assert(nonFunctions.length === 0, new TypeError('All custom types must have function validators'));
           }
         } else {
-          assert(typeof property.validate === 'function',
+          assert(!property.hasOwnProperty('validate') || typeof property.validate === 'function',
             new TypeError('Expected validate to be a function or an object of validators'));
         }
       } catch (err) {

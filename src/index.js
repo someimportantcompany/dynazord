@@ -2,7 +2,7 @@ const AWS = require('aws-sdk');
 const { assert, createLogger, isPlainObject } = require('./utils');
 const { assertValidProperties } = require('./helpers/validate');
 const { transaction: transactionMethods, ...methods } = require('./methods');
-const { types } = require('../types');
+const { types } = require('./types');
 
 const defaultOptions = {
   createdAtTimestamp: true,
@@ -26,26 +26,31 @@ function createModel(opts) {
   assert(!range || properties[range], new TypeError(`Expected ${range} to be a property`));
   assert(!range || properties[range].required === true, new TypeError(`Expected ${range} property to be required`));
 
-  const { options, region } = opts;
-  assert(!options || isPlainObject(options), new TypeError('Expected { options } to be a plain object'));
-  assert(!region || typeof region === 'string', new TypeError('Expected { region } to be a string'));
+  assert(!opts.options || isPlainObject(opts.options), new TypeError('Expected { options } to be a plain object'));
+  assert(!opts.region || typeof opts.region === 'string', new TypeError('Expected { region } to be a string'));
+
+  const options = {
+    ...defaultOptions,
+    ...overwriteOptions,
+    ...opts.options,
+  };
 
   try {
-    if (options && options.createdAtTimestamp === true) {
-      assert(properties.createdAt, new TypeError('Property "createdAt" already exists - set createdAtTimestamp to false!'));
+    if (options.createdAtTimestamp === true) {
+      assert(!properties.hasOwnProperty('createdAt'),
+        new TypeError('Property "createdAt" already exists - set createdAtTimestamp to false!'));
       properties.createdAt = {
         type: Date,
-        required: true,
-        onCreate: () => new Date(),
+        onCreate: value => value || new Date(),
       };
     }
-    if (options && options.updatedAtTimestamp === true) {
-      assert(properties.updatedAt, new TypeError('Property "updatedAt" already exists - set updatedAtTimestamp to false!'));
+    if (options.updatedAtTimestamp === true) {
+      assert(!properties.hasOwnProperty('updatedAt'),
+        new TypeError('Property "updatedAt" already exists - set updatedAtTimestamp to false!'));
       properties.updatedAt = {
         type: Date,
-        required: true,
-        onCreate: () => new Date(),
-        onUpdate: () => new Date(),
+        onCreate: value => value || new Date(),
+        onUpdate: value => value || new Date(),
       };
     }
 
@@ -57,7 +62,7 @@ function createModel(opts) {
 
   return Object.create(methods, {
     client: {
-      value: new AWS.DynamoDB({ region }),
+      value: opts.dynamodb || new AWS.DynamoDB({ region: opts.region || undefined }),
     },
     log: {
       value: opts.log || createLogger({ level: (options || {}).logLevel }),
@@ -66,13 +71,9 @@ function createModel(opts) {
       enumerable: true,
       value: tableName,
     },
-    region: {
-      enumerable: true,
-      value: region,
-    },
     keySchema: {
       enumerable: true,
-      value: keySchema,
+      value: Object.freeze(keySchema),
     },
     properties: {
       enumerable: true,
@@ -86,11 +87,7 @@ function createModel(opts) {
     },
     options: {
       enumerable: true,
-      value: Object.freeze({
-        ...defaultOptions,
-        ...overwriteOptions,
-        ...options,
-      }),
+      value: Object.freeze(options),
     },
   });
 }

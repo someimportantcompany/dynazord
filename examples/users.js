@@ -1,4 +1,4 @@
-const dynamodel = require('../');
+const dynamodel = require('../src');
 
 const users = dynamodel.createModel({
   tableName: 'dynamodel-test-users',
@@ -17,6 +17,10 @@ const users = dynamodel.createModel({
     avatar: {
       type: String,
       required: true,
+    },
+    role: {
+      type: String,
+      enum: [ 'ADMIN', 'MODERATOR', 'EDITOR', 'USER' ],
     },
   },
   options: {
