@@ -44,7 +44,7 @@ describe('dynamodel', () => {
     const id = uuid();
     const email = 'james@jdrydn.com';
     const name = 'James D';
-    // const avatar = 'http://github.com/jdrydn.png';
+    const avatar = 'http://github.com/jdrydn.png';
 
     it('should return a valid model', async () => {
       const model = createModel({
@@ -93,13 +93,13 @@ describe('dynamodel', () => {
         throw err;
       }
 
-      // try {
-      //   const doc = await model.update({ id }, { avatar });
-      //   assert.deepStrictEqual(doc, { id, email, name, avatar });
-      // } catch (err) {
-      //   err.message = `Failed to get document: ${err.message}`;
-      //   throw err;
-      // }
+      try {
+        const doc = await model.update({ avatar }, { id });
+        assert.deepStrictEqual(doc, { id, email, name, avatar });
+      } catch (err) {
+        err.message = `Failed to update document: ${err.message}`;
+        throw err;
+      }
 
       // try {
       //   const deleted = await model.delete({ id });

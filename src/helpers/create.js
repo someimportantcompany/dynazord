@@ -2,22 +2,22 @@ const { assert, isPlainObject } = require('../utils');
 const { types } = require('../types');
 /* eslint-disable no-invalid-this */
 
-function assertRequiredCreateProps(create) {
+function assertRequiredCreateProps(data) {
   const { properties } = this; // eslint-disable-line no-invalid-this
   assert(isPlainObject(properties), new TypeError('Expected properties to be a plain object'));
-  assert(isPlainObject(create), new TypeError('Expected create to be a plain object'));
+  assert(isPlainObject(data), new TypeError('Expected data to be a plain object'));
 
   const required = Object.keys(properties).filter(key => {
     const { [key]: prop } = properties;
     return prop.required === true && !prop.hasOwnProperty('default');
   });
 
-  for (const key in properties) {
-    if (properties.hasOwnProperty(key)) {
+  for (const key in data) {
+    if (data.hasOwnProperty(key) && properties.hasOwnProperty(key)) {
       const { [key]: prop } = properties;
       assert(prop.onCreate !== false, new Error(`Field ${key} cannot be created`));
 
-      if (required.find(r => r === key) && create.hasOwnProperty(key)) {
+      if (required.find(r => r === key) && data.hasOwnProperty(key)) {
         required.splice(required.indexOf(key), 1);
       }
     }
@@ -28,23 +28,23 @@ function assertRequiredCreateProps(create) {
     fields: required,
   });
 
-  const additionalProps = Object.keys(create).filter(key => !properties.hasOwnProperty(key));
+  const additionalProps = Object.keys(data).filter(key => !properties.hasOwnProperty(key));
   assert(additionalProps.length === 0, new Error('Unexpected properties on argument'), {
     code: 'DYNAMODEL_FOUND_ADDITIONAL_FIELDS',
     fields: additionalProps,
   });
 }
 
-async function appendCreateDefaultProps(create) {
+async function appendCreateDefaultProps(data) {
   const { properties } = this; // eslint-disable-line no-invalid-this
-  assert(isPlainObject(create), new TypeError('Expected create to be a plain object'));
+  assert(isPlainObject(data), new TypeError('Expected data to be a plain object'));
 
   await Promise.all(Object.keys(properties).filter(key => {
     const { [key]: property } = properties;
-    return property.hasOwnProperty('default') && !create.hasOwnProperty(key);
+    return property.hasOwnProperty('default') && !data.hasOwnProperty(key);
   }).map(async key => {
     const { [key]: { default: defaultValue } } = properties;
-    create[key] = typeof defaultValue === 'function' ? (await defaultValue()) : defaultValue;
+    data[key] = typeof defaultValue === 'function' ? (await defaultValue()) : defaultValue;
   }));
 }
 

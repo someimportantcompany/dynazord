@@ -8,6 +8,7 @@ module.exports = async function getDocument(key, opts) {
   assert(isPlainObject(keySchema), new TypeError('Expected keySchema to be a plain object'));
   assert(isPlainObject(properties), new TypeError('Expected properties to be a plain object'));
   assert(isPlainObject(options), new TypeError('Expected options to be a plain object'));
+
   assert(isPlainObject(key), new TypeError('Expected argument to be a plain object'));
   assert(!opts || isPlainObject(opts), new TypeError('Expected opts to be a plain object'));
 
