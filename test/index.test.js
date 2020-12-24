@@ -44,7 +44,7 @@ describe('dynamodel', () => {
     const id = uuid();
     const email = 'james@jdrydn.com';
     const name = 'James D';
-    const avatar = 'http://github.com/jdrydn.png';
+    // const avatar = 'http://github.com/jdrydn.png';
 
     it('should return a valid model', async () => {
       const model = createModel({
