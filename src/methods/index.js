@@ -11,6 +11,6 @@ const bulkMethods = {
 };
 
 module.exports = {
-  ...methods,
-  ...bulkMethods,
+  methods,
+  bulkMethods,
 };

@@ -1,7 +1,7 @@
 const AWS = require('aws-sdk');
 const { assert, createLogger, isPlainObject } = require('./utils');
 const { assertValidProperties } = require('./helpers/validate');
-const { transaction: transactionMethods, ...methods } = require('./methods');
+const { methods, bulkMethods } = require('./methods');
 const { types } = require('./types');
 
 const defaultOptions = {
@@ -60,7 +60,7 @@ function createModel(opts) {
     throw err;
   }
 
-  return Object.create(methods, {
+  return Object.create({ ...methods, ...bulkMethods }, {
     client: {
       value: opts.dynamodb || new AWS.DynamoDB({ region: opts.region || undefined }),
     },
@@ -78,12 +78,6 @@ function createModel(opts) {
     properties: {
       enumerable: true,
       value: Object.freeze(opts.properties),
-    },
-    transaction: {
-      enumerable: true,
-      get() {
-        return Object.keys(transactionMethods).reduce((r, k) => ({ ...r, [k]: transactionMethods[k].bind(this) }), {});
-      },
     },
     options: {
       enumerable: true,
