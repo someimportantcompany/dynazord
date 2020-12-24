@@ -2,12 +2,11 @@ const { assert, isPlainObject, marshall, unmarshall } = require('../utils');
 const { formatReadData } = require('../helpers/read');
 
 module.exports = async function getDocument(key, opts) {
-  const { client, tableName: TableName, keySchema, properties, log, options } = this;
+  const { client, tableName, keySchema, properties, log } = this;
   assert(client && typeof client.getItem === 'function', new TypeError('Expected client to be a DynamoDB client'));
-  assert(typeof TableName === 'string', new TypeError('Invalid tableName to be a string'));
+  assert(typeof tableName === 'string', new TypeError('Invalid tableName to be a string'));
   assert(isPlainObject(keySchema), new TypeError('Expected keySchema to be a plain object'));
   assert(isPlainObject(properties), new TypeError('Expected properties to be a plain object'));
-  assert(isPlainObject(options), new TypeError('Expected options to be a plain object'));
 
   assert(isPlainObject(key), new TypeError('Expected argument to be a plain object'));
   assert(!opts || isPlainObject(opts), new TypeError('Expected opts to be a plain object'));
@@ -26,7 +25,7 @@ module.exports = async function getDocument(key, opts) {
   assert(!range || key.hasOwnProperty(range), new Error(`Missing ${range} range property from argument`));
 
   const params = {
-    TableName,
+    TableName: tableName,
     Key: marshall(key),
     AttributesToGet: attributesToGet,
     ConsistentRead: consistentRead,

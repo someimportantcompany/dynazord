@@ -101,13 +101,13 @@ describe('dynamodel', () => {
         throw err;
       }
 
-      // try {
-      //   const deleted = await model.delete({ id });
-      //   assert.strictEqual(deleted, true, 'Expected model.delete to return true');
-      // } catch (err) {
-      //   err.message = `Failed to get document: ${err.message}`;
-      //   throw err;
-      // }
+      try {
+        const deleted = await model.delete({ id });
+        assert.strictEqual(deleted, true, 'Expected model.delete to return true');
+      } catch (err) {
+        err.message = `Failed to get document: ${err.message}`;
+        throw err;
+      }
     });
   });
 

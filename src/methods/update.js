@@ -4,12 +4,11 @@ const { formatReadData } = require('../helpers/read');
 const { validateData } = require('../helpers/validate');
 
 module.exports = async function updateDocument(update, where) {
-  const { client, tableName: TableName, keySchema, properties, log, options } = this;
+  const { client, tableName, keySchema, properties, log } = this;
   assert(client && typeof client.updateItem === 'function', new TypeError('Expected client to be a DynamoDB client'));
-  assert(typeof TableName === 'string', new TypeError('Invalid tableName to be a string'));
+  assert(typeof tableName === 'string', new TypeError('Invalid tableName to be a string'));
   assert(isPlainObject(keySchema), new TypeError('Expected keySchema to be a plain object'));
   assert(isPlainObject(properties), new TypeError('Expected properties to be a plain object'));
-  assert(isPlainObject(options), new TypeError('Expected options to be a plain object'));
 
   assert(isPlainObject(update), new TypeError('Expected update to be a plain object'));
   assert(isPlainObject(where), new TypeError('Expected where to be a plain object'));
@@ -27,7 +26,7 @@ module.exports = async function updateDocument(update, where) {
   assert(isPlainObject(values), new TypeError('Expected update values to be a plain object'));
 
   const params = {
-    TableName,
+    TableName: tableName,
     Key: marshall(where),
     UpdateExpression: expression,
     ExpressionAttributeValues: marshall(values),

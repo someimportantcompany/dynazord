@@ -3,9 +3,9 @@ const { assertRequiredCreateProps, appendCreateDefaultProps, formatCreateData } 
 const { validateData } = require('../helpers/validate');
 
 module.exports = async function createDocument(create) {
-  const { client, tableName: TableName, keySchema, properties, log, options } = this;
+  const { client, tableName, keySchema, properties, log, options } = this;
   assert(client && typeof client.putItem === 'function', new TypeError('Expected client to be a DynamoDB client'));
-  assert(typeof TableName === 'string', new TypeError('Invalid tableName to be a string'));
+  assert(typeof tableName === 'string', new TypeError('Invalid tableName to be a string'));
   assert(isPlainObject(keySchema), new TypeError('Expected keySchema to be a plain object'));
   assert(isPlainObject(properties), new TypeError('Expected properties to be a plain object'));
   assert(isPlainObject(options), new TypeError('Expected options to be a plain object'));
@@ -25,7 +25,7 @@ module.exports = async function createDocument(create) {
 
   const params = {
     // Specify the name & item to be created
-    TableName,
+    TableName: tableName,
     Item: marshall(create),
     // Specify a condition to ensure this doesn't write an item that already exists
     ConditionExpression: hash && range
