@@ -2,6 +2,7 @@
 const methods = {
   create: require('./create'),
   get: require('./get'),
+  find: require('./find'),
   update: require('./update'),
   delete: require('./delete'),
 };

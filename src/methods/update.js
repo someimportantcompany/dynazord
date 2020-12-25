@@ -21,14 +21,16 @@ module.exports = async function updateDocument(update, where) {
   await validateData.call(this, properties, update);
   await formatUpdateData.call(this, properties, update);
 
-  const { expression, values } = stringifyUpdateStatement.call(this, update) || {};
+  const { expression, names, values } = stringifyUpdateStatement.call(this, update) || {};
   assert(typeof expression === 'string', new TypeError('Expected update expression to be a string'));
+  assert(isPlainObject(names), new TypeError('Expected update names to be a plain object'));
   assert(isPlainObject(values), new TypeError('Expected update values to be a plain object'));
 
   const params = {
     TableName: tableName,
     Key: marshall(where),
     UpdateExpression: expression,
+    ExpressionAttributeNames: names,
     ExpressionAttributeValues: marshall(values),
     ReturnValues: 'ALL_NEW', // Return all the attributes
   };

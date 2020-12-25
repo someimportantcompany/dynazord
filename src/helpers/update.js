@@ -54,6 +54,7 @@ async function formatUpdateData(properties, data) {
 
 function stringifyUpdateStatement(data) {
   const changes = [];
+  const names = {};
   const values = {};
 
   let i = 0;
@@ -61,8 +62,9 @@ function stringifyUpdateStatement(data) {
   for (const key in data) {
     if (data.hasOwnProperty(key)) {
       i++; // eslint-disable-line no-plusplus
-      changes.push(`${key} = :${i}`);
-      values[`:${i}`] = data[key];
+      changes.push(`#u${i} = :u${i}`);
+      names[`#u${i}`] = key;
+      values[`:u${i}`] = data[key];
     }
   }
 
@@ -70,6 +72,7 @@ function stringifyUpdateStatement(data) {
     return {
       expression: `SET ${changes.join('')}`,
       changes,
+      names,
       values,
     };
   } else {

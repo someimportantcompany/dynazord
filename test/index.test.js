@@ -79,7 +79,7 @@ describe('dynamodel', () => {
 
       try {
         const doc = await model.create({ email, name });
-        assert.deepStrictEqual(doc, { id, email, name }, 'Expected model.create to return the document');
+        assert.deepStrictEqual(doc, { id, email, name });
       } catch (err) {
         err.message = `Failed to create document: ${err.message}`;
         throw err;
@@ -87,9 +87,26 @@ describe('dynamodel', () => {
 
       try {
         const doc = await model.get({ id });
-        assert.deepStrictEqual(doc, { id, email, name }, 'Expected model.get to return the document');
+        assert.deepStrictEqual(doc, { id, email, name });
       } catch (err) {
         err.message = `Failed to get document: ${err.message}`;
+        throw err;
+      }
+
+      try {
+        const docs = await model.find({ email });
+        assert.deepStrictEqual(docs, [ { id, email, name } ]);
+      } catch (err) {
+        err.message = `Failed to find documents: ${err.message}`;
+        throw err;
+      }
+
+      try {
+        const { or: $or } = dynamodel.operators;
+        const docs = await model.find({ [$or]: [ { email }, { email } ] });
+        assert.deepStrictEqual(docs, [ { id, email, name } ]);
+      } catch (err) {
+        err.message = `Failed to find documents: ${err.message}`;
         throw err;
       }
 

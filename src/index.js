@@ -2,6 +2,7 @@ const AWS = require('aws-sdk');
 const { assert, createLogger, isPlainObject } = require('./utils');
 const { assertValidProperties } = require('./helpers/validate');
 const { methods, bulkMethods } = require('./methods');
+const { operators } = require('./helpers/where');
 const { types } = require('./types');
 
 const defaultOptions = {
@@ -88,7 +89,8 @@ function createModel(opts) {
 
 module.exports = {
   createModel,
-  fieldTypes: Object.keys(types).reduce((r, t) => ({ ...r, [t]: t }), {}),
+  fieldTypes: Object.freeze(Object.keys(types).reduce((r, t) => ({ ...r, [t]: t }), {})),
+  operators: Object.freeze(operators),
   setOptions(overwrite) {
     assert(isPlainObject(overwrite), new TypeError('Expected argument to be a plain object'));
     overwriteOptions = overwrite;
