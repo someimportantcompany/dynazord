@@ -8,7 +8,9 @@ const methods = {
 };
 
 const bulkMethods = {
-  // bulkDelete: require('./bulkDelete'),
+  bulkCreate: require('./bulkCreate'),
+  bulkDelete: require('./bulkDelete'),
+  bulkGet: require('./bulkGet'),
 };
 
 module.exports = {

@@ -1,8 +1,9 @@
-const { assert, isPlainObject, marshall } = require('../utils');
+const { assert, isPlainObject, marshall, unmarshall } = require('../utils');
+const { formatReadData } = require('../helpers/read');
 
-module.exports = async function deleteBulkDocuments(bulk) {
+module.exports = async function getBulkDocuments(bulk) {
   const { client, tableName, keySchema, properties, log } = this;
-  assert(client && typeof client.transactWriteItems === 'function', new TypeError('Expected client to be a DynamoDB client'));
+  assert(client && typeof client.transactGetItems === 'function', new TypeError('Expected client to be a DynamoDB client'));
   assert(typeof tableName === 'string', new TypeError('Invalid tableName to be a string'));
   assert(isPlainObject(keySchema), new TypeError('Expected keySchema to be a plain object'));
   assert(isPlainObject(properties), new TypeError('Expected properties to be a plain object'));
@@ -19,17 +20,26 @@ module.exports = async function deleteBulkDocuments(bulk) {
   if (bulk.length) {
     const params = {
       TransactItems: bulk.map(where => ({
-        Delete: {
+        Get: {
           TableName: tableName,
           Key: marshall(where),
-          ReturnValuesOnConditionCheckFailure: 'NONE',
         },
       })),
     };
 
-    log.debug({ transactWriteItems: params });
-    const results = await client.transactWriteItems(params).promise();
-    log.debug({ transactWriteItems: results });
+    log.debug({ transactGetItems: params });
+    const results = await client.transactGetItems(params).promise();
+    log.debug({ transactGetItems: results });
+
+    return results && Array.isArray(results.Responses) ? Promise.all(results.Responses.map(async ({ Item }) => {
+      if (Item) {
+        Item = unmarshall(Item);
+        await formatReadData(properties, Item);
+        return Item;
+      } else {
+        return null;
+      }
+    })) : [];
   }
 
   return true;

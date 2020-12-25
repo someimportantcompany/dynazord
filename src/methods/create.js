@@ -3,12 +3,11 @@ const { assertRequiredCreateProps, appendCreateDefaultProps, formatCreateData } 
 const { validateData } = require('../helpers/validate');
 
 module.exports = async function createDocument(create) {
-  const { client, tableName, keySchema, properties, log, options } = this;
+  const { client, tableName, keySchema, properties, log } = this;
   assert(client && typeof client.putItem === 'function', new TypeError('Expected client to be a DynamoDB client'));
   assert(typeof tableName === 'string', new TypeError('Invalid tableName to be a string'));
   assert(isPlainObject(keySchema), new TypeError('Expected keySchema to be a plain object'));
   assert(isPlainObject(properties), new TypeError('Expected properties to be a plain object'));
-  assert(isPlainObject(options), new TypeError('Expected options to be a plain object'));
   assert(isPlainObject(create), new TypeError('Expected argument to be a plain object'));
 
   const { hash, range } = keySchema;
