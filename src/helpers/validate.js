@@ -15,9 +15,9 @@ function assertValidProperties(properties, prefix = '') {
           if (property.type && isPlainObject(types[property.type])) {
             const { [property.type]: type } = types;
             const builtIn = Object.keys(property.validate).filter(k => typeof property.validate[k] !== 'function');
-            assert(builtIn.length === 0 || isPlainObject(type.validators),
+            assert(builtIn.length === 0 || isPlainObject(type.validate),
               new TypeError('This field type doesn\'t have any built-in validators'));
-            builtIn.forEach(k => assert(typeof type.validators[k] === 'function',
+            builtIn.forEach(k => assert(typeof type.validate[k] === 'function',
               new TypeError(`Unknown validator ${k} for field`)));
           } else {
             const nonFunctions = Object.keys(property.validate).filter(k => typeof property.validate[k] !== 'function');

@@ -1,4 +1,4 @@
-const { assert } = require('./utils');
+const { assert, isEmpty } = require('./utils');
 
 const types = {
   [String]: {
@@ -12,21 +12,21 @@ const types = {
       return value;
     },
     validate: {
-      type: value => assert(typeof value === 'string', new Error('Expected value to be a string')),
+      type: value => isEmpty(value) || assert(typeof value === 'string', new Error('Expected value to be a string')),
       notNull: value => assert(value !== null, new Error('Expected value to be not-null')),
       notEmpty: value => assert(typeof value === 'string' && value.length > 0, new Error('Expected value to be not empty')),
     },
   },
   [Number]: {
     validate: {
-      type: value => assert(typeof value === 'number', new Error('Expected value to be a number')),
+      type: value => isEmpty(value) || assert(typeof value === 'number', new Error('Expected value to be a number')),
       notNull: value => assert(value !== null, new Error('Expected value to be not-null')),
       isUnsigned: value => assert(parseInt(value, 10) > 0, new Error('Expected value to be unsigned')),
     },
   },
   [Boolean]: {
     validate: {
-      type: value => assert(typeof value === 'boolean', new Error('Expected value to be a boolean')),
+      type: value => isEmpty(value) || assert(typeof value === 'boolean', new Error('Expected value to be a boolean')),
       notNull: value => assert(value !== null, new Error('Expected value to be not-null')),
     },
   },
@@ -40,7 +40,7 @@ const types = {
       return value.getTime();
     },
     validate: {
-      type: value => value instanceof Date,
+      type: value => isEmpty(value) || value instanceof Date,
       notNull: value => assert(value !== null, new Error('Expected value to be not-null')),
     },
   },

@@ -1,6 +1,6 @@
 const { assert, isPlainObject, marshall } = require('../utils');
 const { assertRequiredCreateProps, appendCreateDefaultProps } = require('../helpers/create');
-const { formatWriteData, validateData } = require('../helpers/data');
+const { formatReadData, formatWriteData, validateData } = require('../helpers/data');
 
 module.exports = async function createDocument(create) {
   const { client, tableName, keySchema, properties, log } = this;
@@ -37,9 +37,15 @@ module.exports = async function createDocument(create) {
     ReturnValues: 'NONE',
   };
 
-  log.debug({ putItem: params });
-  const results = await client.putItem(params).promise();
-  log.debug({ putItem: results });
+  try {
+    log.debug({ putItem: params });
+    const results = await client.putItem(params).promise();
+    log.debug({ putItem: results });
+  } catch (err) {
+    log.error({ putItem: { ...err } });
+    throw err;
+  }
 
+  await formatReadData.call(this, properties, create);
   return create;
 };

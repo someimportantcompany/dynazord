@@ -12,11 +12,12 @@ function assertRequiredCreateProps(data) {
   });
 
   for (const key in data) {
+    /* istanbul ignore else */
     if (data.hasOwnProperty(key) && properties.hasOwnProperty(key)) {
       const { [key]: prop } = properties;
       assert(prop.onCreate !== false, new Error(`Field ${key} cannot be created`));
 
-      if (required.find(r => r === key) && data.hasOwnProperty(key)) {
+      if (required.includes(key) && data.hasOwnProperty(key)) {
         required.splice(required.indexOf(key), 1);
       }
     }

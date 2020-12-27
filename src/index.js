@@ -5,6 +5,8 @@ const { methods, bulkMethods } = require('./methods');
 const { operators } = require('./helpers/where');
 const { types } = require('./types');
 
+const { name: PACKAGE_NAME } = require('../package.json');
+
 const defaultOptions = {
   createdAtTimestamp: true,
   updatedAtTimestamp: true,
@@ -18,6 +20,7 @@ function createModel(opts) {
   assert(typeof tableName === 'string', new TypeError('Expected { tableName } to be a string'));
   assert(isPlainObject(keySchema), new TypeError('Expected { keySchema } to be a plain object'));
   assert(isPlainObject(properties), new TypeError('Expected { properties } to be a plain object'));
+  assert(!opts.options || isPlainObject(opts.options), new TypeError('Expected { options } to be a plain object'));
 
   const { hash, range } = keySchema;
   assert(typeof hash === 'string', new TypeError('Expected keySchema hash property to be a string'));
@@ -27,8 +30,18 @@ function createModel(opts) {
   assert(!range || properties[range], new TypeError(`Expected ${range} to be a property`));
   assert(!range || properties[range].required === true, new TypeError(`Expected ${range} property to be required`));
 
-  assert(!opts.options || isPlainObject(opts.options), new TypeError('Expected { options } to be a plain object'));
-  assert(!opts.region || typeof opts.region === 'string', new TypeError('Expected { region } to be a string'));
+  if (opts.dynamodb) {
+    if (isPlainObject(opts.dynamodb)) {
+      opts.dynamodb = new AWS.DynamoDB({ ...opts.dynamodb });
+    } else {
+      assert(!(opts.dynamodb instanceof AWS.DynamoDB.DocumentClient),
+        new TypeError(`Sorry, ${PACKAGE_NAME} doesn't support AWS.DynamoDB.DocumentClient`));
+      assert(opts.dynamodb instanceof AWS.DynamoDB,
+        new TypeError('Expected { dynamodb } to be an instance of AWS.DynamoDB'));
+    }
+  } else {
+    opts.dynamodb = new AWS.DynamoDB();
+  }
 
   const options = {
     ...defaultOptions,
@@ -63,10 +76,10 @@ function createModel(opts) {
 
   return Object.create({ ...methods, ...bulkMethods }, {
     client: {
-      value: opts.dynamodb || new AWS.DynamoDB({ region: opts.region || undefined }),
+      value: opts.dynamodb,
     },
     log: {
-      value: opts.log || createLogger({ level: (options || {}).logLevel }),
+      value: opts.log || createLogger((options || {}).logLevel),
     },
     tableName: {
       enumerable: true,
