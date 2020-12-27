@@ -5,12 +5,13 @@ const methods = {
   find: require('./find'),
   update: require('./update'),
   delete: require('./delete'),
+  upsert: require('./upsert'),
 };
 
 const bulkMethods = {
   bulkCreate: require('./bulkCreate'),
-  bulkDelete: require('./bulkDelete'),
   bulkGet: require('./bulkGet'),
+  bulkDelete: require('./bulkDelete'),
 };
 
 module.exports = {

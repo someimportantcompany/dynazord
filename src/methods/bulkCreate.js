@@ -1,6 +1,6 @@
 const { assert, isPlainObject, marshall } = require('../utils');
-const { assertRequiredCreateProps, appendCreateDefaultProps, formatCreateData } = require('../helpers/create');
-const { validateData } = require('../helpers/validate');
+const { assertRequiredCreateProps, appendCreateDefaultProps } = require('../helpers/create');
+const { formatWriteData, validateData } = require('../helpers/data');
 
 module.exports = async function createBulkDocuments(bulk) {
   const { client, tableName, keySchema, properties, log } = this;
@@ -23,7 +23,7 @@ module.exports = async function createBulkDocuments(bulk) {
     await assertRequiredCreateProps.call(this, create);
     await appendCreateDefaultProps.call(this, create);
     await validateData.call(this, properties, create);
-    await formatCreateData.call(this, properties, create);
+    await formatWriteData.call(this, properties, create, { fieldHook: 'onCreate' });
 
     return create;
   }));

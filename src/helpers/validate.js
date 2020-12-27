@@ -35,42 +35,6 @@ function assertValidProperties(properties, prefix = '') {
   }
 }
 
-async function validateData(properties, data, prefix = '') {
-  assert(isPlainObject(properties), new TypeError('Expected properties to be a plain object'));
-  assert(isPlainObject(data), new TypeError('Expected create to be a plain object'));
-
-  for (const key in data) {
-    if (data.hasOwnProperty(key)) {
-      try {
-        const { [key]: property } = properties;
-        const { [property ? property.type : 'null']: type } = types;
-
-        const propertyValidators = property && isPlainObject(property.validate) ? property.validate : {};
-        const { type: assertValidType, ...typeValidators } = type && isPlainObject(type.validate) ? type.validate : {};
-        // eslint-disable-next-line no-unused-expressions
-        typeof assertValidType === 'function' && assertValidType(data[key]);
-
-        for (const vkey in propertyValidators) {
-          if (propertyValidators.hasOwnProperty(vkey)) {
-            if (typeof propertyValidators[vkey] === 'function') {
-              const { [vkey]: validateProperty } = propertyValidators;
-              await validateProperty(data[key]);
-            } else {
-              const { [vkey]: validateType } = typeValidators;
-              assert(typeof validateType === 'function', new Error(`Expected validator ${vkey} to be a function`));
-              await validateType(data[key], propertyValidators[vkey]);
-            }
-          }
-        }
-      } catch (err) {
-        err.message = `Error validating ${prefix}${key}: ${err.message}`;
-        throw err;
-      }
-    }
-  }
-}
-
 module.exports = {
   assertValidProperties,
-  validateData,
 };

@@ -1,6 +1,6 @@
 const { assert, isPlainObject, marshall, unmarshall } = require('../utils');
 const { buildFilterExpression, buildProjectionExpression } = require('../helpers/where');
-const { formatReadData } = require('../helpers/read');
+const { formatReadData } = require('../helpers/data');
 
 module.exports = async function findDocument(where, opts) {
   const { client, tableName, keySchema, properties, log } = this;

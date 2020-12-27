@@ -1,5 +1,4 @@
 const { assert, isPlainObject } = require('../utils');
-const { types } = require('../types');
 /* eslint-disable no-invalid-this */
 
 function assertRequiredCreateProps(data) {
@@ -48,38 +47,7 @@ async function appendCreateDefaultProps(data) {
   }));
 }
 
-async function formatCreateData(properties, data) {
-  assert(isPlainObject(properties), new TypeError('Expected properties to be a plain object'));
-  assert(isPlainObject(data), new TypeError('Expected data to be a plain object'));
-
-  for (const key in properties) {
-    if (properties.hasOwnProperty(key)) {
-      const { [key]: property } = properties;
-      const { [property ? property.type : 'null']: type } = types;
-
-      let value = data.hasOwnProperty(key) ? data[key] : undefined;
-
-      if (typeof property.onCreate === 'function') {
-        value = await property.onCreate.call(property, value); // eslint-disable-line no-useless-call
-      }
-      if (typeof property.set === 'function') {
-        value = await property.set.call(property, value); // eslint-disable-line no-useless-call
-      }
-      if (type && typeof type.set === 'function') {
-        value = await type.set.call(type, value, property); // eslint-disable-line no-useless-call
-      }
-
-      if (data.hasOwnProperty(key)) {
-        data[key] = value;
-      } else if (value !== undefined) {
-        data[key] = value;
-      }
-    }
-  }
-}
-
 module.exports = {
   assertRequiredCreateProps,
   appendCreateDefaultProps,
-  formatCreateData,
 };

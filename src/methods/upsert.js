@@ -2,7 +2,7 @@ const { assert, isPlainObject, marshall, unmarshall } = require('../utils');
 const { assertRequiredUpdateProps, stringifyUpdateStatement } = require('../helpers/update');
 const { formatReadData, formatWriteData, validateData } = require('../helpers/data');
 
-module.exports = async function updateDocument(update, where) {
+module.exports = async function upsertDocument(update, where) {
   const { client, tableName, keySchema, properties, log } = this;
   assert(client && typeof client.updateItem === 'function', new TypeError('Expected client to be a DynamoDB client'));
   assert(typeof tableName === 'string', new TypeError('Invalid tableName to be a string'));
@@ -18,7 +18,7 @@ module.exports = async function updateDocument(update, where) {
 
   await assertRequiredUpdateProps.call(this, update);
   await validateData.call(this, properties, update);
-  await formatWriteData.call(this, properties, update, { fieldHook: 'onUpdate' });
+  await formatWriteData.call(this, properties, update, { fieldHook: 'onUpsert' });
 
   const { expression, names, values } = stringifyUpdateStatement.call(this, update) || {};
   assert(typeof expression === 'string', new TypeError('Expected update expression to be a string'));
@@ -28,16 +28,8 @@ module.exports = async function updateDocument(update, where) {
   const params = {
     TableName: tableName,
     Key: marshall(where),
-    ConditionExpression: hash && range
-      ? 'attribute_exists(#_hash_key) && attribute_exists(#_range_key)'
-      : 'attribute_exists(#_hash_key)',
     UpdateExpression: expression,
-    ExpressionAttributeNames: {
-      ...(hash && range
-        ? { '#_hash_key': hash, '#_range_key': range }
-        : { '#_hash_key': hash }),
-      ...names,
-    },
+    ExpressionAttributeNames: names,
     ExpressionAttributeValues: marshall(values),
     ReturnValues: 'ALL_NEW', // Return all the attributes
   };

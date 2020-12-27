@@ -1,5 +1,5 @@
 const { assert, isPlainObject, marshall, unmarshall } = require('../utils');
-const { formatReadData } = require('../helpers/read');
+const { formatReadData } = require('../helpers/data');
 
 module.exports = async function getBulkDocuments(bulk) {
   const { client, tableName, keySchema, properties, log } = this;
