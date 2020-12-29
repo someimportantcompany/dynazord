@@ -4,7 +4,7 @@ const AWS = require('aws-sdk');
 const mockdate = require('mockdate');
 const { createModel } = require('../fixtures/dynamodb');
 
-describe.only('dynamodel/create', () => {
+describe('dynamodel/create', () => {
   let dynamodb = null;
   const currentDate = new Date();
 

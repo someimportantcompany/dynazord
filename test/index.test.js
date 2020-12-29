@@ -2,6 +2,7 @@ const _ = require('lodash');
 const assert = require('assert');
 const AWS = require('aws-sdk');
 const dynamodel = require('../src');
+const { deleteThenCreateTable } = require('./fixtures/dynamodb');
 const { v4: uuid } = require('uuid');
 
 describe('dynamodel', () => {
@@ -12,15 +13,14 @@ describe('dynamodel', () => {
     const tableName = `dynamodel-test-users-${Date.now()}`;
 
     before(async () => {
+      console.log(process.env.AWS_DYNAMODB_ENDPOINT);
+
       dynamodb = new AWS.DynamoDB({
         endpoint: process.env.AWS_DYNAMODB_ENDPOINT,
         region: 'us-east-1',
       });
 
-      const deleteTableParams = {
-        TableName: tableName,
-      };
-      const createTableParams = {
+      await deleteThenCreateTable(dynamodb, {
         TableName: tableName,
         BillingMode: 'PAY_PER_REQUEST',
         KeySchema: [
@@ -29,17 +29,7 @@ describe('dynamodel', () => {
         AttributeDefinitions: [
           { AttributeName: 'id', AttributeType: 'S' },
         ],
-      };
-
-      try {
-        await dynamodb.deleteTable(deleteTableParams).promise();
-      } catch (err) {
-        if (!`${err.message}`.includes('Cannot do operations on a non-existent table')) {
-          throw err;
-        }
-      }
-
-      await dynamodb.createTable(createTableParams).promise();
+      });
     });
 
     let model = null;
