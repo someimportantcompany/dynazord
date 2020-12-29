@@ -1,8 +1,5 @@
----
-layout: default
-title: Home
-nav_order: 1
-permalink: /
----
+# dynazord
 
-# Hello, world!
+_DynamoDB NodeJS ORM_
+
+- [Getting Started](./docs/Getting-Started.md)
