@@ -3,7 +3,7 @@
   <a href="https://npm.im/dynazord"><img alt="NPM" src="https://badge.fury.io/js/dynazord.svg"/></a>
   <a href="https://github.com/jdrydn/dynazord/actions?query=branch%3Amaster"><img alt="CI" src="https://github.com/jdrydn/dynazord/workflows/Test/badge.svg?branch=master"/></a>
   <!-- <a href="https://coveralls.io/github/jdrydn/dynazord?branch=master"><img alt="Coverage" src="https://coveralls.io/repos/github/jdrydn/dynazord/badge.svg?branch=master"/></a> -->
-  <a href="./docs"><img alt="Docs" src="https://img.shields.io/static/v1?label=Read&message=Documentation&color=blue&logo=read-the-docs"/></a>
+  <a href="./docs/"><img alt="Docs" src="https://img.shields.io/static/v1?label=Read&message=Documentation&color=blue&logo=read-the-docs"/></a>
 </div>
 
 Yet another [DynamoDB](https://aws.amazon.com/dynamodb) [NodeJS](https://nodejs.org) [ORM](https://en.wikipedia.org/wiki/Object–relational_mapping), inspired by similar ORMs like [Mongoose](https://mongoosejs.com) & [Sequelize](https://sequelize.org).
@@ -76,7 +76,7 @@ npm install --save dynazord
 
 ## Documentation
 
-- [Documentation](./docs/index.md)
+- [Documentation](./docs/)
 - [Getting Started](./docs/Getting-Started.md)
 
 ## Development
@@ -90,4 +90,4 @@ npm install --save dynazord
   ```
   docker run --name dynamodb --rm -d -p 8000:8000 amazon/dynamodb-local
   ```
-  - Take note of [the differences](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/DynamoDBLocal.UsageNotes.html#DynamoDBLocal.Differences).
+  - If you've not read through them, take note of [the differences](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/DynamoDBLocal.UsageNotes.html#DynamoDBLocal.Differences) between the production AWS DynamoDB platform & local Docker container.
