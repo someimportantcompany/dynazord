@@ -3,7 +3,7 @@ const dynazord = require('dynazord');
 const isEmail = require('validator/lib/isEmail');
 
 const users = dynazord.createModel({
-  tableName: 'dynazord-test-users',
+  tableName: 'dynazord-example-users',
   keySchema: {
     hash: 'email',
   },
@@ -24,7 +24,6 @@ const users = dynazord.createModel({
     },
     avatar: {
       type: String,
-      required: true,
       validate: {
         isValidContent(value) {
           const isValid = `${value}`.startsWith('https://') ||

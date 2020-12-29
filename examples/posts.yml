@@ -2,7 +2,7 @@ Resources:
   PostsTable:
     Type: AWS::DynamoDB::Table
     Properties:
-      TableName: dynazord-test-posts
+      TableName: dynazord-example-posts
       BillingMode: PAY_PER_REQUEST
       KeySchema:
         - AttributeName: id

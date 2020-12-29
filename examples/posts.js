@@ -2,7 +2,7 @@ const dynazord = require('dynazord');
 const { v4: uuid } = require('uuid');
 
 const posts = dynazord.createModel({
-  tableName: 'dynazord-test-posts',
+  tableName: 'dynazord-example-posts',
   keySchema: {
     hash: 'email',
   },

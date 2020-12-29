@@ -2,7 +2,7 @@ Resources:
   UsersTable:
     Type: AWS::DynamoDB::Table
     Properties:
-      TableName: dynazord-test-users
+      TableName: dynazord-example-users
       BillingMode: PAY_PER_REQUEST
       KeySchema:
         - AttributeName: email

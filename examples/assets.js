@@ -19,7 +19,7 @@ const VALID_EXTS = {
 };
 
 const posts = dynazord.createModel({
-  tableName: 'dynazord-test-posts',
+  tableName: 'dynazord-example-posts',
   keySchema: {
     hash: 'email',
   },

@@ -2,7 +2,7 @@ Resources:
   AssetsTable:
     Type: AWS::DynamoDB::Table
     Properties:
-      TableName: dynazord-test-assets
+      TableName: dynazord-example-assets
       BillingMode: PAY_PER_REQUEST
       KeySchema:
         - AttributeName: id
