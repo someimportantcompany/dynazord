@@ -8,16 +8,13 @@ jobs:
       AWS_ACCESS_KEY_ID: some-important-access-key
       AWS_SECRET_ACCESS_KEY: some-important-secret-key
       AWS_REGION: us-east-1
-      AWS_DYNAMODB_ENDPOINT: http://localhost:4566
+      AWS_DYNAMODB_ENDPOINT: http://localhost:8000
       NODE_ENV: testing
     services:
-      localstack:
-        image: localstack/localstack
-        env:
-          SERVICES: iam,dynamodb,apigateway,s3
-          DEFAULT_REGION: us-east-1
+      dynamodb:
+        image: amazon/dynamodb-local
         ports:
-          - 4566:4566
+          - 8000:8000
     steps:
       - uses: actions/checkout@v2
       - name: Use Node.js 12.x
