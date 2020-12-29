@@ -11,17 +11,18 @@ async function formatReadData(properties, data) {
       const { [key]: property } = properties;
       const { [property ? property.type : 'null']: type } = types;
 
-      let value = data.hasOwnProperty(key) ? data[key] : undefined;
+      const hasProperty = data.hasOwnProperty(key);
+      let value = hasProperty ? data[key] : undefined;
 
-      if (type && typeof type.get === 'function') {
+      if ((hasProperty || value) && type && typeof type.get === 'function') {
         value = await type.get.call(type, value, property); // eslint-disable-line no-useless-call
       }
-      if (typeof property.get === 'function') {
+      if ((hasProperty || value) && typeof property.get === 'function') {
         value = await property.get.call(property, value); // eslint-disable-line no-useless-call
       }
 
       /* istanbul ignore else */
-      if (data.hasOwnProperty(key)) {
+      if (hasProperty) {
         data[key] = value;
       } else if (value !== undefined) {
         data[key] = value;
@@ -44,20 +45,21 @@ async function formatWriteData(properties, data, opts = {}) {
       const { [key]: property } = properties;
       const { [property ? property.type : 'null']: type } = types;
 
+      const hasProperty = data.hasOwnProperty(key);
       let value = data.hasOwnProperty(key) ? data[key] : undefined;
 
       if (fieldHook && typeof property[fieldHook] === 'function') {
         value = await property[fieldHook].call(property, value); // eslint-disable-line no-useless-call
       }
-      if (typeof property.set === 'function') {
+      if ((hasProperty || value) && typeof property.set === 'function') {
         value = await property.set.call(property, value); // eslint-disable-line no-useless-call
       }
-      if (type && typeof type.set === 'function') {
+      if ((hasProperty || value) && type && typeof type.set === 'function') {
         value = await type.set.call(type, value, property); // eslint-disable-line no-useless-call
       }
 
       /* istanbul ignore else */
-      if (data.hasOwnProperty(key)) {
+      if (hasProperty) {
         data[key] = value;
       } else if (value !== undefined) {
         data[key] = value;
@@ -80,7 +82,7 @@ async function validateData(properties, data, prefix = '') {
         const propertyValidators = property && isPlainObject(property.validate) ? property.validate : {};
         const { type: assertValidType, ...typeValidators } = type && isPlainObject(type.validate) ? type.validate : {};
         // eslint-disable-next-line no-unused-expressions
-        typeof assertValidType === 'function' && assertValidType(data[key]);
+        typeof assertValidType === 'function' && assertValidType(data[key], property);
 
         for (const vkey in propertyValidators) {
           /* istanbul ignore else */

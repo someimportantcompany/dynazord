@@ -1,9 +1,9 @@
 const AWS = require('aws-sdk');
 const { assert, createLogger, isPlainObject } = require('./utils');
 const { assertValidProperties } = require('./helpers/validate');
+const { keys: typeKeys } = require('./types');
 const { methods, bulkMethods } = require('./methods');
 const { operators } = require('./helpers/where');
-const { types } = require('./types');
 
 const { name: PACKAGE_NAME } = require('../package.json');
 
@@ -50,21 +50,23 @@ function createModel(opts) {
   };
 
   try {
+    const pickTimestampProps = ({ format }) => ({ format });
+
     if (options.createdAtTimestamp === true) {
-      assert(!properties.hasOwnProperty('createdAt'),
-        new TypeError('Property "createdAt" already exists - set createdAtTimestamp to false!'));
       properties.createdAt = {
         type: Date,
         onCreate: value => value || new Date(),
+        ...pickTimestampProps(isPlainObject(properties.createdAt) ? properties.createdAt : {}),
       };
     }
+
     if (options.updatedAtTimestamp === true) {
-      assert(!properties.hasOwnProperty('updatedAt'),
-        new TypeError('Property "updatedAt" already exists - set updatedAtTimestamp to false!'));
       properties.updatedAt = {
         type: Date,
         onCreate: value => value || new Date(),
         onUpdate: value => value || new Date(),
+        onUpsert: value => value || new Date(),
+        ...pickTimestampProps(isPlainObject(properties.updatedAt) ? properties.updatedAt : {}),
       };
     }
 
@@ -102,7 +104,7 @@ function createModel(opts) {
 
 module.exports = {
   createModel,
-  fieldTypes: Object.freeze(Object.keys(types).reduce((r, t) => ({ ...r, [t]: t }), {})),
+  types: Object.freeze(typeKeys.reduce((r, t) => ({ ...r, [t]: t }), {})),
   operators: Object.freeze(operators),
   setOptions(overwrite) {
     assert(isPlainObject(overwrite), new TypeError('Expected argument to be a plain object'));
