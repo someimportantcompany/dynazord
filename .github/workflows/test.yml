@@ -32,5 +32,4 @@ jobs:
             ${{ runner.os }}-
       - run: npm ci
       - run: npm run lint
-      - run: npm run test:create-tables
       - run: npm test

@@ -51,7 +51,7 @@ async function deleteThenCreateTable(dynamodb, opts) {
   assert(dynamodb instanceof AWS.DynamoDB, 'Expected deleteThenCreateTable dynamodb to be an instance of AWS.DynamoDB');
   assert(_isPlainObject(opts), 'Expected deleteThenCreateTable opts to be a plain object');
 
-  const { TableName } = opts;
+  const { TableName, TimeToLiveSpecification, ...createTableParams } = opts;
   assert(TableName && typeof TableName === 'string', 'Expected deleteThenCreateTable opts.TableName to be a string');
 
   try {
@@ -65,11 +65,21 @@ async function deleteThenCreateTable(dynamodb, opts) {
   }
 
   try {
-    logger.debug({ createTable: opts });
-    await dynamodb.createTable(opts).promise();
+    logger.debug({ createTable: { TableName, ...createTableParams } });
+    await dynamodb.createTable({ TableName, ...createTableParams }).promise();
   } catch (err) {
     err.message = `Failed to create ${TableName}: ${err.message}`;
     throw err;
+  }
+
+  if (TimeToLiveSpecification) {
+    try {
+      logger.debug({ updateTimeToLive: { TableName, TimeToLiveSpecification } });
+      await dynamodb.updateTimeToLive({ TableName, TimeToLiveSpecification }).promise();
+    } catch (err) {
+      err.message = `Failed to set TTL for ${TableName}: ${err.message}`;
+      throw err;
+    }
   }
 }
 
