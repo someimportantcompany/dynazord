@@ -1,7 +1,7 @@
 const _isPlainObject = require('lodash/isPlainObject');
 const assert = require('assert');
 const AWS = require('aws-sdk');
-const dynamodel = require('../../src');
+const dynazord = require('../../src');
 const { createLogger } = require('../../src/utils');
 const { v4: uuid } = require('uuid');
 
@@ -29,7 +29,7 @@ async function createModel(opts) {
     ...createTable,
   });
 
-  return dynamodel.createModel({
+  return dynazord.createModel({
     dynamodb,
     tableName,
     keySchema: {

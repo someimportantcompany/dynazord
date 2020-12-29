@@ -4,7 +4,7 @@ const AWS = require('aws-sdk');
 const mockdate = require('mockdate');
 const { createModel } = require('../fixtures/dynamodb');
 
-describe('dynamodel/create', () => {
+describe('dynazord/create', () => {
   let dynamodb = null;
   const currentDate = new Date();
 
@@ -22,7 +22,7 @@ describe('dynamodel/create', () => {
   });
 
   it('should create a new document', async () => {
-    const tableName = 'dynamodel-test-entries';
+    const tableName = 'dynazord-test-entries';
     const entries = await createModel({
       dynamodb,
       tableName,
@@ -45,7 +45,7 @@ describe('dynamodel/create', () => {
   });
 
   it('should create a new document with required properties', async () => {
-    const tableName = 'dynamodel-test-entries';
+    const tableName = 'dynazord-test-entries';
     const posts = await createModel({
       dynamodb,
       tableName,
@@ -72,7 +72,7 @@ describe('dynamodel/create', () => {
   });
 
   it('should create a new document with default properties', async () => {
-    const tableName = 'dynamodel-test-entries';
+    const tableName = 'dynazord-test-entries';
     const posts = await createModel({
       dynamodb,
       tableName,
@@ -118,7 +118,7 @@ describe('dynamodel/create', () => {
   });
 
   it('should create a new document with a custom JSON property', async () => {
-    const tableName = 'dynamodel-test-entries';
+    const tableName = 'dynazord-test-entries';
     const posts = await createModel({
       dynamodb,
       tableName,
@@ -171,7 +171,7 @@ describe('dynamodel/create', () => {
   });
 
   it('should create a new document with a custom property', async () => {
-    const tableName = 'dynamodel-test-entries';
+    const tableName = 'dynazord-test-entries';
     const entries = await createModel({
       dynamodb,
       tableName,
@@ -208,7 +208,7 @@ describe('dynamodel/create', () => {
   });
 
   it('should throw an error if a required property is not found', async () => {
-    const tableName = 'dynamodel-test-entries';
+    const tableName = 'dynazord-test-entries';
     const entries = await createModel({
       dynamodb,
       tableName,
@@ -230,7 +230,7 @@ describe('dynamodel/create', () => {
   });
 
   it('should throw an error if a validator fails', async () => {
-    const tableName = 'dynamodel-test-entries';
+    const tableName = 'dynazord-test-entries';
     const entries = await createModel({
       dynamodb,
       tableName,

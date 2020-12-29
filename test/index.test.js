@@ -1,12 +1,12 @@
 const _ = require('lodash');
 const assert = require('assert');
 const AWS = require('aws-sdk');
-const dynamodel = require('../src');
+const dynazord = require('../src');
 const isUUID = require('validator/lib/isUUID');
 const { deleteThenCreateTable } = require('./fixtures/dynamodb');
 const { v4: uuid } = require('uuid');
 
-describe('dynamodel', () => {
+describe('dynazord', () => {
   describe('createModel', () => {
     let model = null;
 
@@ -17,7 +17,7 @@ describe('dynamodel', () => {
       });
 
       await deleteThenCreateTable(dynamodb, {
-        TableName: 'dynamodel-test-entries',
+        TableName: 'dynazord-test-entries',
         BillingMode: 'PAY_PER_REQUEST',
         KeySchema: [
           { AttributeName: 'id', KeyType: 'HASH' },
@@ -27,9 +27,9 @@ describe('dynamodel', () => {
         ],
       });
 
-      model = dynamodel.createModel({
+      model = dynazord.createModel({
         dynamodb,
-        tableName: 'dynamodel-test-entries',
+        tableName: 'dynazord-test-entries',
         keySchema: {
           hash: 'id',
         },
@@ -96,7 +96,7 @@ describe('dynamodel', () => {
       }
 
       try {
-        const { or: $or } = dynamodel.operators;
+        const { or: $or } = dynazord.operators;
         const docs = await model.find({ [$or]: [ { email }, { email } ] });
         assert.deepStrictEqual(docs, [ { id, email, name } ]);
       } catch (err) {

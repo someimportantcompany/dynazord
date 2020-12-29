@@ -1,6 +1,6 @@
-title: dynamodel
+title: dynazord
 description: DynamoDB ORM for Node.js
-baseurl: /dynamodel
+baseurl: /dynazord
 url: https://jdrydn.github.io
 
 remote_theme: pmarsceill/just-the-docs

@@ -1,8 +1,8 @@
-const dynamodel = require('dyna-model');
+const dynazord = require('dynazord');
 const { v4: uuid } = require('uuid');
 
-const posts = dynamodel.createModel({
-  tableName: 'dynamodel-test-posts',
+const posts = dynazord.createModel({
+  tableName: 'dynazord-test-posts',
   keySchema: {
     hash: 'email',
   },

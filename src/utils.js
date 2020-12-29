@@ -27,7 +27,7 @@ function assert(value, err, additional = {}) {
 }
 
 function createLogger(level) {
-  level = level || process.env.DYNAMODEL_LOG_LEVEL || null;
+  level = level || null;
   const make = (log, allowed) => allowed.includes(level) ? args => log(JSON.stringify(args, null, 2)) : () => null;
   /* eslint-disable no-console */
   return {

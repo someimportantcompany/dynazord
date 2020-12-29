@@ -1,5 +1,5 @@
 const assert = require('http-assert');
-const dynamodel = require('dyna-model');
+const dynazord = require('dynazord');
 const isHash = require('validator/lib/isHash');
 const { customAlphabet } = require('nanoid');
 
@@ -18,8 +18,8 @@ const VALID_EXTS = {
   '.pdf': 'application/pdf',
 };
 
-const posts = dynamodel.createModel({
-  tableName: 'dynamodel-test-posts',
+const posts = dynazord.createModel({
+  tableName: 'dynazord-test-posts',
   keySchema: {
     hash: 'email',
   },

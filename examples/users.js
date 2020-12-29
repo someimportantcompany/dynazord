@@ -1,9 +1,9 @@
 const assert = require('http-assert');
-const dynamodel = require('dyna-model');
+const dynazord = require('dynazord');
 const isEmail = require('validator/lib/isEmail');
 
-const users = dynamodel.createModel({
-  tableName: 'dynamodel-test-users',
+const users = dynazord.createModel({
+  tableName: 'dynazord-test-users',
   keySchema: {
     hash: 'email',
   },

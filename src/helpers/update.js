@@ -16,7 +16,7 @@ function assertRequiredUpdateProps(data) {
 
   const additionalProps = Object.keys(data).filter(key => !properties.hasOwnProperty(key));
   assert(additionalProps.length === 0, new Error('Unexpected properties on argument'), {
-    code: 'DYNAMODEL_FOUND_ADDITIONAL_FIELDS',
+    code: 'TOO_MANY_FIELDS',
     fields: additionalProps,
   });
 }

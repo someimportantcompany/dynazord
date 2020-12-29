@@ -24,13 +24,13 @@ function assertRequiredCreateProps(data) {
   }
 
   assert(required.length === 0, new Error('Expected all required fields to be set'), {
-    code: 'DYNAMODEL_MISSING_REQUIRED_FIELDS',
+    code: 'MISSING_REQUIRED_FIELDS',
     fields: required,
   });
 
   const additionalProps = Object.keys(data).filter(key => !properties.hasOwnProperty(key));
   assert(additionalProps.length === 0, new Error('Unexpected properties on argument'), {
-    code: 'DYNAMODEL_FOUND_ADDITIONAL_FIELDS',
+    code: 'TOO_MANY_FIELDS',
     fields: additionalProps,
   });
 }

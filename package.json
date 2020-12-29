@@ -1,5 +1,5 @@
 {
-  "name": "dyna-model",
+  "name": "dynazord",
   "description": "DynamoDB NodeJS ORM",
   "version": "1.0.0",
   "main": "src/index.js",
@@ -9,13 +9,13 @@
   },
   "author": "James D <james@jdrydn.com> (https://jdrydn.com)",
   "license": "SEE LICENSE IN ./LICENSE",
-  "homepage": "https://github.com/jdrydn/dynamodel#readme",
+  "homepage": "https://github.com/jdrydn/dynazord#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/jdrydn/dynamodel.git"
+    "url": "git+https://github.com/jdrydn/dynazord.git"
   },
   "bugs": {
-    "url": "https://github.com/jdrydn/dynamodel/issues"
+    "url": "https://github.com/jdrydn/dynazord/issues"
   },
   "files": [
     "src"

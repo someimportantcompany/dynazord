@@ -3,7 +3,7 @@ const _isPlainObject = require('lodash/isPlainObject');
 const assert = require('assert');
 const { types } = require('../src/types');
 
-describe('dynamodel/types', () => {
+describe('dynazord/types', () => {
 
   it('should expose an object of types', () => {
     assert(_isPlainObject(types), 'Expected types to be a plain object');
