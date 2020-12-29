@@ -42,7 +42,7 @@ const types = {
       return formatAsNumber ? value.getTime() : value.toISOString();
     },
     validate: {
-      type: value => isEmpty(value) || value instanceof Date,
+      type: value => isEmpty(value) || assert(value instanceof Date, new TypeError('Expected value to be a Date')),
       notNull: value => assert(value !== null, new Error('Expected value to be not-null')),
     },
   },
@@ -60,6 +60,19 @@ const types = {
   //     notEmpty: value => typeof value === 'string' && value.length > 0,
   //   },
   // },
+  BINARY: {
+    get(value) {
+      return Buffer.from(value, 'binary');
+    },
+    set(value) {
+      assert(value instanceof Buffer, new TypeError('Expected value to be an instance of Buffer'), { value });
+      return value.toString('binary');
+    },
+    validate: {
+      type: value => isEmpty(value) || assert(value instanceof Buffer, new TypeError('Expected value to be a Buffer')),
+      notNull: value => assert(value !== null, new Error('Expected value to be not-null')),
+    },
+  },
 };
 
 module.exports = {
@@ -75,3 +88,4 @@ types[Number] = types.NUMBER;
 types[Boolean] = types.BOOLEAN;
 types[Date] = types.DATE;
 // types[Set] = types.SET;
+types[Buffer] = types.BINARY;
