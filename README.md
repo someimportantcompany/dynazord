@@ -1,4 +1,4 @@
-<div align="center">
+<div align="center" style="margin-bottom: 50px">
   <h1>dynazord</h1>
   <a href="https://npm.im/dynazord"><img alt="NPM" src="https://badge.fury.io/js/dynazord.svg"/></a>
   <a href="https://github.com/jdrydn/dynazord/actions?query=branch%3Amaster"><img alt="CI" src="https://github.com/jdrydn/dynazord/workflows/Test/badge.svg?branch=master"/></a>
@@ -41,12 +41,29 @@ const user = await users.create({
   name: 'James D',
   avatar: 'https://github.com/jdrydn.png',
 });
-
 console.log(user);
 // { email: 'james@jdrydn.com',
 //   name: 'James D',
 //   avatar: 'https://github.com/jdrydn.png'
 //   role: 'USER' }
+
+const user = await users.get({ email: 'james@jdrydn.com' });
+console.log(user);
+// { email: 'james@jdrydn.com',
+//   name: 'James D',
+//   avatar: 'https://github.com/jdrydn.png'
+//   role: 'USER' }
+
+const user = await users.update({ role: 'EDITOR' }, { email: 'james@jdrydn.com' });
+console.log(user);
+// { email: 'james@jdrydn.com',
+//   name: 'James D',
+//   avatar: 'https://github.com/jdrydn.png'
+//   role: 'EDITOR' }
+
+const user = await users.delete({ email: 'james@jdrydn.com' });
+console.log(user);
+// true
 ```
 
 This library is designed to simplify interaction with DynamoDB, offering more traditional CRUD methods instead of learning DynamoDB's [`getItem`](https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB.html#getItem-property)/[`putItem`](https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB.html#putItem-property) methods. You can also write functions to validate properties on objects.
