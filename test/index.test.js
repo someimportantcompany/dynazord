@@ -11,8 +11,6 @@ describe('dynamodel', () => {
     let model = null;
 
     before(async () => {
-      console.log(process.env.AWS_DYNAMODB_ENDPOINT);
-
       const dynamodb = new AWS.DynamoDB({
         endpoint: process.env.AWS_DYNAMODB_ENDPOINT,
         region: 'us-east-1',

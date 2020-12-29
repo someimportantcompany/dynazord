@@ -1,6 +1,6 @@
 const { assert, isPlainObject, marshall } = require('../utils');
 const { assertRequiredCreateProps, appendCreateDefaultProps } = require('../helpers/create');
-const { formatWriteData, validateData } = require('../helpers/data');
+const { formatReadData, formatWriteData, validateData } = require('../helpers/data');
 
 module.exports = async function createBulkDocuments(bulk) {
   const { client, tableName, keySchema, properties, log } = this;
@@ -53,6 +53,11 @@ module.exports = async function createBulkDocuments(bulk) {
     const results = await client.transactWriteItems(params).promise();
     log.debug({ transactWriteItems: results });
   }
+
+  bulk = await Promise.all(bulk.map(async create => {
+    await formatReadData.call(this, properties, create);
+    return create;
+  }));
 
   return bulk;
 };
