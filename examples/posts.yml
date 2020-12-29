@@ -1,0 +1,36 @@
+Resources:
+  PostsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: dynamodel-test-posts
+      BillingMode: PAY_PER_REQUEST
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: blogPostsByTime
+          KeySchema:
+            - AttributeName: blog
+              KeyType: HASH
+            - AttributeName: createdAt
+              KeyType: RANGE
+          Projection:
+            ProjectionType: KEYS_ONLY
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+        - AttributeName: blog
+          AttributeType: S
+        - AttributeName: createdAt
+          AttributeType: N
+Outputs:
+  PostsTableName:
+    Export:
+      Name: test-PostsTableName
+    Value:
+      Ref: PostsTable
+  PostsTableArn:
+    Export:
+      Name: test-PostsTableArn
+    Value:
+      Fn::GetAtt: [PostsTable, Arn]

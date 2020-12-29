@@ -1,4 +1,6 @@
-const dynamodel = require('../src');
+const assert = require('http-assert');
+const dynamodel = require('dyna-model');
+const isEmail = require('validator/lib/isEmail');
 
 const users = dynamodel.createModel({
   tableName: 'dynamodel-test-users',
@@ -9,6 +11,12 @@ const users = dynamodel.createModel({
     email: {
       type: String,
       required: true,
+      validate: {
+        notNull: true,
+        isEmail(value) {
+          assert(isEmail(value), 400, new Error('Expected value to be an email address'), { value });
+        },
+      },
     },
     name: {
       type: String,
@@ -17,6 +25,14 @@ const users = dynamodel.createModel({
     avatar: {
       type: String,
       required: true,
+      validate: {
+        isValidContent(value) {
+          const isValid = `${value}`.startsWith('https://') ||
+            `${value}`.startsWith('data:image/jpg;base64,') || `${value}`.startsWith('data:image/jpeg;base64,') ||
+              `${value}`.startsWith('data:image/png;base64,');
+          assert(isValid, 400, new Error('Expected value to be a base64-string or URL'));
+        },
+      },
     },
     role: {
       type: String,
