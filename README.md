@@ -37,31 +37,31 @@ const users = dynazord.createModel({
 });
 
 const user = await users.create({
-  email: 'james@jdrydn.com',
+  email: 'jdrydn@github.io',
   name: 'James D',
   avatar: 'https://github.com/jdrydn.png',
 });
 console.log(user);
-// { email: 'james@jdrydn.com',
+// { email: 'jdrydn@github.io',
 //   name: 'James D',
 //   avatar: 'https://github.com/jdrydn.png'
 //   role: 'USER' }
 
-const user = await users.get({ email: 'james@jdrydn.com' });
+const user = await users.get({ email: 'jdrydn@github.io' });
 console.log(user);
-// { email: 'james@jdrydn.com',
+// { email: 'jdrydn@github.io',
 //   name: 'James D',
 //   avatar: 'https://github.com/jdrydn.png'
 //   role: 'USER' }
 
-const user = await users.update({ role: 'EDITOR' }, { email: 'james@jdrydn.com' });
+const user = await users.update({ role: 'EDITOR' }, { email: 'jdrydn@github.io' });
 console.log(user);
-// { email: 'james@jdrydn.com',
+// { email: 'jdrydn@github.io',
 //   name: 'James D',
 //   avatar: 'https://github.com/jdrydn.png'
 //   role: 'EDITOR' }
 
-const user = await users.delete({ email: 'james@jdrydn.com' });
+const user = await users.delete({ email: 'jdrydn@github.io' });
 console.log(user);
 // true
 ```

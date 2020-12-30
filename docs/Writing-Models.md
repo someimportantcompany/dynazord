@@ -375,6 +375,30 @@ Regardless of type, all properties have some shared config.
 - Can be referenced as `DATE` string or JS's native `Date` constructor.
 - Optionally set the underlying DynamoDB format to `Number` when you want to use a date value as a Range key!
 
+If you want to store a custom Date format, use a [custom type](#custom-type) with a validator/set function:
+
+```js
+const assert = require('http-assert');
+const formatDate = require('date-fns/format');
+
+{
+  publishedDay: {
+    format: 'YYYY-MM-DD',
+    get(value) {
+      return new Date(value);
+    },
+    set(value) {
+      return formatDate(value, this.format);
+    },
+    validate: {
+      isDateType(value) {
+        assert(value instanceof Date, new Error('Expected value to be a Date object'));
+      },
+    }
+  }
+}
+```
+
 ### Buffer Type
 
 ```js
@@ -398,6 +422,31 @@ Regardless of type, all properties have some shared config.
 
 - Translates to DynamoDB binary (`B`) type.
 - Can be referenced as `BINARY` string or JS's native `Buffer` constructor.
+
+### Custom Type
+
+```js
+{
+  somethingComplex: {
+    /**
+     * Omit the type key to avoid using any type-checking
+     */
+    // type: null,
+
+    /**
+     * There are no specific validators for custom types
+     * @type {Object}
+     */
+    validate: {
+      /**
+       * But you can write your own using functions!
+       */
+    },
+  },
+}
+```
+
+- Translates to a native DynamoDB type using [marshall](https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/Converter.html#marshall-property).
 
 ## Additional Options
 
