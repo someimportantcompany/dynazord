@@ -30,9 +30,7 @@ describe('dynazord', () => {
       model = dynazord.createModel({
         dynamodb,
         tableName: 'dynazord-test-entries',
-        keySchema: {
-          hash: 'id',
-        },
+        keySchema: 'id',
         properties: {
           id: {
             type: String,
@@ -64,73 +62,71 @@ describe('dynazord', () => {
     const name = 'James D';
     const avatar = 'http://github.com/jdrydn.png';
 
-    it('should be able to perform singular CRUD actions with a model', async () => {
-      assert(model, 'Failed to create model');
+    describe('CRUD', () => {
       let id = null;
 
-      try {
+      it('should create an entry', async () => {
+        assert(model, 'Failed to create the model');
+
         const doc = await model.create({ email, name });
         assert.ok(_.isPlainObject(doc), 'Expected document to be a plain object');
         assert.ok(typeof doc.id === 'string' && isUUID(doc.id, 4), 'Expected id to be a UUID-v4 string');
         ({ id } = doc);
         assert.deepStrictEqual(doc, { id, email, name });
-      } catch (err) {
-        err.message = `Failed to create document: ${err.message}`;
-        throw err;
-      }
+      });
 
-      try {
+      it('should get an entry', async () => {
+        assert(model, 'Failed to create the model');
+        assert(id, 'Failed to initially create the entry');
+
         const doc = await model.get({ id });
         assert.deepStrictEqual(doc, { id, email, name });
-      } catch (err) {
-        err.message = `Failed to get document: ${err.message}`;
-        throw err;
-      }
+      });
 
-      try {
+      it('should find an entry #1', async () => {
+        assert(model, 'Failed to create the model');
+        assert(id, 'Failed to initially create the entry');
+
         const docs = await model.find({ email });
         assert.deepStrictEqual(docs, [ { id, email, name } ]);
-      } catch (err) {
-        err.message = `Failed to find documents: ${err.message}`;
-        throw err;
-      }
+      });
 
-      try {
+      it('should find an entry #2', async () => {
+        assert(model, 'Failed to create the model');
+        assert(id, 'Failed to initially create the entry');
+
         const { or: $or } = dynazord.operators;
         const docs = await model.find({ [$or]: [ { email }, { email } ] });
         assert.deepStrictEqual(docs, [ { id, email, name } ]);
-      } catch (err) {
-        err.message = `Failed to find documents: ${err.message}`;
-        throw err;
-      }
+      });
 
-      try {
+      it('should update an entry', async () => {
+        assert(model, 'Failed to create the model');
+        assert(id, 'Failed to initially create the entry');
+
         const doc = await model.update({ avatar }, { id });
         assert.deepStrictEqual(doc, { id, email, name, avatar });
-      } catch (err) {
-        err.message = `Failed to update document: ${err.message}`;
-        throw err;
-      }
+      });
 
-      try {
+      it('should delete an entry', async () => {
+        assert(model, 'Failed to create the model');
+        assert(id, 'Failed to initially create the entry');
+
         const deleted = await model.delete({ id });
-        assert.strictEqual(deleted, true, 'Expected model.delete to return true');
-      } catch (err) {
-        err.message = `Failed to delete document: ${err.message}`;
-        throw err;
-      }
+        assert.strictEqual(deleted, true);
+      });
     });
 
-    it('should be able to perform bulk CRUD actions with a model', async () => {
-      assert(model, 'Failed to create model');
+    describe('bulk CRUD', () => {
       const ids = [];
-
       const body = _.times(5).map(i => ({
-        email: `james+${i}@jdrydn.com`,
+        email: `jdrydn+${i}@github.io`,
         name,
       }));
 
-      try {
+      it('should create entries', async () => {
+        assert(model, 'Failed to create the model');
+
         const docs = await model.bulkCreate(body);
         docs.forEach((doc, i) => {
           assert.ok(_.isPlainObject(doc), `Expected document #${i} to be a plain object`);
@@ -139,43 +135,94 @@ describe('dynazord', () => {
           assert.deepStrictEqual(doc, { id: doc.id, ...body[i] });
         });
         assert.deepStrictEqual(body.length, docs.length, `Expected bulkCreate to create ${body.length} documents`);
-      } catch (err) {
-        err.message = `Failed to bulk create documents: ${err.message}`;
-        throw err;
-      }
+      });
 
-      try {
+      it('should get entries', async () => {
+        assert(model, 'Failed to create the model');
+        assert(ids.length, 'Failed to initially create entries');
+
         const docs = await model.bulkGet(ids.map(id => ({ id })));
-        assert.deepStrictEqual(docs, body);
-      } catch (err) {
-        err.message = `Failed to bulk get documents: ${err.message}`;
-        throw err;
-      }
+        assert.deepStrictEqual(docs, body.map((b, i) => ({ id: ids[i], ...b })));
+      });
 
-      // try {
-      //   const doc = await model.update({ avatar }, { id });
-      //   assert.deepStrictEqual(doc, { id, email, name, avatar });
-      // } catch (err) {
-      //   err.message = `Failed to update document: ${err.message}`;
-      //   throw err;
-      // }
+      it('should find entries #1', async () => {
+        assert(model, 'Failed to create the model');
+        assert(ids.length, 'Failed to initially create entries');
 
-      try {
+        const docs = await model.find({ email: body[0].email });
+        assert.deepStrictEqual(docs, [ { id: ids[0], ...body[0] } ]);
+      });
+
+      it('should find entries #2', async () => {
+        assert(model, 'Failed to create the model');
+        assert(ids.length, 'Failed to initially create entries');
+
+        const { or: $or } = dynazord.operators;
+        const docs = await model.find({ [$or]: [ { email: body[0].email }, { email: body[1].email } ] });
+        assert.strictEqual(docs.length, 2, 'Expected find to return 2 documents');
+
+        const first = docs.find(d => d && d.email === body[0].email);
+        const second = docs.find(d => d && d.email === body[1].email);
+        assert.deepStrictEqual([ first, second ], [ { id: ids[0], ...body[0] }, { id: ids[1], ...body[1] } ]);
+      });
+
+      it.skip('should update entries', () => {
+        assert(model, 'Failed to create the model');
+        assert(ids.length, 'Failed to initially create entries');
+
+        assert.fail('Not implemented');
+
+        // const doc = await model.update({ avatar }, { id });
+        // assert.deepStrictEqual(doc, { id, email, name, avatar });
+      });
+
+      it('should delete entries', async () => {
+        assert(model, 'Failed to create the model');
+        assert(ids.length, 'Failed to initially create entries');
+
         const deleted = await model.bulkDelete(ids.map(id => ({ id })));
-        assert.strictEqual(deleted, true, 'Expected model.delete to return true');
-      } catch (err) {
-        err.message = `Failed to bulk delete documents: ${err.message}`;
-        throw err;
-      }
+        assert.strictEqual(deleted, true);
+      });
+    });
+  });
 
+  describe('types', () => {
+    it('should export a static object of types', () => {
+      assert.deepStrictEqual(dynazord.types, {
+        STRING: 'STRING',
+        NUMBER: 'NUMBER',
+        BOOLEAN: 'BOOLEAN',
+        DATE: 'DATE',
+        BINARY: 'BINARY',
+      });
+    });
+  });
+
+  describe('operators', () => {
+    const { operators } = require('../src/helpers/where');
+
+    it('should export a static object of operators', () => {
+      assert.deepStrictEqual(dynazord.operators, operators);
+    });
+  });
+
+  describe('setDynamoDB', () => {
+    it('should set a global dynamodb client', () => {
+      dynazord.setDynamoDB({});
+      dynazord.setDynamoDB(new AWS.DynamoDB());
+      dynazord.setDynamoDB(null);
+    });
+
+    it('should throw an error if a DocumentClient is passed', () => {
       try {
-        const docs = await model.bulkGet(ids.map(id => ({ id })));
-        assert.deepStrictEqual(docs, body.map(() => null));
+        dynazord.setDynamoDB(new AWS.DynamoDB.DocumentClient());
+        assert.fail('Should have errored');
       } catch (err) {
-        err.message = `Failed to bulk get documents: ${err.message}`;
-        throw err;
+        assert.ok(err instanceof Error);
+        assert.strictEqual(err.message, 'Sorry, dynazord doesn\'t support AWS.DynamoDB.DocumentClient');
       }
     });
 
+    after(() => dynazord.setDynamoDB(null));
   });
 });

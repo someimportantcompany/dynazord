@@ -5,21 +5,29 @@ const dynazord = require('../../src');
 const { createLogger } = require('../../src/utils');
 const { v4: uuid } = require('uuid');
 
-const logger = createLogger();
+const logger = createLogger(process.env.DYNAMODEL_LOG_LEVEL);
 
-async function createModel(opts) {
-  assert(_isPlainObject(opts), 'Expected createModel opts to be a plain object');
+async function assertItem(dynamodb, getItemOpts, expected) {
+  getItemOpts.TableName = typeof getItemOpts.TableName === 'string' ? getItemOpts.TableName : 'dynazord-test-entries';
+  getItemOpts.ConsistentRead = typeof getItemOpts.ConsistentRead === 'boolean' ? getItemOpts.ConsistentRead : true;
 
-  const { dynamodb, tableName, createTable, properties, keySchema, options, ...createOpts } = opts;
-  assert(dynamodb instanceof AWS.DynamoDB, 'Expected createModel dynamodb to be an instance of AWS.DynamoDB');
-  assert(tableName && typeof tableName === 'string', 'Expected createModel opts.tableName to be a string');
-  assert(!createTable || _isPlainObject(createTable), 'Expected createModel opts.createTable to be a plain object');
-  assert(!properties || _isPlainObject(properties), 'Expected createModel opts.properties to be a plain object');
-  assert(!keySchema || _isPlainObject(keySchema), 'Expected createModel opts.keySchema to be a plain object');
-  assert(!options || _isPlainObject(options), 'Expected createModel opts.options to be a plain object');
+  logger.debug({ getItem: getItemOpts });
+  const result = await dynamodb.getItem(getItemOpts).promise();
+  const actual = _isPlainObject(result.Item) ? result.Item : null;
+  assert.deepStrictEqual(actual, expected, 'Expected item in DynamoDB to deepStrictEqual');
+}
+
+async function createTestModel(opts) {
+  assert(_isPlainObject(opts), 'Expected createTestModel opts to be a plain object');
+
+  const { dynamodb, tableName, createTable, options, ...createOpts } = opts;
+  assert(dynamodb instanceof AWS.DynamoDB, 'Expected createTestModel dynamodb to be an instance of AWS.DynamoDB');
+  assert(!tableName || typeof tableName === 'string', 'Expected createTestModel opts.tableName to be a string');
+  assert(!createTable || _isPlainObject(createTable), 'Expected createTestModel opts.createTable to be a plain object');
+  assert(!options || _isPlainObject(options), 'Expected createTestModel opts.options to be a plain object');
 
   await deleteThenCreateTable(dynamodb, {
-    TableName: tableName,
+    TableName: tableName || 'dynazord-test-entries',
     BillingMode: 'PAY_PER_REQUEST',
     KeySchema: [
       { AttributeName: 'id', KeyType: 'HASH' },
@@ -32,7 +40,8 @@ async function createModel(opts) {
 
   return dynazord.createModel({
     dynamodb,
-    tableName,
+    tableName: tableName || 'dynazord-test-entries',
+    log: logger,
     keySchema: {
       hash: 'id',
     },
@@ -42,7 +51,6 @@ async function createModel(opts) {
         required: true,
         default: () => uuid(),
       },
-      ...properties,
     },
     options: {
       createdAtTimestamp: true,
@@ -90,6 +98,7 @@ async function deleteThenCreateTable(dynamodb, opts) {
 }
 
 module.exports = {
-  createModel,
+  assertItem,
+  createTestModel,
   deleteThenCreateTable,
 };

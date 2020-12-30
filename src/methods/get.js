@@ -1,14 +1,14 @@
-const { assert, isPlainObject, marshall, unmarshall } = require('../utils');
-const { formatReadData } = require('../helpers/data');
+const { assert, isPlainObject, unmarshall } = require('../utils');
+const { formatReadData, marshallKey } = require('../helpers/data');
 
-module.exports = async function getDocument(key, opts) {
+module.exports = async function getDocument(where, opts) {
   const { client, tableName, keySchema, properties, log } = this;
   assert(client && typeof client.getItem === 'function', new TypeError('Expected client to be a DynamoDB client'));
   assert(typeof tableName === 'string', new TypeError('Invalid tableName to be a string'));
   assert(isPlainObject(keySchema), new TypeError('Expected keySchema to be a plain object'));
   assert(isPlainObject(properties), new TypeError('Expected properties to be a plain object'));
 
-  assert(isPlainObject(key), new TypeError('Expected argument to be a plain object'));
+  assert(isPlainObject(where), new TypeError('Expected argument to be a plain object'));
   assert(!opts || isPlainObject(opts), new TypeError('Expected opts to be a plain object'));
 
   const {
@@ -21,12 +21,12 @@ module.exports = async function getDocument(key, opts) {
     new TypeError('Expected consistentRead to be a boolean'));
 
   const { hash, range } = keySchema;
-  assert(key.hasOwnProperty(hash), new Error(`Missing ${hash} hash property from argument`));
-  assert(!range || key.hasOwnProperty(range), new Error(`Missing ${range} range property from argument`));
+  assert(where.hasOwnProperty(hash), new Error(`Missing ${hash} hash property from argument`));
+  assert(!range || where.hasOwnProperty(range), new Error(`Missing ${range} range property from argument`));
 
   const params = {
     TableName: tableName,
-    Key: marshall(key),
+    Key: await marshallKey(properties, where),
     AttributesToGet: attributesToGet,
     ConsistentRead: consistentRead,
   };
@@ -39,7 +39,7 @@ module.exports = async function getDocument(key, opts) {
 
   assert(item, new Error('Document not found'), {
     code: 'DOCUMENT_NOT_FOUND',
-    key: JSON.stringify(key),
+    key: JSON.stringify(where),
   });
 
   formatReadData(properties, item);

@@ -18,6 +18,17 @@ const VALID_EXTS = {
   '.pdf': 'application/pdf',
 };
 
+const createTable = {
+  TableName: 'dynazord-example-assets',
+  BillingMode: 'PAY_PER_REQUEST',
+  KeySchema: [
+    { AttributeName: 'id', KeyType: 'HASH' },
+  ],
+  AttributeDefinitions: [
+    { AttributeName: 'id', AttributeType: 'S' },
+  ],
+};
+
 const assets = dynazord.createModel({
   tableName: 'dynazord-example-assets',
   keySchema: 'id',
@@ -74,3 +85,4 @@ const assets = dynazord.createModel({
 });
 
 module.exports = assets;
+module.exports.createTable = createTable;

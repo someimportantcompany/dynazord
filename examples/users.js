@@ -2,6 +2,17 @@ const assert = require('http-assert');
 const dynazord = require('dynazord');
 const isEmail = require('validator/lib/isEmail');
 
+const createTable = {
+  TableName: 'dynazord-example-users',
+  BillingMode: 'PAY_PER_REQUEST',
+  KeySchema: [
+    { AttributeName: 'email', KeyType: 'HASH' },
+  ],
+  AttributeDefinitions: [
+    { AttributeName: 'email', AttributeType: 'S' },
+  ],
+};
+
 const users = dynazord.createModel({
   tableName: 'dynazord-example-users',
   keySchema: {
@@ -45,3 +56,4 @@ const users = dynazord.createModel({
 });
 
 module.exports = users;
+module.exports.createTable = createTable;

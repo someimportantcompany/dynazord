@@ -2,7 +2,8 @@ const _isPlainObject = require('lodash/isPlainObject');
 const assert = require('assert');
 const AWS = require('aws-sdk');
 const mockdate = require('mockdate');
-const { createModel } = require('../fixtures/dynamodb');
+const { assertItem, createTestModel } = require('../fixtures/dynamodb');
+const { v4: uuid } = require('uuid');
 
 describe('dynazord/create', () => {
   let dynamodb = null;
@@ -22,10 +23,8 @@ describe('dynazord/create', () => {
   });
 
   it('should create a new document', async () => {
-    const tableName = 'dynazord-test-entries';
-    const entries = await createModel({
+    const entries = await createTestModel({
       dynamodb,
-      tableName,
       properties: {
         id: {
           type: String,
@@ -41,15 +40,25 @@ describe('dynazord/create', () => {
 
     const entry = await entries.create({});
     assert(_isPlainObject(entry), 'Expected entry to be a plain object');
+
+    await assertItem(dynamodb, { Key: { id: { S: 'POST-ID' } } }, {
+      id: {
+        S: 'POST-ID',
+      },
+    });
+
     assert.deepStrictEqual(entry, { id: 'POST-ID' });
   });
 
   it('should create a new document with required properties', async () => {
-    const tableName = 'dynazord-test-entries';
-    const posts = await createModel({
+    const posts = await createTestModel({
       dynamodb,
-      tableName,
       properties: {
+        id: {
+          type: String,
+          required: true,
+          default: () => uuid(),
+        },
         title: {
           type: String,
           required: true,
@@ -63,8 +72,16 @@ describe('dynazord/create', () => {
 
     assert(_isPlainObject(post), 'Expected post to be a plain object');
     assert(post.id && typeof post.id === 'string', 'Expected post.id to be a string');
-    assert.deepStrictEqual({ ...post, id: 'POST-ID' }, {
-      id: 'POST-ID',
+
+    await assertItem(dynamodb, { Key: { id: { S: post.id } } }, {
+      id: { S: post.id },
+      title: { S: 'Hello, world!' },
+      createdAt: { S: currentDate.toISOString() },
+      updatedAt: { S: currentDate.toISOString() },
+    });
+
+    assert.deepStrictEqual(post, {
+      id: post.id,
       title: 'Hello, world!',
       createdAt: currentDate,
       updatedAt: currentDate,
@@ -72,11 +89,14 @@ describe('dynazord/create', () => {
   });
 
   it('should create a new document with default properties', async () => {
-    const tableName = 'dynazord-test-entries';
-    const posts = await createModel({
+    const posts = await createTestModel({
       dynamodb,
-      tableName,
       properties: {
+        id: {
+          type: String,
+          required: true,
+          default: () => uuid(),
+        },
         title: {
           type: String,
           required: true,
@@ -106,6 +126,17 @@ describe('dynazord/create', () => {
 
     assert(_isPlainObject(post), 'Expected post to be a plain object');
     assert(post.id && typeof post.id === 'string', 'Expected post.id to be a string');
+
+    await assertItem(dynamodb, { Key: { id: { S: post.id } } }, {
+      id: { S: post.id },
+      title: { S: 'Hello, world!' },
+      headline: { S: 'Super interesting headline!' },
+      slug: { S: 'super-clever-non-unique-slug' },
+      author: { S: 'James' },
+      createdAt: { S: currentDate.toISOString() },
+      updatedAt: { S: currentDate.toISOString() },
+    });
+
     assert.deepStrictEqual({ ...post, id: 'POST-ID' }, {
       id: 'POST-ID',
       title: 'Hello, world!',
@@ -118,11 +149,14 @@ describe('dynazord/create', () => {
   });
 
   it('should create a new document with a custom JSON property', async () => {
-    const tableName = 'dynazord-test-entries';
-    const posts = await createModel({
+    const posts = await createTestModel({
       dynamodb,
-      tableName,
       properties: {
+        id: {
+          type: String,
+          required: true,
+          default: () => uuid(),
+        },
         title: {
           type: String,
           required: true,
@@ -156,6 +190,17 @@ describe('dynazord/create', () => {
 
     assert(_isPlainObject(post), 'Expected post to be a plain object');
     assert(post.id && typeof post.id === 'string', 'Expected post.id to be a string');
+
+    await assertItem(dynamodb, { Key: { id: { S: post.id } } }, {
+      id: { S: post.id },
+      title: { S: 'Hello, world!' },
+      headline: { S: 'Super interesting headline!' },
+      slug: { S: 'super-clever-non-unique-slug' },
+      author: { S: '{"id":"USER-ID","name":"James"}' },
+      createdAt: { S: currentDate.toISOString() },
+      updatedAt: { S: currentDate.toISOString() },
+    });
+
     assert.deepStrictEqual({ ...post, id: 'POST-ID' }, {
       id: 'POST-ID',
       title: 'Hello, world!',
@@ -171,11 +216,14 @@ describe('dynazord/create', () => {
   });
 
   it('should create a new document with a custom property', async () => {
-    const tableName = 'dynazord-test-entries';
-    const entries = await createModel({
+    const entries = await createTestModel({
       dynamodb,
-      tableName,
       properties: {
+        id: {
+          type: String,
+          required: true,
+          default: () => uuid(),
+        },
         title: {
           required: true,
         },
@@ -197,6 +245,18 @@ describe('dynazord/create', () => {
 
     assert(_isPlainObject(entry), 'Expected entry to be a plain object');
     assert(entry.id && typeof entry.id === 'string', 'Expected entry.id to be a string');
+
+    await assertItem(dynamodb, { Key: { id: { S: entry.id } } }, {
+      id: { S: entry.id },
+      title: { S: 'Hello, world!' },
+      content: {
+        L: [
+          { M: { text: { S: 'This could be the body of a post' } } },
+          { M: { image: { M: { url: { S: '/this/could/be/an/image.jpg' } } } } },
+        ],
+      },
+    });
+
     assert.deepStrictEqual({ ...entry, id: 'POST-ID' }, {
       id: 'POST-ID',
       title: 'Hello, world!',
@@ -208,11 +268,14 @@ describe('dynazord/create', () => {
   });
 
   it('should throw an error if a required property is not found', async () => {
-    const tableName = 'dynazord-test-entries';
-    const entries = await createModel({
+    const entries = await createTestModel({
       dynamodb,
-      tableName,
       properties: {
+        id: {
+          type: String,
+          required: true,
+          default: () => uuid(),
+        },
         title: {
           required: true,
         },
@@ -230,11 +293,14 @@ describe('dynazord/create', () => {
   });
 
   it('should throw an error if a validator fails', async () => {
-    const tableName = 'dynazord-test-entries';
-    const entries = await createModel({
+    const entries = await createTestModel({
       dynamodb,
-      tableName,
       properties: {
+        id: {
+          type: String,
+          required: true,
+          default: () => uuid(),
+        },
         title: {
           type: String,
           required: true,

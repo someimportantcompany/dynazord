@@ -1,6 +1,6 @@
 const { assert, isPlainObject, marshall, unmarshall } = require('../utils');
 const { assertRequiredUpdateProps, stringifyUpdateStatement } = require('../helpers/update');
-const { formatReadData, formatWriteData, validateData } = require('../helpers/data');
+const { formatReadData, formatWriteData, marshallKey, validateData } = require('../helpers/data');
 
 module.exports = async function updateDocument(update, where) {
   const { client, tableName, keySchema, properties, log } = this;
@@ -27,9 +27,9 @@ module.exports = async function updateDocument(update, where) {
 
   const params = {
     TableName: tableName,
-    Key: marshall(where),
+    Key: await marshallKey(properties, where),
     ConditionExpression: hash && range
-      ? 'attribute_exists(#_hash_key) && attribute_exists(#_range_key)'
+      ? 'attribute_exists(#_hash_key) AND attribute_exists(#_range_key)'
       : 'attribute_exists(#_hash_key)',
     UpdateExpression: expression,
     ExpressionAttributeNames: {

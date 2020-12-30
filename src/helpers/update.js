@@ -39,7 +39,7 @@ function stringifyUpdateStatement(data) {
 
   if (changes.length) {
     return {
-      expression: `SET ${changes.join('')}`,
+      expression: `SET ${changes.join(', ')}`,
       changes,
       names,
       values,
