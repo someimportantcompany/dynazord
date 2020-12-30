@@ -7,8 +7,8 @@ _DynamoDB NodeJS ORM_
 ## Table Of Contents
 
 - [Getting Started](./Getting-Started.md)
-- [Writing Models](./Writing Models.md)
-- [Using Models](./Using Models.md)
+- [Writing Models](./Writing-Models.md)
+- [Using Models](./Using-Models.md)
 
 ## Writing
 

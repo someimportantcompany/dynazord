@@ -9,7 +9,7 @@ const posts = dynazord.createModel({
   secondaryIndexes: {
     blogPostsByTime: {
       hash: 'blog',
-      range: 'createdAt',
+      range: 'publishedAt',
     },
   },
   properties: {
@@ -31,10 +31,15 @@ const posts = dynazord.createModel({
       type: String,
       required: true,
     },
-    createdAt: {
+    publishedAt: {
       type: Date,
-      // Optionally set the underlying format for the automated createdAt property
+      // Optionally set the underlying format to a Number to assist with sorting
       format: Number,
+    },
+    status: {
+      type: String,
+      enum: [ 'PUBLISHED', 'DRAFT', 'SCHEDULED', 'DELETED' ],
+      required: true,
     },
   },
   options: {

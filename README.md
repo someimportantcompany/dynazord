@@ -78,6 +78,8 @@ npm install --save dynazord
 
 - [Documentation](./docs/)
 - [Getting Started](./docs/Getting-Started.md)
+- [Writing Models](./docs/Writing-Models.md)
+- [Using Models](./docs/Using-Models.md)
 
 ## Development
 
