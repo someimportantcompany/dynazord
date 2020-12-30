@@ -1,6 +1,6 @@
 # Getting Started
 
-To kick things off, install this library as you would any other:
+To kick things off, install _dynazord_ as you would any other:
 
 ```sh
 $ npm install --save dynazord
@@ -10,7 +10,7 @@ $ yarn add dynazord
 
 ## Import
 
-Import or require this library into your project:
+Import or require _dynazord_ into your project:
 
 ```js
 const dynazord = require('dynazord');
@@ -20,7 +20,7 @@ import dynazord from 'dynazord';
 
 ## Configure
 
-This library interacts with the AWS-SDK, by default it creates a new `AWS.DynamoDB` instance when you create a model. Check out AWS's "[Setting credentials in Node.js](https://docs.aws.amazon.com/sdk-for-javascript/v2/developer-guide/setting-credentials-node.html)" documentation for more details.
+_dynazord_ interacts with the AWS-SDK, by default it creates a new `AWS.DynamoDB` instance when you create a model. Check out AWS's "[Setting credentials in Node.js](https://docs.aws.amazon.com/sdk-for-javascript/v2/developer-guide/setting-credentials-node.html)" documentation for more details.
 
 Alternatively you can pass a preconfigured `dynamodb` instance:
 
@@ -46,3 +46,7 @@ const entries = dynazord.createModel({
   dynamodb,
 });
 ```
+
+---
+
+Next, [start writing models](./Writing-Models.md).

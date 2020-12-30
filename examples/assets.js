@@ -18,11 +18,9 @@ const VALID_EXTS = {
   '.pdf': 'application/pdf',
 };
 
-const posts = dynazord.createModel({
-  tableName: 'dynazord-example-posts',
-  keySchema: {
-    hash: 'email',
-  },
+const assets = dynazord.createModel({
+  tableName: 'dynazord-example-assets',
+  keySchema: 'id',
   properties: {
     id: {
       type: String,
@@ -34,9 +32,9 @@ const posts = dynazord.createModel({
       required: true,
       validate: {
         notNull: true,
-        hasValidExtension(value) {
-          assert(typeof value === 'string' && value.includes('.'), new Error('Expected a filename with an extension'));
-          const ext = value.split('.').pop();
+        hasValidExtension(filename) {
+          assert(typeof filename === 'string' && filename.includes('.'), new Error('Expected a filename with an extension'));
+          const ext = filename.split('.').pop();
           assert(Object.keys(VALID_EXTS).incldues(`.${ext}`), new Error('Expected filename to have a valid extension'), { ext });
         },
       },
@@ -46,9 +44,9 @@ const posts = dynazord.createModel({
       required: true,
       validate: {
         notNull: true,
-        hasValidMimetype(value) {
-          assert(typeof value === 'string' && value.includes('/'), new Error('Expected a filemime'));
-          assert(Object.values(VALID_EXTS).incldues(value), new Error('Expected filename to have a valid extension'), { value });
+        hasValidMimetype(filemime) {
+          assert(typeof filemime === 'string' && filemime.includes('/'), new Error('Expected a filemime'));
+          assert(Object.values(VALID_EXTS).incldues(filemime), new Error('Expected filename to have a valid extension'), { filemime });
         },
       },
     },
@@ -60,8 +58,8 @@ const posts = dynazord.createModel({
       type: String,
       validate: {
         notNull: true,
-        isValidHash(value) {
-          assert(isHash(value, 'sha1'), new Error('Expected value to be a SHA1 string'));
+        isValidHash(filesha1) {
+          assert(isHash(filesha1, 'sha1'), new Error('Expected value to be a SHA1 string'));
         },
       }
     },
@@ -75,4 +73,4 @@ const posts = dynazord.createModel({
   },
 });
 
-module.exports = posts;
+module.exports = assets;

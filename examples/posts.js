@@ -4,7 +4,7 @@ const { v4: uuid } = require('uuid');
 const posts = dynazord.createModel({
   tableName: 'dynazord-example-posts',
   keySchema: {
-    hash: 'email',
+    hash: 'id',
   },
   secondaryIndexes: {
     blogPostsByTime: {

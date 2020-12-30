@@ -8,8 +8,8 @@ const { operators } = require('./helpers/where');
 const { name: PACKAGE_NAME } = require('../package.json');
 
 const defaultOptions = {
-  createdAtTimestamp: true,
-  updatedAtTimestamp: true,
+  createdAtTimestamp: false,
+  updatedAtTimestamp: false,
 };
 let overwriteOptions = {};
 
@@ -18,11 +18,15 @@ function createModel(opts) {
 
   const { tableName, keySchema, properties } = opts;
   assert(typeof tableName === 'string', new TypeError('Expected { tableName } to be a string'));
-  assert(isPlainObject(keySchema), new TypeError('Expected { keySchema } to be a plain object'));
   assert(isPlainObject(properties), new TypeError('Expected { properties } to be a plain object'));
+  assert(Object.keys(properties).length, new TypeError('Expected { properties } to have properties'));
+  assert(!keySchema || isPlainObject(keySchema) || typeof keySchema === 'string',
+    new TypeError('Expected { keySchema } to be a string or a plain object'));
   assert(!opts.options || isPlainObject(opts.options), new TypeError('Expected { options } to be a plain object'));
 
-  const { hash, range } = keySchema;
+  const { hash, range, ...keySchemaOpts } = isPlainObject(keySchema)
+    ? (({ hash: h, range: r }) => ({ hash: h, range: r }))(keySchema)
+    : { hash: (keySchema && typeof keySchema === 'string') ? keySchema : Object.keys(properties).shift() };
   assert(typeof hash === 'string', new TypeError('Expected keySchema hash property to be a string'));
   assert(properties[hash], new TypeError(`Expected ${hash} to be a property`));
   assert(properties[hash].required === true, new TypeError(`Expected ${hash} property to be required`));
@@ -89,7 +93,7 @@ function createModel(opts) {
     },
     keySchema: {
       enumerable: true,
-      value: Object.freeze(keySchema),
+      value: Object.freeze({ hash, range, ...keySchemaOpts }),
     },
     properties: {
       enumerable: true,

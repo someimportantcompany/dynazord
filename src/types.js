@@ -31,14 +31,14 @@ const types = {
   },
   DATE: {
     get(value, { format } = {}) {
-      const formatAsNumber = format === Number || `${format}`.toUpperCase() === 'NUMBER';
+      const formatAsNumber = format === Number || format === 'NUMBER' || format === 'Number';
       assert(!formatAsNumber || typeof value === 'number', new TypeError('Expected value to be a number'), { value });
       assert(formatAsNumber || typeof value === 'string', new TypeError('Expected value to be a string'), { value });
       return new Date(value);
     },
     set(value, { format } = {}) {
       assert(value instanceof Date, new TypeError('Expected value to be an instance of Date'), { value });
-      const formatAsNumber = format === Number || `${format}`.toUpperCase() === 'NUMBER';
+      const formatAsNumber = format === Number || format === 'NUMBER' || format === 'Number';
       return formatAsNumber ? value.getTime() : value.toISOString();
     },
     validate: {
