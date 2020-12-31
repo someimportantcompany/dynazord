@@ -7,25 +7,15 @@ async function formatReadData(properties, data) {
 
   for (const key in properties) {
     /* istanbul ignore else */
-    if (properties.hasOwnProperty(key)) {
+    if (data.hasOwnProperty(key) && properties.hasOwnProperty(key)) {
       const { [key]: property } = properties;
       const { [property ? property.type : 'null']: type } = types;
 
-      const hasProperty = data.hasOwnProperty(key);
-      let value = hasProperty ? data[key] : undefined;
-
-      if ((hasProperty || value) && type && typeof type.get === 'function') {
-        value = await type.get.call(type, value, property); // eslint-disable-line no-useless-call
+      if (type && typeof type.get === 'function') {
+        data[key] = await type.get.call(type, data[key], property); // eslint-disable-line no-useless-call
       }
-      if ((hasProperty || value) && typeof property.get === 'function') {
-        value = await property.get.call(property, value); // eslint-disable-line no-useless-call
-      }
-
-      /* istanbul ignore else */
-      if (hasProperty) {
-        data[key] = value;
-      } else if (value !== undefined) {
-        data[key] = value;
+      if (typeof property.get === 'function') {
+        data[key] = await property.get.call(property, data[key]); // eslint-disable-line no-useless-call
       }
     }
   }

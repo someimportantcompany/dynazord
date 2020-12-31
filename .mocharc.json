@@ -1,0 +1,8 @@
+{
+  "exit": true,
+  "recursive": true,
+  "sort": true,
+  "require": [ "./test/bootstrap.js" ],
+  "ignore": [ "*node_modules*" ],
+  "spec": [ "./test/*.test.js", "./test/**/*.test.js" ]
+}

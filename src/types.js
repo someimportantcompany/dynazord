@@ -13,14 +13,14 @@ const types = {
         }
       },
       notNull: value => assert(value !== null, new Error('Expected value to be not-null')),
-      notEmpty: value => assert(typeof value === 'string' && value.length > 0, new Error('Expected value to be not empty')),
+      notEmpty: value => typeof value !== 'string' || assert(value.length > 0, new Error('Expected value to be not empty')),
     },
   },
   NUMBER: {
     validate: {
       type: value => isEmpty(value) || assert(typeof value === 'number', new Error('Expected value to be a number'), { value }),
       notNull: value => assert(value !== null, new Error('Expected value to be not-null')),
-      isUnsigned: value => assert(parseInt(value, 10) > 0, new Error('Expected value to be unsigned'), { value }),
+      isUnsigned: value => isEmpty(value) || assert(parseInt(value, 10) > 0, new Error('Expected value to be unsigned'), { value }),
     },
   },
   BOOLEAN: {
@@ -71,6 +71,7 @@ const types = {
     validate: {
       type: value => isEmpty(value) || assert(value instanceof Buffer, new TypeError('Expected value to be a Buffer'), { value }),
       notNull: value => assert(value !== null, new Error('Expected value to be not-null')),
+      notEmpty: value => !(value instanceof Buffer) || assert(value.length > 0, new TypeError('Expected value to be not empty')),
     },
   },
 };

@@ -42,6 +42,6 @@ module.exports = async function getDocument(where, opts) {
     key: JSON.stringify(where),
   });
 
-  formatReadData(properties, item);
+  await formatReadData(properties, item);
   return item;
 };

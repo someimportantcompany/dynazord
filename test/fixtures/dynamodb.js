@@ -1,7 +1,7 @@
 const _isPlainObject = require('lodash/isPlainObject');
 const assert = require('assert');
 const AWS = require('aws-sdk');
-const dynazord = require('../../src');
+const dynazord = require('dynazord');
 const { createLogger } = require('../../src/utils');
 const { v4: uuid } = require('uuid');
 
@@ -99,6 +99,10 @@ async function deleteThenCreateTable(dynamodb, opts) {
 
 module.exports = {
   assertItem,
+  dynamodb: new AWS.DynamoDB({
+    endpoint: process.env.AWS_DYNAMODB_ENDPOINT,
+    region: process.env.AWS_REGION || 'us-east-1',
+  }),
   createTestModel,
   deleteThenCreateTable,
 };

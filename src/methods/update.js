@@ -47,13 +47,11 @@ module.exports = async function updateDocument(update, where) {
   log.debug({ updateItem: result });
 
   const item = result && isPlainObject(result.Attributes) ? unmarshall(result.Attributes) : null;
-
   assert(item, new Error('Document not found'), {
     code: 'DOCUMENT_NOT_FOUND',
     key: JSON.stringify(where),
   });
 
-  formatReadData(properties, item);
-
+  await formatReadData(properties, item);
   return item;
 };

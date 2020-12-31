@@ -84,5 +84,7 @@ const assets = dynazord.createModel({
   },
 });
 
-module.exports = assets;
-module.exports.createTable = createTable;
+module.exports = {
+  assets,
+  createTable,
+};

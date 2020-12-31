@@ -57,7 +57,6 @@ module.exports = async function upsertDocument(upsert) {
     key: JSON.stringify(where),
   });
 
-  formatReadData(properties, item);
-
+  await formatReadData(properties, item);
   return item;
 };

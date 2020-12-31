@@ -70,5 +70,7 @@ const posts = dynazord.createModel({
   },
 });
 
-module.exports = posts;
-module.exports.createTable = createTable;
+module.exports = {
+  posts,
+  createTable,
+};

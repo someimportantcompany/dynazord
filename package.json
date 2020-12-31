@@ -5,7 +5,7 @@
   "main": "src/index.js",
   "scripts": {
     "lint": "eslint --ext .js .",
-    "test": "nyc --reporter=lcov --reporter=text mocha --config ./.mocharc.js"
+    "test": "nyc --reporter=lcov --reporter=text mocha --config ./.mocharc.json"
   },
   "author": "James D <james@jdrydn.com> (https://jdrydn.com)",
   "license": "SEE LICENSE IN ./LICENSE",
@@ -31,6 +31,7 @@
     "eslint-plugin-mocha": "^5.3.0",
     "eslint-plugin-sort-requires": "^2.1.0",
     "faker": "^5.1.0",
+    "http-assert": "^1.4.1",
     "js-yaml": "^3.14.1",
     "mocha": "^6.2.3",
     "mockdate": "^3.0.2",

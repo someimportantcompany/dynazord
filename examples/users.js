@@ -33,10 +33,11 @@ const users = dynazord.createModel({
       type: String,
       required: true,
     },
-    avatar: {
+    avatarUrl: {
       type: String,
       validate: {
-        isValidContent(value) {
+        notEmpty: true,
+        isValidUrl(value) {
           const isValid = `${value}`.startsWith('https://') ||
             `${value}`.startsWith('data:image/jpg;base64,') || `${value}`.startsWith('data:image/jpeg;base64,') ||
               `${value}`.startsWith('data:image/png;base64,');
@@ -44,9 +45,16 @@ const users = dynazord.createModel({
         },
       },
     },
+    avatarBlob: {
+      type: Buffer,
+      validate: {
+        notEmpty: true,
+      },
+    },
     role: {
       type: String,
       enum: [ 'ADMIN', 'MODERATOR', 'EDITOR', 'USER' ],
+      default: 'USER',
     },
   },
   options: {
@@ -55,5 +63,7 @@ const users = dynazord.createModel({
   },
 });
 
-module.exports = users;
-module.exports.createTable = createTable;
+module.exports = {
+  users,
+  createTable,
+};
