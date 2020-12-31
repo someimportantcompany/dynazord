@@ -1,8 +1,6 @@
 const { assert, isPlainObject } = require('../utils');
-/* eslint-disable no-invalid-this */
 
-function assertRequiredCreateProps(data) {
-  const { properties } = this; // eslint-disable-line no-invalid-this
+function assertRequiredCreateProps(properties, data) {
   assert(isPlainObject(properties), new TypeError('Expected properties to be a plain object'));
   assert(isPlainObject(data), new TypeError('Expected data to be a plain object'));
 
@@ -35,8 +33,8 @@ function assertRequiredCreateProps(data) {
   });
 }
 
-async function appendCreateDefaultProps(data) {
-  const { properties } = this; // eslint-disable-line no-invalid-this
+async function appendCreateDefaultProps(properties, data) {
+  assert(isPlainObject(properties), new TypeError('Expected data to be a plain object'));
   assert(isPlainObject(data), new TypeError('Expected data to be a plain object'));
 
   await Promise.all(Object.keys(properties).filter(key => {

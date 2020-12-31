@@ -17,8 +17,8 @@ module.exports = async function createDocument(create) {
   assert(!range || rangeProp.hasOwnProperty('default') || create.hasOwnProperty(range),
     new Error(`Missing ${range} range property from argument`));
 
-  await assertRequiredCreateProps.call(this, create);
-  await appendCreateDefaultProps.call(this, create);
+  await assertRequiredCreateProps.call(this, properties, create);
+  await appendCreateDefaultProps.call(this, properties, create);
   await validateData.call(this, properties, create);
   await formatWriteData.call(this, properties, create, { fieldHook: 'onCreate' });
 

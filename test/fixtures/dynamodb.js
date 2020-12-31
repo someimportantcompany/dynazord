@@ -5,7 +5,7 @@ const dynazord = require('../../src');
 const { createLogger } = require('../../src/utils');
 const { v4: uuid } = require('uuid');
 
-const logger = createLogger(process.env.DYNAMODEL_LOG_LEVEL);
+const logger = createLogger(process.env.DYNAZORD_LOG_LEVEL);
 
 async function assertItem(dynamodb, getItemOpts, expected) {
   getItemOpts.TableName = typeof getItemOpts.TableName === 'string' ? getItemOpts.TableName : 'dynazord-test-entries';

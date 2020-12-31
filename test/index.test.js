@@ -3,7 +3,7 @@ const assert = require('assert');
 const AWS = require('aws-sdk');
 const dynazord = require('../src');
 const isUUID = require('validator/lib/isUUID');
-const { deleteThenCreateTable } = require('./fixtures/dynamodb');
+const { createTestModel } = require('./fixtures/dynamodb');
 const { v4: uuid } = require('uuid');
 
 describe('dynazord', () => {
@@ -11,26 +11,15 @@ describe('dynazord', () => {
     let model = null;
 
     before(async () => {
+      assert.strictEqual(typeof dynazord.createModel, 'function', 'Expected createModel to be a function');
+
       const dynamodb = new AWS.DynamoDB({
         endpoint: process.env.AWS_DYNAMODB_ENDPOINT,
         region: 'us-east-1',
       });
 
-      await deleteThenCreateTable(dynamodb, {
-        TableName: 'dynazord-test-entries',
-        BillingMode: 'PAY_PER_REQUEST',
-        KeySchema: [
-          { AttributeName: 'id', KeyType: 'HASH' },
-        ],
-        AttributeDefinitions: [
-          { AttributeName: 'id', AttributeType: 'S' },
-        ],
-      });
-
-      model = dynazord.createModel({
+      model = await createTestModel({
         dynamodb,
-        tableName: 'dynazord-test-entries',
-        keySchema: 'id',
         properties: {
           id: {
             type: String,
@@ -114,6 +103,22 @@ describe('dynazord', () => {
 
         const deleted = await model.delete({ id });
         assert.strictEqual(deleted, true);
+        id = null;
+      });
+
+      it('should upsert an entry', async () => {
+        assert(model, 'Failed to create the model');
+        assert(!id, 'Failed to initially create then delete the entry');
+
+        const doc1 = await model.upsert({ email, name });
+        assert.ok(_.isPlainObject(doc1), 'Expected document to be a plain object');
+        assert.ok(typeof doc1.id === 'string' && isUUID(doc1.id, 4), 'Expected id to be a UUID-v4 string');
+        ({ id } = doc1);
+        assert.deepStrictEqual(doc1, { id, email, name });
+
+        const doc2 = await model.upsert({ id, email, name, avatar });
+        assert.ok(_.isPlainObject(doc2), 'Expected document to be a plain object');
+        assert.deepStrictEqual(doc2, { id, email, name, avatar });
       });
     });
 

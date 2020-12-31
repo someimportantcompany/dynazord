@@ -16,7 +16,7 @@ module.exports = async function updateDocument(update, where) {
   assert(where.hasOwnProperty(hash), new Error(`Missing ${hash} hash property from where`));
   assert(!range || where.hasOwnProperty(range), new Error(`Missing ${range} range property from where`));
 
-  await assertRequiredUpdateProps.call(this, update);
+  await assertRequiredUpdateProps.call(this, properties, update);
   await validateData.call(this, properties, update);
   await formatWriteData.call(this, properties, update, { fieldHook: 'onUpdate' });
 

@@ -1,26 +1,38 @@
 const { assert, isPlainObject, marshall, unmarshall } = require('../utils');
-const { assertRequiredUpdateProps, stringifyUpdateStatement } = require('../helpers/update');
+const { assertRequiredCreateProps, appendCreateDefaultProps } = require('../helpers/create');
 const { formatReadData, formatWriteData, validateData } = require('../helpers/data');
+const { stringifyUpsertStatement } = require('../helpers/upsert');
 
-module.exports = async function upsertDocument(update, where) {
+module.exports = async function upsertDocument(upsert) {
   const { client, tableName, keySchema, properties, log } = this;
   assert(client && typeof client.updateItem === 'function', new TypeError('Expected client to be a DynamoDB client'));
   assert(typeof tableName === 'string', new TypeError('Invalid tableName to be a string'));
   assert(isPlainObject(keySchema), new TypeError('Expected keySchema to be a plain object'));
   assert(isPlainObject(properties), new TypeError('Expected properties to be a plain object'));
 
-  assert(isPlainObject(update), new TypeError('Expected update to be a plain object'));
-  assert(isPlainObject(where), new TypeError('Expected where to be a plain object'));
+  assert(isPlainObject(upsert), new TypeError('Expected update to be a plain object'));
 
   const { hash, range } = keySchema;
-  assert(where.hasOwnProperty(hash), new Error(`Missing ${hash} hash property from where`));
-  assert(!range || where.hasOwnProperty(range), new Error(`Missing ${range} range property from where`));
+  const { [hash]: hashProp, [range]: rangeProp } = properties;
+  assert(hashProp.hasOwnProperty('default') || upsert.hasOwnProperty(hash),
+    new Error(`Missing ${hash} hash property from argument`));
+  assert(!range || rangeProp.hasOwnProperty('default') || upsert.hasOwnProperty(range),
+    new Error(`Missing ${range} range property from argument`));
 
-  await assertRequiredUpdateProps.call(this, update);
-  await validateData.call(this, properties, update);
-  await formatWriteData.call(this, properties, update, { fieldHook: 'onUpsert' });
+  const specifiedUpsertKeys = Object.keys(upsert);
 
-  const { expression, names, values } = stringifyUpdateStatement.call(this, update) || {};
+  await assertRequiredCreateProps.call(this, properties, upsert);
+  await appendCreateDefaultProps.call(this, properties, upsert);
+  await validateData.call(this, properties, upsert);
+  await formatWriteData.call(this, properties, upsert, { fieldHook: 'onUpsert' });
+
+  const { [hash]: hashValue, [range || 'null']: rangeValue, ...upsertValues } = upsert;
+  const where = {
+    [hash]: hashValue,
+    ...(range ? { [range]: rangeValue } : {}),
+  };
+
+  const { expression, names, values } = stringifyUpsertStatement.call(this, upsertValues, specifiedUpsertKeys) || {};
   assert(typeof expression === 'string', new TypeError('Expected update expression to be a string'));
   assert(isPlainObject(names), new TypeError('Expected update names to be a plain object'));
   assert(isPlainObject(values), new TypeError('Expected update values to be a plain object'));

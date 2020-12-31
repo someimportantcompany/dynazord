@@ -1,8 +1,6 @@
 const { assert, isEmpty, isPlainObject } = require('../utils');
-/* eslint-disable no-invalid-this */
 
-function assertRequiredUpdateProps(data) {
-  const { properties } = this; // eslint-disable-line no-invalid-this
+function assertRequiredUpdateProps(properties, data) {
   assert(isPlainObject(properties), new TypeError('Expected properties to be a plain object'));
   assert(isPlainObject(data), new TypeError('Expected create to be a plain object'));
 
@@ -22,6 +20,8 @@ function assertRequiredUpdateProps(data) {
 }
 
 function stringifyUpdateStatement(data) {
+  assert(isPlainObject(data), new TypeError('Expected data to be a plain object'));
+
   const changes = [];
   const names = {};
   const values = {};
