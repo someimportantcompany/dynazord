@@ -109,11 +109,13 @@ async function validateData(properties, data, prefix = '') {
           if (propertyValidators.hasOwnProperty(vkey)) {
             if (typeof propertyValidators[vkey] === 'function') {
               const { [vkey]: validateProperty } = propertyValidators;
-              await validateProperty(data[key]);
+              const valid = await validateProperty(data[key]);
+              assert(valid !== false, new Error(`Expected ${key} validator ${vkey} to pass`));
             } else {
               const { [vkey]: validateType } = typeValidators;
               assert(typeof validateType === 'function', new Error(`Expected validator ${vkey} to be a function`));
-              await validateType(data[key], propertyValidators[vkey], property);
+              const valid = await validateType(data[key], propertyValidators[vkey], property);
+              assert(valid !== false, new Error(`Expected ${key} validator ${vkey} to pass`));
             }
           }
         }

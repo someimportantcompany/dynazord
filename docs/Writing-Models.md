@@ -1,13 +1,27 @@
 # Writing Models
 
-A "model" represents a table in DynamoDB, providing a collection of methods designed to fetch, search, validate & write items following a specific schema. All models returns native JS objects, **there are no documents** as you'd expect from a more traditional ORM.
+A "model" represents a table in DynamoDB, providing a collection of methods designed to fetch, search, validate & write items following a specific schema. All models returns native JS objects, **there are no documents** as you'd expect from a more traditional ORM. Create your model with `dynazord.createModel`:
 
 ```js
 const dynazord = require('dynazord');
-const model = dynazord.createModel({ /* Config */ })
+const model = dynazord.createModel({
+  tableName: /* DYNAMODB TABLE NAME */,
+  keySchema: { /* DYNAMODB KEY SCHEMA */ },
+  // secondaryIndexes: { /* DYNAMODB KEY SCHEMA */ },
+  properties: { /* INDIVIDUAL PROPERTIES FOR YOUR ENTRIES */ },
+  options: { /* ADDITIONAL OPTIONS */ },
+});
 ```
 
-This global method is the starting point for all models: It is a synchronous method that builds a model from the provided configuration object that defines the keys, indexes & properties the model will support.
+| Table of Contents |
+| ---- |
+| [Primary Index](#primary-index) |
+<!-- | [Secondary Indexes](#secondary-indexes) | -->
+| [Properties & Types](#properties-types) |
+| [Additional Options](#additional-options) |
+| [Kitchen Sink Example](#kitchen-sink-example) |
+
+The `createModel` method is the starting point for all models: It is a synchronous method that builds a model from the provided configuration object that defines the keys, indexes & properties the model will support.
 
 ```js
 const users = dynazord.createModel({
@@ -55,32 +69,37 @@ From [Core Components &raquo; Primary Key](https://docs.aws.amazon.com/amazondyn
 
 Set the `KeySchema` the same as you would in your DynamoDB config (either via the console UI or Cloudformation template):
 
-```yml
-- Type: AWS::DynamoDB::Table
-  Properties:
-    TableName: dynazord-example-users
-    BillingMode: PAY_PER_REQUEST
-    KeySchema:
-      - AttributeName: email
-        KeyType: HASH
-    AttributeDefinitions:
-      - AttributeName: email
-        AttributeType: S
-
-- Type: AWS::DynamoDB::Table
-  Properties:
-    TableName: dynazord-example-sessions
-    BillingMode: PAY_PER_REQUEST
-    KeySchema:
-      - AttributeName: email
-        KeyType: HASH
-      - AttributeName: createdAt
-        KeyType: RANGE
-    AttributeDefinitions:
-      - AttributeName: email
-        AttributeType: S
-      - AttributeName: createdAt
-        AttributeType: N
+```json
+[
+  {
+    "Type": "AWS::DynamoDB::Table",
+    "Properties": {
+      "TableName": "dynazord-example-users",
+      "BillingMode": "PAY_PER_REQUEST",
+      "KeySchema": [
+        { "AttributeName": "email", "KeyType": "HASH" }
+      ],
+      "AttributeDefinitions": [
+        { "AttributeName": "email", "AttributeType": "S" }
+      ],
+    }
+  },
+  {
+    "Type": "AWS::DynamoDB::Table",
+    "Properties": {
+      "TableName": "dynazord-example-sessions",
+      "BillingMode": "PAY_PER_REQUEST",
+      "KeySchema": [
+        { "AttributeName": "email", "KeyType": "HASH" },
+        { "AttributeName": "createdAt", "KeyType": "RANGE" }
+      ],
+      "AttributeDefinitions": [
+        { "AttributeName": "email", "AttributeType": "S" },
+        { "AttributeName": "createdAt", "AttributeType": "N" }
+      ],
+    }
+  }
+]
 ```
 
 And configure the `keySchema` to match in your model:
@@ -132,17 +151,22 @@ const sessions = dynazord.createModel({
     createdAt: {
       type: Date,
       required: true,
+      default: () => new Date(),
       format: Number,
+      onUpdate: false,
     },
   },
 });
 ```
 
+- `createModel` will throw an error if the `keySchema` is invalid.
+- `createModel` expects hash & range properties to be `required`, although they can have `default` values.
+
 <!-- ## Secondary Indexes -->
 
-## Property Types
+## Properties & Types
 
-Keeping it simple, all properties have types & all types have options!
+Each property of a model should have a type, optionally enforced with getters/setters & validators.
 
 | Type | Native Type | DynamoDB Type |
 | ---- |---- | ---- |
@@ -152,85 +176,53 @@ Keeping it simple, all properties have types & all types have options!
 | BINARY | Buffer | B |
 | DATE | Date | S/N |
 
+**Note:** Array & Nested Object types will be introduced soon.
+
 <!-- | ARRAY | Array | L | -->
 <!-- | OBJECT | Object | M | -->
 
-```js
-const { v4: uuid } = require('uuid');
-
-const entries = dynazord.createModel({
-  tableName: 'dynazord-example-entries',
-  properties: {
-    id: {
-      type: String,
-      required: true,
-      default: () => uuid(),
-      validate: {
-        notNull: true,
-      },
-    },
-    title: {
-      type: String,
-      required: true,
-    },
-    views: {
-      type: Number,
-      required: true,
-      default: 0,
-    },
-    isDraft: {
-      type: Boolean,
-      default: () => false,
-    },
-    createdAt: {
-      type: Date,
-      required: true,
-    },
-    publishedAt: {
-      type: Date,
-    },
-  },
-});
-```
-
-### All Types
-
-Regardless of type, all properties have some shared config.
+Each property should be an object with the following details:
 
 ```js
 {
   property: {
     /**
      * Specify the type for this property
+     * @type {*}
      * @required
      */
     type: String | Number | Boolean | Date | etc,
 
     /**
-     * Optionally mark this property as "required"
-     * @type {Boolean}
+     * Optionally mark this property as "required", which will throw errors if the property isn't present.
+     *
+     * @type {boolean}
      */
     required: true,
 
     /**
      * Optionally set a relevant default
-     * Can be a native tyoe, or a function, or an async-function
-     * @type {Function|String|Number|Boolean|Anything}
+     * Can be a native type, or a function, or an async-function
+     *
+     * @type {Function|*}
+     * @return {*}
      */
     default: () => uuid(),
 
     /**
+     * Optionally define a function to execute when reading this value from DynamoDB
+     *
      * @type {Function}
-     * @param value The outgoing value
-     * @return The transformed value
+     * @param {*} value The value from DynamoDB
+     * @return {*} The output value going back out to your code
      */
     get(value) {
       return value;
     },
     /**
      * @type {Function}
-     * @param value The incoming value
-     * @return The transformed value
+     * @param {*} value The value from your code
+     * @return {*} The input value going into DynamoDB
      */
     set(value) {
       // Transform the value as you see fit.
@@ -238,21 +230,28 @@ Regardless of type, all properties have some shared config.
     },
 
     /**
-     * Enable/define validators for this property
-     * @type {Object}
+     * Enable/define validators for this property.
+     *
+     * @type {Object<string,Function|boolean>}
      */
     validate: {
       /**
        * Types have specific validators, enable them by setting their key to true
+       *
+       * @type {boolean}
        */
       notNull: true,
 
       /**
        * You can also define your own validators as functions
+       * These can either throw an error (with a custom error message), or return a boolean
+       *
        * @type {Function}
+       * @param {string} value
+       * @return {boolean}
        */
-      isValid(email) {
-        return email.includes('@');
+      isValid(value) {
+        return `${value}`.includes('@');
       },
     },
   },
@@ -265,22 +264,20 @@ Regardless of type, all properties have some shared config.
 {
   email: {
     type: String,
-
-    /**
-     * Specific built-in String validators
-     * @type {Object}
-     */
     validate: {
+
       /**
        * Optionally enforce that the property is not set to NULL
        */
       notNull: true,
+
       /**
        * Optionally enforce that the property is not an empty string
        */
       notEmpty: true,
-    },
-  },
+
+    }
+  }
 }
 ```
 
@@ -290,22 +287,20 @@ Regardless of type, all properties have some shared config.
 {
   viewCount: {
     type: Number,
-
-    /**
-     * Specific built-in Number validators
-     * @type {Object}
-     */
     validate: {
+
       /**
        * Optionally enforce that the property is not set to NULL
        */
       notNull: true,
+
       /**
        * Optionally enforce that the property is greater than 0
        */
       isUnsigned: true,
-    },
-  },
+
+    }
+  }
 }
 ```
 
@@ -318,22 +313,20 @@ Regardless of type, all properties have some shared config.
 {
   isPublished: {
     type: Boolean,
-
-    /**
-     * Specific built-in Boolean validators
-     * @type {Object}
-     */
     validate: {
+
       /**
        * Optionally enforce that the property is not set to NULL
        */
       notNull: true,
+
       /**
        * Optionally enforce that the property is greater than 0
        */
       isUnsigned: true,
-    },
-  },
+
+    }
+  }
 }
 ```
 
@@ -353,21 +346,15 @@ Regardless of type, all properties have some shared config.
      */
     format: String | Number,
 
-    /**
-     * Specific built-in Date validators
-     * @type {Object}
-     */
     validate: {
+
       /**
        * Optionally enforce that the property is not set to NULL
        */
       notNull: true,
-      /**
-       * Optionally enforce that the property is greater than 0
-       */
-      isUnsigned: true,
-    },
-  },
+
+    }
+  }
 }
 ```
 
@@ -405,18 +392,15 @@ const formatDate = require('date-fns/format');
 {
   profileImage: {
     type: Buffer,
-
-    /**
-     * Specific built-in Buffer validators
-     * @type {Object}
-     */
     validate: {
+
       /**
        * Optionally enforce that the property is not set to NULL
        */
       notNull: true,
-    },
-  },
+
+    }
+  }
 }
 ```
 
@@ -424,6 +408,8 @@ const formatDate = require('date-fns/format');
 - Can be referenced as `BINARY` string or JS's native `Buffer` constructor.
 
 ### Custom Type
+
+By omitting the required
 
 ```js
 {
@@ -441,14 +427,74 @@ const formatDate = require('date-fns/format');
       /**
        * But you can write your own using functions!
        */
-    },
-  },
+    }
+  }
 }
 ```
 
 - Translates to a native DynamoDB type using [marshall](https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/Converter.html#marshall-property).
 
 ## Additional Options
+
+Set additional options as the `options` object in the config:
+
+```js
+{
+  options: {
+
+    /**
+     * Enable createdAtTimestamp to add a `createdAt` property to all entries, which will be set on create.
+     *
+     * @type {boolean}
+     */
+    createdAtTimestamp: true,
+
+    /**
+     * Enable updatedAtTimestamp to add a `updatedAt` property to all entries, which will be set on create/update/upsert.
+     *
+     * @type {boolean}
+     */
+    updatedAtTimestamp: true
+
+  }
+}
+```
+
+A common DynamoDB use-case is to use a hash-key (partition key) & range key (sort key), where you'd like your range key to be the automatically-generated `createdAt`
+
+| Option | Type | Default | Description |
+| ---- | ---- | ---- | ---- |
+| `createdAtTimestamp` | Boolean | `false` | See [Created/Updated Timestamps](#created-updated-timestamps) |
+| `updatedAtTimestamp` | Boolean | `false` | See [Created/Updated Timestamps](#created-updated-timestamps) |
+
+### Created/Updated Timestamps
+
+Setting either `createdAtTimestamp` or `updatedAtTimestamp` to `true` will add a `createdAt` or `updatedAt` property respectively:
+
+```js
+{
+  options: {
+    createdAtTimestamp: true,
+    updatedAtTimestamp: true
+  }
+}
+
+{
+  createdAt: {
+    type: Date,
+    required: true,
+    default: () => new Date(),
+  },
+  updatedAt: {
+    type: Date,
+    required: true,
+    default: () => new Date(),
+    onUpdate: value => value || new Date(),
+  }
+}
+```
+
+By default, `Date` fields
 
 ## Kitchen Sink Example
 

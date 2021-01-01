@@ -1,6 +1,6 @@
 # Getting Started
 
-To kick things off, install _dynazord_ as you would any other:
+To kick things off, install _dynazord_ as you would any other dependency:
 
 ```sh
 $ npm install --save dynazord
@@ -45,6 +45,23 @@ const entries = dynazord.createModel({
   properties: { /* * */ },
   dynamodb,
 });
+```
+
+Or you can set a `dynamodb` instance for **all future** `createModel` calls:
+
+```js
+const dynamodb = new AWS.DynamoDB({ endpoint: 'http://localhost:8000' });
+dynazord.setDynamoDB(dynamodb);
+
+const entries = dynazord.createModel({
+  tableName: 'dynazord-example-entries',
+  keySchema: { /* * */ },
+  properties: { /* * */ },
+  // And this will use the dynamodb instance specified
+});
+
+// This is mostly useful for tests, so you can set a local instance of DynamoDB
+// without littering your codebase with if-tests-then statements!
 ```
 
 ---
