@@ -19,7 +19,7 @@ module.exports = async function deleteDocument(key, opts = undefined) {
   assert(key.hasOwnProperty(hash), new Error(`Missing ${hash} hash property from key`));
   assert(!range || key.hasOwnProperty(range), new Error(`Missing ${range} range property from key`));
 
-  await hooks.emit('beforeDelete', opts.hooks === true, key, opts);
+  await hooks.emit('beforeDelete', this, opts.hooks === true, key, opts);
 
   const params = {
     TableName: tableName,
@@ -31,7 +31,7 @@ module.exports = async function deleteDocument(key, opts = undefined) {
   const result = await client.deleteItem(params).promise();
   log.debug({ deleteItem: result });
 
-  await hooks.emit('afterDelete', opts.hooks === true, key, opts);
+  await hooks.emit('afterDelete', this, opts.hooks === true, key, opts);
 
   return Boolean(result);
 };

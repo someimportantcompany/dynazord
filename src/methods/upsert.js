@@ -31,21 +31,24 @@ module.exports = async function upsertDocument(upsert, opts = undefined) {
   await appendCreateDefaultProps.call(this, properties, upsert);
 
   try {
-    await hooks.emit('beforeValidateUpdate', opts.hooks === true, upsert, opts);
+    await hooks.emit('beforeValidateUpsert', this, opts.hooks === true, upsert, opts);
+    await hooks.emit('beforeValidate', this, opts.hooks === true, upsert, opts);
     await validateData.call(this, properties, upsert).catch(async err => {
-      await hooks.emit('validateUpdateFailed', opts.hooks === true, upsert, err, opts);
+      await hooks.emit('validateUpsertFailed', this, opts.hooks === true, upsert, err, opts);
+      await hooks.emit('validateFailed', this, opts.hooks === true, upsert, err, opts);
       throw err;
     });
-    await hooks.emit('afterValidateUpdate', opts.hooks === true, upsert, opts);
+    await hooks.emit('afterValidateUpsert', this, opts.hooks === true, upsert, opts);
+    await hooks.emit('afterValidate', this, opts.hooks === true, upsert, opts);
   } catch (err) {
     err.name = 'ValidationError';
     err.message = `[${tableName}] ${err.message}`;
     throw err;
   }
 
-  await hooks.emit('beforeUpsert', opts.hooks === true, upsert, opts);
+  await hooks.emit('beforeUpsert', this, opts.hooks === true, upsert, opts);
   await formatWriteData.call(this, properties, upsert, { fieldHook: 'onUpsert' });
-  await hooks.emit('beforeUpsertWrite', opts.hooks === true, upsert, opts);
+  await hooks.emit('beforeUpsertWrite', this, opts.hooks === true, upsert, opts);
 
   const { [hash]: hashValue, [range || 'null']: rangeValue, ...upsertValues } = upsert;
   const where = { [hash]: hashValue, ...(range ? { [range]: rangeValue } : {}) };
@@ -75,8 +78,8 @@ module.exports = async function upsertDocument(upsert, opts = undefined) {
     key: JSON.stringify(where),
   });
 
-  await hooks.emit('afterUpsertWrite', opts.hooks === true, item, opts);
+  await hooks.emit('afterUpsertWrite', this, opts.hooks === true, item, opts);
   await formatReadData.call(this, properties, item);
-  await hooks.emit('afterUpsert', opts.hooks === true, item, opts);
+  await hooks.emit('afterUpsert', this, opts.hooks === true, item, opts);
   return item;
 };

@@ -14,7 +14,7 @@ module.exports = async function findDocument(where, opts) {
 
   const {
     attributesToGet = undefined,
-    consistentRead = undefined,
+    consistentRead = true,
   } = opts || {};
   assert(attributesToGet === undefined || (Array.isArray(attributesToGet) && attributesToGet.length),
     new TypeError('Expected attributesToGet to be an array'));

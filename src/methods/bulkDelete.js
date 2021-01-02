@@ -25,7 +25,7 @@ module.exports = async function deleteBulkDocuments(keys, opts) {
   });
 
   if (keys.length) {
-    await hooks.emit('afterBulkDelete', opts.bulkHooks === true, keys, opts);
+    await hooks.emit('afterBulkDelete', this, opts.bulkHooks === true, keys, opts);
 
     const TransactItems = await Promise.all(keys.map(async where => {
       const Key = await marshallKey(properties, where);
@@ -42,7 +42,7 @@ module.exports = async function deleteBulkDocuments(keys, opts) {
     const results = await client.transactWriteItems({ TransactItems }).promise();
     log.debug({ transactWriteItems: results });
 
-    await hooks.emit('afterBulkDelete', opts.bulkHooks === true, keys, opts);
+    await hooks.emit('afterBulkDelete', this, opts.bulkHooks === true, keys, opts);
   }
 
   return true;

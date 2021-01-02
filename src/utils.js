@@ -5,6 +5,7 @@ const { marshall, unmarshall } = AWS.DynamoDB.Converter;
 
 function assert(value, err, additional = {}) {
   if (Boolean(value) === false) {
+    /* istanbul ignore if */
     if ((err instanceof Error) === false) {
       err = new Error(`${err}`);
       if (typeof Error.captureStackTrace === 'function') {
@@ -13,10 +14,11 @@ function assert(value, err, additional = {}) {
     }
 
     for (const key in additional) {
+      /* istanbul ignore else */
       if (additional.hasOwnProperty(key) && key !== 'message' && key !== 'stack') {
         try {
           err[key] = typeof additional[key] === 'function' ? additional[key].call() : additional[key];
-        } catch (e) {
+        } catch (e) /* istanbul ignore next */ {
           err[key] = `ERR: ${e.message}`;
         }
       }
@@ -27,6 +29,7 @@ function assert(value, err, additional = {}) {
 }
 
 function createLogger(level = null) {
+  /* istanbul ignore next */
   const make = (log, allowed) => allowed.includes(level) ? args => log(JSON.stringify(args, null, 2)) : () => null;
   /* eslint-disable no-console */
   return {

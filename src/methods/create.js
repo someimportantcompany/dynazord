@@ -27,21 +27,24 @@ module.exports = async function createDocument(create, opts = undefined) {
   await appendCreateDefaultProps.call(this, properties, create);
 
   try {
-    await hooks.emit('beforeValidateCreate', opts.hooks === true, create, opts);
+    await hooks.emit('beforeValidateCreate', this, opts.hooks === true, create, opts);
+    await hooks.emit('beforeValidate', this, opts.hooks === true, create, opts);
     await validateData.call(this, properties, create).catch(async err => {
-      await hooks.emit('validateCreateFailed', opts.hooks === true, create, err, opts);
+      await hooks.emit('validateCreateFailed', this, opts.hooks === true, create, err, opts);
+      await hooks.emit('validateFailed', this, opts.hooks === true, create, err, opts);
       throw err;
     });
-    await hooks.emit('afterValidateCreate', opts.hooks === true, create, opts);
+    await hooks.emit('afterValidate', this, opts.hooks === true, create, opts);
+    await hooks.emit('afterValidateCreate', this, opts.hooks === true, create, opts);
   } catch (err) {
     err.name = 'ValidationError';
     err.message = `[${tableName}] ${err.message}`;
     throw err;
   }
 
-  await hooks.emit('beforeCreate', opts.hooks === true, create, opts);
+  await hooks.emit('beforeCreate', this, opts.hooks === true, create, opts);
   await formatWriteData.call(this, properties, create, { fieldHook: 'onCreate' });
-  await hooks.emit('beforeCreateWrite', opts.hooks === true, create, opts);
+  await hooks.emit('beforeCreateWrite', this, opts.hooks === true, create, opts);
 
   try {
     const params = {
@@ -67,9 +70,9 @@ module.exports = async function createDocument(create, opts = undefined) {
     throw err;
   }
 
-  await hooks.emit('afterCreateWrite', opts.hooks === true, create, opts);
+  await hooks.emit('afterCreateWrite', this, opts.hooks === true, create, opts);
   await formatReadData.call(this, properties, create);
-  await hooks.emit('afterCreate', opts.hooks === true, create, opts);
+  await hooks.emit('afterCreate', this, opts.hooks === true, create, opts);
 
   return create;
 };

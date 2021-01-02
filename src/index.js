@@ -106,6 +106,7 @@ function validateDynamoDB(client) {
 
 module.exports = {
   createModel,
+  methods: { ...methods, ...bulkMethods },
   types: Object.freeze(typeKeys.reduce((r, t) => ({ ...r, [t]: t }), {})),
   operators: Object.freeze(operators),
   setDynamoDB: client => overwriteDynamoDB = validateDynamoDB(client),

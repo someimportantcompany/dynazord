@@ -1,12 +1,13 @@
 const _ = require('lodash');
 const assert = require('assert');
 const AWS = require('aws-sdk');
-const dynazord = require('../src');
 const isUUID = require('validator/lib/isUUID');
 const { createTestModel } = require('./utils');
 const { v4: uuid } = require('uuid');
 
 describe('dynazord', () => {
+  const dynazord = require('../src');
+
   describe('createModel', () => {
     let model = null;
 
@@ -191,15 +192,20 @@ describe('dynazord', () => {
     });
   });
 
-  describe('types', () => {
-    it('should export a static object of types', () => {
-      assert.deepStrictEqual(dynazord.types, {
-        STRING: 'STRING',
-        NUMBER: 'NUMBER',
-        BOOLEAN: 'BOOLEAN',
-        DATE: 'DATE',
-        BINARY: 'BINARY',
-      });
+  describe('methods', () => {
+    it('should export a static object of methods', () => {
+      assert.ok(_.isPlainObject(dynazord.methods), 'Expected dynazord.methods to be a plain object');
+      assert.deepStrictEqual(Object.keys(dynazord.methods), [
+        'create', 'get', 'find', 'update', 'delete', 'upsert',
+        'bulkCreate', 'bulkGet', /* 'bulkUpdate', */ 'bulkDelete', /* 'bulkUpsert', */
+      ]);
+
+      for (const key in dynazord.methods) {
+        if (dynazord.methods.hasOwnProperty(key)) {
+          const { [key]: method } = dynazord.methods;
+          assert.ok(typeof method === 'function', `Expected ${key} to be a function`);
+        }
+      }
     });
   });
 
@@ -207,6 +213,7 @@ describe('dynazord', () => {
     const { operators } = require('../src/helpers/where');
 
     it('should export a static object of operators', () => {
+      assert.deepStrictEqual(Object.keys(dynazord.operators), [ 'and', 'or', 'eq', 'gt', 'gte', 'lt', 'lte', 'btw' ]);
       assert.deepStrictEqual(dynazord.operators, operators);
     });
   });
@@ -229,5 +236,17 @@ describe('dynazord', () => {
     });
 
     after(() => dynazord.setDynamoDB(null));
+  });
+
+  describe('types', () => {
+    it('should export a static object of types', () => {
+      assert.deepStrictEqual(dynazord.types, {
+        STRING: 'STRING',
+        NUMBER: 'NUMBER',
+        BOOLEAN: 'BOOLEAN',
+        DATE: 'DATE',
+        BINARY: 'BINARY',
+      });
+    });
   });
 });

@@ -25,21 +25,24 @@ module.exports = async function updateDocument(update, where, opts = undefined) 
   await assertRequiredUpdateProps.call(this, properties, update);
 
   try {
-    await hooks.emit('beforeValidateUpdate', opts.hooks === true, update, opts);
+    await hooks.emit('beforeValidateUpdate', this, opts.hooks === true, update, opts);
+    await hooks.emit('beforeValidate', this, opts.hooks === true, update, opts);
     await validateData.call(this, properties, update).catch(async err => {
-      await hooks.emit('validateUpdateFailed', opts.hooks === true, update, err, opts);
+      await hooks.emit('validateUpdateFailed', this, opts.hooks === true, update, err, opts);
+      await hooks.emit('validateFailed', this, opts.hooks === true, update, err, opts);
       throw err;
     });
-    await hooks.emit('afterValidateUpdate', opts.hooks === true, update, opts);
+    await hooks.emit('afterValidateUpdate', this, opts.hooks === true, update, opts);
+    await hooks.emit('afterValidate', this, opts.hooks === true, update, opts);
   } catch (err) {
     err.name = 'ValidationError';
     err.message = `[${tableName}] ${err.message}`;
     throw err;
   }
 
-  await hooks.emit('beforeUpdate', opts.hooks === true, update, opts);
+  await hooks.emit('beforeUpdate', this, opts.hooks === true, update, opts);
   await formatWriteData.call(this, properties, update, { fieldHook: 'onUpdate' });
-  await hooks.emit('beforeUpdateWrite', opts.hooks === true, update, opts);
+  await hooks.emit('beforeUpdateWrite', this, opts.hooks === true, update, opts);
 
   const { expression, names, values } = stringifyUpdateStatement.call(this, update) || {};
   assert(typeof expression === 'string', new TypeError('Expected update expression to be a string'));
@@ -73,9 +76,9 @@ module.exports = async function updateDocument(update, where, opts = undefined) 
     key: JSON.stringify(where),
   });
 
-  await hooks.emit('afterUpdateWrite', opts.hooks === true, item, opts);
+  await hooks.emit('afterUpdateWrite', this, opts.hooks === true, item, opts);
   await formatReadData.call(this, properties, item);
-  await hooks.emit('afterUpdate', opts.hooks === true, item, opts);
+  await hooks.emit('afterUpdate', this, opts.hooks === true, item, opts);
 
   return item;
 };

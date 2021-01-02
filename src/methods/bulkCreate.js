@@ -19,7 +19,7 @@ module.exports = async function createBulkDocuments(items, opts = undefined) {
   assert(opts === undefined || isPlainObject(opts), new TypeError('Expected opts argument to be a plain object'));
   opts = { ...DEFAULT_OPTS, ...opts };
 
-  await hooks.emit('beforeBulkCreate', opts.bulkHooks === true, items, opts);
+  await hooks.emit('beforeBulkCreate', this, opts.bulkHooks === true, items, opts);
 
   const { hash, range } = keySchema;
   const { [hash]: hashProp, [range]: rangeProp } = properties;
@@ -35,12 +35,12 @@ module.exports = async function createBulkDocuments(items, opts = undefined) {
 
   items = await asyncEach(items, async create => {
     try {
-      await hooks.emit('beforeValidateCreate', opts.hooks === true, create, opts);
+      await hooks.emit('beforeValidateCreate', this, opts.hooks === true, create, opts);
       await validateData.call(this, properties, create).catch(async err => {
-        await hooks.emit('validateCreateFailed', opts.hooks === true, create, err, opts);
+        await hooks.emit('validateCreateFailed', this, opts.hooks === true, create, err, opts);
         throw err;
       });
-      await hooks.emit('afterValidateCreate', opts.hooks === true, create, opts);
+      await hooks.emit('afterValidateCreate', this, opts.hooks === true, create, opts);
     } catch (err) {
       err.name = 'ValidationError';
       err.message = `[${tableName}] ${err.message}`;
@@ -49,9 +49,9 @@ module.exports = async function createBulkDocuments(items, opts = undefined) {
   });
 
   items = await asyncEach(items, async create => {
-    await hooks.emit('beforeCreate', opts.hooks === true, create, opts);
+    await hooks.emit('beforeCreate', this, opts.hooks === true, create, opts);
     await formatWriteData.call(this, properties, create, { fieldHook: 'onCreate' });
-    await hooks.emit('beforeCreateWrite', opts.hooks === true, create, opts);
+    await hooks.emit('beforeCreateWrite', this, opts.hooks === true, create, opts);
   });
 
   if (items.length) {
@@ -78,12 +78,12 @@ module.exports = async function createBulkDocuments(items, opts = undefined) {
   }
 
   items = await asyncEach(items, async create => {
-    await hooks.emit('afterCreateWrite', opts.hooks === true, create, opts);
+    await hooks.emit('afterCreateWrite', this, opts.hooks === true, create, opts);
     await formatReadData.call(this, properties, create);
-    await hooks.emit('afterCreate', opts.hooks === true, create, opts);
+    await hooks.emit('afterCreate', this, opts.hooks === true, create, opts);
   });
 
-  await hooks.emit('afterBulkCreate', opts.bulkHooks === true, items, opts);
+  await hooks.emit('afterBulkCreate', this, opts.bulkHooks === true, items, opts);
 
   return items;
 };
