@@ -12,10 +12,9 @@ module.exports = async function createDocument(create, opts = undefined) {
   assert(typeof tableName === 'string', new TypeError('Invalid tableName to be a string'));
   assert(isPlainObject(keySchema), new TypeError('Expected keySchema to be a plain object'));
   assert(isPlainObject(properties), new TypeError('Expected properties to be a plain object'));
-  assert(isPlainObject(create), new TypeError('Expected argument to be a plain object'));
-
-  assert(!opts || isPlainObject(opts), new TypeError('Expected argument to be a plain object'));
-  opts = { ...DEFAULT_OPTS, ...(isPlainObject(opts) ? opts : {}) };
+  assert(isPlainObject(create), new TypeError('Expected create argument to be a plain object'));
+  assert(opts === undefined || isPlainObject(opts), new TypeError('Expected opts argument to be a plain object'));
+  opts = { ...DEFAULT_OPTS, ...opts };
 
   const { hash, range } = keySchema;
   const { [hash]: hashProp, [range]: rangeProp } = properties;

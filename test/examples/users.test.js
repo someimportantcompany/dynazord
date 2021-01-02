@@ -1,7 +1,7 @@
 const _ = require('lodash');
 const assert = require('assert');
 const mockdate = require('mockdate');
-const { dynamodb, assertItem, deleteThenCreateTable } = require('../fixtures/dynamodb');
+const { dynamodb, assertItem, deleteThenCreateTable } = require('../utils');
 const { users, createTable } = require('../../examples/users');
 
 describe('examples', () => describe('users', () => {

@@ -12,7 +12,7 @@ require('module-alias/register');
 
 (() => {
   const dynazord = require('dynazord');
-  const { dynamodb } = require('./fixtures/dynamodb');
+  const { dynamodb } = require('./utils');
 
   dynazord.setDynamoDB(dynamodb);
 })();

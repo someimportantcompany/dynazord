@@ -2,10 +2,10 @@ const _isPlainObject = require('lodash/isPlainObject');
 const assert = require('assert');
 const AWS = require('aws-sdk');
 const mockdate = require('mockdate');
-const { assertItem, createTestModel } = require('../fixtures/dynamodb');
+const { assertItem, createTestModel } = require('../utils');
 const { v4: uuid } = require('uuid');
 
-describe('dynazord/create', () => {
+describe.skip('dynazord/create', () => {
   let dynamodb = null;
   const currentDate = new Date();
 
@@ -316,7 +316,8 @@ describe('dynazord/create', () => {
       assert.fail('Should have thrown an error');
     } catch (err) {
       assert.ok(err instanceof Error);
-      assert.strictEqual(err.message, 'Error validating title: Expected value to be not-null');
+      assert.strictEqual(err.message, '[dynazord-test-entries] [title]: Expected value to be not-null');
+      assert.strictEqual(err.name, 'ValidationError');
     }
   });
 

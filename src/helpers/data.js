@@ -115,12 +115,12 @@ async function validateData(properties, data, prefix = '') {
               const { [vkey]: validateType } = typeValidators;
               assert(typeof validateType === 'function', new Error(`Expected validator ${vkey} to be a function`));
               const valid = await validateType(data[key], propertyValidators[vkey], property);
-              assert(valid !== false, new Error(`Expected ${key} validator ${vkey} to pass`));
+              assert(valid !== false, new Error(`Expected ${vkey} to pass`));
             }
           }
         }
       } catch (err) {
-        err.message = `Error validating ${prefix}${key}: ${err.message}`;
+        err.message = `[${prefix}${key}]: ${err.message}`;
         throw err;
       }
     }

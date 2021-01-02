@@ -2,8 +2,12 @@ const { assert, isPlainObject, marshall, unmarshall } = require('../utils');
 const { assertRequiredUpdateProps, stringifyUpdateStatement } = require('../helpers/update');
 const { formatReadData, formatWriteData, marshallKey, validateData } = require('../helpers/data');
 
-module.exports = async function updateDocument(update, where) {
-  const { client, tableName, keySchema, properties, log } = this;
+const DEFAULT_OPTS = {
+  hooks: true,
+};
+
+module.exports = async function updateDocument(update, where, opts = undefined) {
+  const { tableName, keySchema, properties, client, hooks, log } = this;
   assert(client && typeof client.updateItem === 'function', new TypeError('Expected client to be a DynamoDB client'));
   assert(typeof tableName === 'string', new TypeError('Invalid tableName to be a string'));
   assert(isPlainObject(keySchema), new TypeError('Expected keySchema to be a plain object'));
@@ -11,14 +15,31 @@ module.exports = async function updateDocument(update, where) {
 
   assert(isPlainObject(update), new TypeError('Expected update to be a plain object'));
   assert(isPlainObject(where), new TypeError('Expected where to be a plain object'));
+  assert(opts === undefined || isPlainObject(opts), new TypeError('Expected opts argument to be a plain object'));
+  opts = { ...DEFAULT_OPTS, ...opts };
 
   const { hash, range } = keySchema;
   assert(where.hasOwnProperty(hash), new Error(`Missing ${hash} hash property from where`));
   assert(!range || where.hasOwnProperty(range), new Error(`Missing ${range} range property from where`));
 
   await assertRequiredUpdateProps.call(this, properties, update);
-  await validateData.call(this, properties, update);
+
+  try {
+    await hooks.emit('beforeValidateUpdate', opts.hooks === true, update, opts);
+    await validateData.call(this, properties, update).catch(async err => {
+      await hooks.emit('validateUpdateFailed', opts.hooks === true, update, err, opts);
+      throw err;
+    });
+    await hooks.emit('afterValidateUpdate', opts.hooks === true, update, opts);
+  } catch (err) {
+    err.name = 'ValidationError';
+    err.message = `[${tableName}] ${err.message}`;
+    throw err;
+  }
+
+  await hooks.emit('beforeUpdate', opts.hooks === true, update, opts);
   await formatWriteData.call(this, properties, update, { fieldHook: 'onUpdate' });
+  await hooks.emit('beforeUpdateWrite', opts.hooks === true, update, opts);
 
   const { expression, names, values } = stringifyUpdateStatement.call(this, update) || {};
   assert(typeof expression === 'string', new TypeError('Expected update expression to be a string'));
@@ -52,6 +73,9 @@ module.exports = async function updateDocument(update, where) {
     key: JSON.stringify(where),
   });
 
-  await formatReadData(properties, item);
+  await hooks.emit('afterUpdateWrite', opts.hooks === true, item, opts);
+  await formatReadData.call(this, properties, item);
+  await hooks.emit('afterUpdate', opts.hooks === true, item, opts);
+
   return item;
 };

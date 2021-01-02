@@ -1,16 +1,22 @@
 const { assert, isPlainObject, marshall, unmarshall } = require('../utils');
 const { assertRequiredCreateProps, appendCreateDefaultProps } = require('../helpers/create');
-const { formatReadData, formatWriteData, validateData } = require('../helpers/data');
+const { formatReadData, formatWriteData, marshallKey, validateData } = require('../helpers/data');
 const { stringifyUpsertStatement } = require('../helpers/upsert');
 
-module.exports = async function upsertDocument(upsert) {
-  const { client, tableName, keySchema, properties, log } = this;
+const DEFAULT_OPTS = {
+  hooks: true,
+};
+
+module.exports = async function upsertDocument(upsert, opts = undefined) {
+  const { tableName, keySchema, properties, client, hooks, log } = this;
   assert(client && typeof client.updateItem === 'function', new TypeError('Expected client to be a DynamoDB client'));
   assert(typeof tableName === 'string', new TypeError('Invalid tableName to be a string'));
   assert(isPlainObject(keySchema), new TypeError('Expected keySchema to be a plain object'));
   assert(isPlainObject(properties), new TypeError('Expected properties to be a plain object'));
 
-  assert(isPlainObject(upsert), new TypeError('Expected update to be a plain object'));
+  assert(isPlainObject(upsert), new TypeError('Expected update argument to be a plain object'));
+  assert(opts === undefined || isPlainObject(opts), new TypeError('Expected opts argument to be a plain object'));
+  opts = { ...DEFAULT_OPTS, ...opts };
 
   const { hash, range } = keySchema;
   const { [hash]: hashProp, [range]: rangeProp } = properties;
@@ -23,14 +29,26 @@ module.exports = async function upsertDocument(upsert) {
 
   await assertRequiredCreateProps.call(this, properties, upsert);
   await appendCreateDefaultProps.call(this, properties, upsert);
-  await validateData.call(this, properties, upsert);
+
+  try {
+    await hooks.emit('beforeValidateUpdate', opts.hooks === true, upsert, opts);
+    await validateData.call(this, properties, upsert).catch(async err => {
+      await hooks.emit('validateUpdateFailed', opts.hooks === true, upsert, err, opts);
+      throw err;
+    });
+    await hooks.emit('afterValidateUpdate', opts.hooks === true, upsert, opts);
+  } catch (err) {
+    err.name = 'ValidationError';
+    err.message = `[${tableName}] ${err.message}`;
+    throw err;
+  }
+
+  await hooks.emit('beforeUpsert', opts.hooks === true, upsert, opts);
   await formatWriteData.call(this, properties, upsert, { fieldHook: 'onUpsert' });
+  await hooks.emit('beforeUpsertWrite', opts.hooks === true, upsert, opts);
 
   const { [hash]: hashValue, [range || 'null']: rangeValue, ...upsertValues } = upsert;
-  const where = {
-    [hash]: hashValue,
-    ...(range ? { [range]: rangeValue } : {}),
-  };
+  const where = { [hash]: hashValue, ...(range ? { [range]: rangeValue } : {}) };
 
   const { expression, names, values } = stringifyUpsertStatement.call(this, upsertValues, specifiedUpsertKeys) || {};
   assert(typeof expression === 'string', new TypeError('Expected update expression to be a string'));
@@ -39,7 +57,7 @@ module.exports = async function upsertDocument(upsert) {
 
   const params = {
     TableName: tableName,
-    Key: marshall(where),
+    Key: await marshallKey(properties, where),
     UpdateExpression: expression,
     ExpressionAttributeNames: names,
     ExpressionAttributeValues: marshall(values),
@@ -57,6 +75,8 @@ module.exports = async function upsertDocument(upsert) {
     key: JSON.stringify(where),
   });
 
-  await formatReadData(properties, item);
+  await hooks.emit('afterUpsertWrite', opts.hooks === true, item, opts);
+  await formatReadData.call(this, properties, item);
+  await hooks.emit('afterUpsert', opts.hooks === true, item, opts);
   return item;
 };

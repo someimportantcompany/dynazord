@@ -1,8 +1,13 @@
 const { assert, isPlainObject } = require('../utils');
 const { marshallKey } = require('../helpers/data');
 
-module.exports = async function deleteBulkDocuments(keys) {
-  const { client, tableName, keySchema, properties, log } = this;
+const DEFAULT_OPTS = {
+  bulkHooks: true,
+  hooks: false,
+};
+
+module.exports = async function deleteBulkDocuments(keys, opts) {
+  const { tableName, keySchema, properties, client, hooks, log } = this;
   assert(client && typeof client.transactWriteItems === 'function', new TypeError('Expected client to be a DynamoDB client'));
   assert(typeof tableName === 'string', new TypeError('Invalid tableName to be a string'));
   assert(isPlainObject(keySchema), new TypeError('Expected keySchema to be a plain object'));
@@ -10,6 +15,8 @@ module.exports = async function deleteBulkDocuments(keys) {
 
   assert(Array.isArray(keys), new Error('Expected argument to be an array'));
   assert(keys.length <= 25, new Error('Expected argument array to be less than 25 items'));
+  assert(opts === undefined || isPlainObject(opts), new TypeError('Expected opts argument to be a plain object'));
+  opts = { ...DEFAULT_OPTS, ...opts };
 
   keys.forEach((where, i) => {
     const { hash, range } = keySchema;
@@ -18,8 +25,10 @@ module.exports = async function deleteBulkDocuments(keys) {
   });
 
   if (keys.length) {
+    await hooks.emit('afterBulkDelete', opts.bulkHooks === true, keys, opts);
+
     const TransactItems = await Promise.all(keys.map(async where => {
-      const Key = await marshallKey(where);
+      const Key = await marshallKey(properties, where);
       return {
         Delete: {
           TableName: tableName,
@@ -32,6 +41,8 @@ module.exports = async function deleteBulkDocuments(keys) {
     log.debug({ transactWriteItems: { TransactItems } });
     const results = await client.transactWriteItems({ TransactItems }).promise();
     log.debug({ transactWriteItems: results });
+
+    await hooks.emit('afterBulkDelete', opts.bulkHooks === true, keys, opts);
   }
 
   return true;

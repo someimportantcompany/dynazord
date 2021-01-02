@@ -14,11 +14,10 @@ module.exports = async function createBulkDocuments(items, opts = undefined) {
   assert(isPlainObject(keySchema), new TypeError('Expected keySchema to be a plain object'));
   assert(isPlainObject(properties), new TypeError('Expected properties to be a plain object'));
 
-  assert(!opts || isPlainObject(opts), new TypeError('Expected argument to be a plain object'));
-  opts = { ...DEFAULT_OPTS, ...(isPlainObject(opts) ? opts : {}) };
-
   assert(Array.isArray(items), new Error('Expected argument to be an array'));
   assert(items.length <= 25, new Error('Expected array argument to be less than 25 items'));
+  assert(opts === undefined || isPlainObject(opts), new TypeError('Expected opts argument to be a plain object'));
+  opts = { ...DEFAULT_OPTS, ...opts };
 
   await hooks.emit('beforeBulkCreate', opts.bulkHooks === true, items, opts);
 

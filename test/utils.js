@@ -2,7 +2,7 @@ const _isPlainObject = require('lodash/isPlainObject');
 const assert = require('assert');
 const AWS = require('aws-sdk');
 const dynazord = require('dynazord');
-const { createLogger } = require('../../src/utils');
+const { createLogger } = require('../src/utils');
 const { v4: uuid } = require('uuid');
 
 const logger = createLogger(process.env.DYNAZORD_LOG_LEVEL);

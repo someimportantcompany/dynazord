@@ -3,7 +3,7 @@ const assert = require('assert');
 const AWS = require('aws-sdk');
 const dynazord = require('../src');
 const isUUID = require('validator/lib/isUUID');
-const { createTestModel } = require('./fixtures/dynamodb');
+const { createTestModel } = require('./utils');
 const { v4: uuid } = require('uuid');
 
 describe('dynazord', () => {

@@ -1,9 +1,10 @@
-const { assert, isPlainObject } = require('../utils');
+const { assert, isPlainObject } = require('./utils');
 
 function createHooks(hooks) {
   assert(isPlainObject(hooks), new Error('Expected hooks to be a plain object'));
 
   for (const key in hooks) {
+    /* istanbul ignore else */
     if (hooks.hasOwnProperty(key)) {
       assert(key && typeof key === 'string', new TypeError('Expected hooks key to be a string'));
       assert(validHooks.includes(key), new TypeError('Expected hooks key argument to be a valid hook'), { hook: key });
@@ -27,11 +28,10 @@ function createHooks(hooks) {
 
 const hooksProto = {
   on(key, fn) {
-    assert(key && typeof key === 'string', new TypeError('Expected hooks.on key argument to be a string'));
+    assert(typeof key === 'string' && key.length, new TypeError('Expected hooks.on key argument to be a string'));
     assert(validHooks.includes(key), new TypeError('Expected hooks.on argument to be a valid hook'), { hook: key });
-
-    this.hooks[key] = isPlainObject(this.hooks[key]) ? this.hooks[key] : {};
-    this.hooks[key].push(fn);
+    assert(typeof fn === 'function', new TypeError('Expected hooks.on function argument to be a function'));
+    this.hooks[key] = (Array.isArray(this.hooks[key]) ? this.hooks[key] : []).concat([ fn ]);
   },
   async emit(key, fire = true, ...params) {
     if (fire && this.hooks && Array.isArray(this.hooks[key]) && this.hooks[key].length) {
