@@ -1,6 +1,7 @@
 const AWS = require('aws-sdk');
 const { assert, createLogger, isPlainObject } = require('./utils');
 const { assertValidProperties } = require('./helpers/validate');
+const { createHooks } = require('./hooks');
 const { keys: typeKeys } = require('./types');
 const { methods, bulkMethods } = require('./methods');
 const { operators } = require('./helpers/where');
@@ -18,12 +19,15 @@ let overwriteOptions = {};
 function createModel(opts) {
   assert(isPlainObject(opts), new TypeError('Expected opts to be a plain object'));
 
+  // Required
   const { tableName, keySchema, properties } = opts;
   assert(typeof tableName === 'string', new TypeError('Expected { tableName } to be a string'));
   assert(isPlainObject(properties), new TypeError('Expected { properties } to be a plain object'));
   assert(Object.keys(properties).length, new TypeError('Expected { properties } to have properties'));
+  // Optional
   assert(!keySchema || isPlainObject(keySchema) || typeof keySchema === 'string',
     new TypeError('Expected { keySchema } to be a string or a plain object'));
+  assert(!opts.hooks || isPlainObject(opts.hooks), new TypeError('Expected { hooks } to be a plain object'));
   assert(!opts.options || isPlainObject(opts.options), new TypeError('Expected { options } to be a plain object'));
 
   const options = {
@@ -73,29 +77,16 @@ function createModel(opts) {
   assert(!range || properties[range], new TypeError(`Expected ${range} to be a property`));
   assert(!range || properties[range].required === true, new TypeError(`Expected ${range} property to be required`));
 
+  const hooks = createHooks(opts.hooks || {});
+
   return Object.create({ ...methods, ...bulkMethods }, {
-    client: {
-      value: validateDynamoDB(opts.dynamodb) || overwriteDynamoDB || new AWS.DynamoDB(),
-    },
-    log: {
-      value: opts.log || createLogger(opts.logLevel),
-    },
-    tableName: {
-      enumerable: true,
-      value: tableName,
-    },
-    keySchema: {
-      enumerable: true,
-      value: Object.freeze({ hash, range, ...keySchemaOpts }),
-    },
-    properties: {
-      enumerable: true,
-      value: Object.freeze(opts.properties),
-    },
-    options: {
-      enumerable: true,
-      value: Object.freeze(options),
-    },
+    tableName: { enumerable: true, value: tableName },
+    keySchema: { enumerable: true, value: Object.freeze({ hash, range, ...keySchemaOpts }) },
+    properties: { enumerable: true, value: Object.freeze(opts.properties) },
+    client: { value: validateDynamoDB(opts.dynamodb) || overwriteDynamoDB || new AWS.DynamoDB() },
+    hooks: { enumerable: true, value: Object.freeze(hooks) },
+    log: { value: opts.log || createLogger(opts.logLevel) },
+    options: { enumerable: true, value: Object.freeze(options) },
   });
 }
 

@@ -2,13 +2,20 @@ const { assert, isPlainObject, marshall } = require('../utils');
 const { assertRequiredCreateProps, appendCreateDefaultProps } = require('../helpers/create');
 const { formatReadData, formatWriteData, validateData } = require('../helpers/data');
 
-module.exports = async function createDocument(create) {
-  const { client, tableName, keySchema, properties, log } = this;
+const DEFAULT_OPTS = {
+  hooks: true,
+};
+
+module.exports = async function createDocument(create, opts = undefined) {
+  const { tableName, keySchema, properties, client, hooks, log } = this;
   assert(client && typeof client.putItem === 'function', new TypeError('Expected client to be a DynamoDB client'));
   assert(typeof tableName === 'string', new TypeError('Invalid tableName to be a string'));
   assert(isPlainObject(keySchema), new TypeError('Expected keySchema to be a plain object'));
   assert(isPlainObject(properties), new TypeError('Expected properties to be a plain object'));
   assert(isPlainObject(create), new TypeError('Expected argument to be a plain object'));
+
+  assert(!opts || isPlainObject(opts), new TypeError('Expected argument to be a plain object'));
+  opts = { ...DEFAULT_OPTS, ...(isPlainObject(opts) ? opts : {}) };
 
   const { hash, range } = keySchema;
   const { [hash]: hashProp, [range]: rangeProp } = properties;
@@ -19,33 +26,51 @@ module.exports = async function createDocument(create) {
 
   await assertRequiredCreateProps.call(this, properties, create);
   await appendCreateDefaultProps.call(this, properties, create);
-  await validateData.call(this, properties, create);
-  await formatWriteData.call(this, properties, create, { fieldHook: 'onCreate' });
-
-  const params = {
-    // Specify the name & item to be created
-    TableName: tableName,
-    Item: marshall(create),
-    // Specify a condition to ensure this doesn't write an item that already exists
-    ConditionExpression: hash && range
-      ? 'attribute_not_exists(#_hash_key) AND attribute_not_exists(#_range_key)'
-      : 'attribute_not_exists(#_hash_key)',
-    ExpressionAttributeNames: hash && range
-      ? { '#_hash_key': hash, '#_range_key': range }
-      : { '#_hash_key': hash },
-    // Reject all return values, since we have a complete copy of the object
-    ReturnValues: 'NONE',
-  };
 
   try {
-    log.debug({ putItem: params });
-    const results = await client.putItem(params).promise();
-    log.debug({ putItem: results });
+    await hooks.emit('beforeValidateCreate', opts.hooks === true, create, opts);
+    await validateData.call(this, properties, create).catch(async err => {
+      await hooks.emit('validateCreateFailed', opts.hooks === true, create, err, opts);
+      throw err;
+    });
+    await hooks.emit('afterValidateCreate', opts.hooks === true, create, opts);
   } catch (err) {
-    log.error({ putItem: { ...err } });
+    err.name = 'ValidationError';
+    err.message = `[${tableName}] ${err.message}`;
     throw err;
   }
 
+  await hooks.emit('beforeCreate', opts.hooks === true, create, opts);
+  await formatWriteData.call(this, properties, create, { fieldHook: 'onCreate' });
+  await hooks.emit('beforeCreateWrite', opts.hooks === true, create, opts);
+
+  try {
+    const params = {
+      // Specify the name & item to be created
+      TableName: tableName,
+      Item: marshall(create),
+      // Specify a condition to ensure this doesn't write an item that already exists
+      ConditionExpression: hash && range
+        ? 'attribute_not_exists(#_hash_key) AND attribute_not_exists(#_range_key)'
+        : 'attribute_not_exists(#_hash_key)',
+      ExpressionAttributeNames: hash && range
+        ? { '#_hash_key': hash, '#_range_key': range }
+        : { '#_hash_key': hash },
+      // Reject all return values, since we have a complete copy of the object
+      ReturnValues: 'NONE',
+    };
+    log.debug({ putItem: params });
+
+    const results = await client.putItem(params).promise();
+    log.debug({ putItem: results });
+  } catch (err) {
+    log.error(err);
+    throw err;
+  }
+
+  await hooks.emit('afterCreateWrite', opts.hooks === true, create, opts);
   await formatReadData.call(this, properties, create);
+  await hooks.emit('afterCreate', opts.hooks === true, create, opts);
+
   return create;
 };
