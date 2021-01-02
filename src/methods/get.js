@@ -24,9 +24,11 @@ module.exports = async function getDocument(where, opts) {
   assert(where.hasOwnProperty(hash), new Error(`Missing ${hash} hash property from argument`));
   assert(!range || where.hasOwnProperty(range), new Error(`Missing ${range} range property from argument`));
 
+  const Key = await marshallKey(properties, where);
+
   const params = {
     TableName: tableName,
-    Key: await marshallKey(properties, where),
+    Key,
     AttributesToGet: attributesToGet,
     ConsistentRead: consistentRead,
   };

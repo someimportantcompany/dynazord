@@ -1,5 +1,5 @@
-const { assert, isPlainObject, marshall, unmarshall } = require('../utils');
-const { formatReadData } = require('../helpers/data');
+const { assert, isPlainObject, unmarshall } = require('../utils');
+const { formatReadData, marshallKey } = require('../helpers/data');
 
 module.exports = async function getBulkDocuments(keys) {
   const { client, tableName, keySchema, properties, log } = this;
@@ -18,17 +18,13 @@ module.exports = async function getBulkDocuments(keys) {
   });
 
   if (keys.length) {
-    const params = {
-      TransactItems: keys.map(where => ({
-        Get: {
-          TableName: tableName,
-          Key: marshall(where),
-        },
-      })),
-    };
+    const TransactItems = await Promise.all(keys.map(async where => {
+      const Key = await marshallKey(properties, where);
+      return { Get: { TableName: tableName, Key } };
+    }));
 
-    log.debug({ transactGetItems: params });
-    const results = await client.transactGetItems(params).promise();
+    log.debug({ transactGetItems: { TransactItems } });
+    const results = await client.transactGetItems({ TransactItems }).promise();
     log.debug({ transactGetItems: results });
 
     return results && Array.isArray(results.Responses) ? Promise.all(results.Responses.map(async ({ Item }) => {
