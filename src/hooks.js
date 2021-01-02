@@ -43,7 +43,7 @@ const hooksProto = {
 const validHooks = [
   'beforeBulkCreate',
   'beforeBulkUpdate',
-  'beforeBulkDestroy',
+  'beforeBulkDelete',
   'beforeBulkUpsert',
 
   'beforeValidate',
@@ -61,25 +61,25 @@ const validHooks = [
 
   'beforeCreate',
   'beforeUpdate',
-  'beforeDestroy',
+  'beforeDelete',
   'beforeUpsert',
   'beforeCreateWrite',
   'beforeUpdateWrite',
-  'beforeDestroyWrite',
+  'beforeDeleteWrite',
   'beforeUpsertWrite',
 
   'afterCreateWrite',
   'afterUpdateWrite',
-  'afterDestroyWrite',
+  'afterDeleteWrite',
   'afterUpsertWrite',
   'afterCreate',
   'afterUpdate',
-  'afterDestroy',
+  'afterDelete',
   'afterUpsert',
 
   'afterBulkCreate',
   'afterBulkUpdate',
-  'afterBulkDestroy',
+  'afterBulkDelete',
 ];
 
 module.exports = {

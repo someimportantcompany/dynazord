@@ -6,45 +6,45 @@ const DEFAULT_OPTS = {
   hooks: true,
 };
 
-module.exports = async function createDocument(create, opts = undefined) {
+module.exports = async function createDocument(item, opts = undefined) {
   const { tableName, keySchema, properties, client, hooks, log } = this;
   assert(client && typeof client.putItem === 'function', new TypeError('Expected client to be a DynamoDB client'));
   assert(typeof tableName === 'string', new TypeError('Invalid tableName to be a string'));
   assert(isPlainObject(keySchema), new TypeError('Expected keySchema to be a plain object'));
   assert(isPlainObject(properties), new TypeError('Expected properties to be a plain object'));
-  assert(isPlainObject(create), new TypeError('Expected create argument to be a plain object'));
+  assert(isPlainObject(item), new TypeError('Expected item argument to be a plain object'));
   assert(opts === undefined || isPlainObject(opts), new TypeError('Expected opts argument to be a plain object'));
   opts = { ...DEFAULT_OPTS, ...opts };
 
-  await assertRequiredCreateProps.call(this, properties, create);
-  await appendCreateDefaultProps.call(this, properties, create);
+  await assertRequiredCreateProps.call(this, properties, item);
+  await appendCreateDefaultProps.call(this, properties, item);
 
   try {
-    await hooks.emit('beforeValidateCreate', this, opts.hooks === true, create, opts);
-    await hooks.emit('beforeValidate', this, opts.hooks === true, create, opts);
-    await validateData.call(this, properties, create).catch(async err => {
-      await hooks.emit('validateCreateFailed', this, opts.hooks === true, create, err, opts);
-      await hooks.emit('validateFailed', this, opts.hooks === true, create, err, opts);
+    await hooks.emit('beforeValidateCreate', this, opts.hooks === true, item, opts);
+    await hooks.emit('beforeValidate', this, opts.hooks === true, item, opts);
+    await validateData.call(this, properties, item).catch(async err => {
+      await hooks.emit('validateCreateFailed', this, opts.hooks === true, item, err, opts);
+      await hooks.emit('validateFailed', this, opts.hooks === true, item, err, opts);
       throw err;
     });
-    await hooks.emit('afterValidate', this, opts.hooks === true, create, opts);
-    await hooks.emit('afterValidateCreate', this, opts.hooks === true, create, opts);
+    await hooks.emit('afterValidateCreate', this, opts.hooks === true, item, opts);
+    await hooks.emit('afterValidate', this, opts.hooks === true, item, opts);
   } catch (err) {
     err.name = 'ValidationError';
     err.message = `[${tableName}] ${err.message}`;
     throw err;
   }
 
-  await hooks.emit('beforeCreate', this, opts.hooks === true, create, opts);
-  await formatWriteData.call(this, properties, create, { fieldHook: 'onCreate' });
-  await hooks.emit('beforeCreateWrite', this, opts.hooks === true, create, opts);
+  await hooks.emit('beforeCreate', this, opts.hooks === true, item, opts);
+  await formatWriteData.call(this, properties, item, { fieldHook: 'onCreate' });
+  await hooks.emit('beforeCreateWrite', this, opts.hooks === true, item, opts);
 
   try {
     const { hash, range } = keySchema;
     const params = {
       // Specify the name & item to be created
       TableName: tableName,
-      Item: marshall(create),
+      Item: marshall(item),
       // Specify a condition to ensure this doesn't write an item that already exists
       ConditionExpression: hash && range
         ? 'attribute_not_exists(#_hash_key) AND attribute_not_exists(#_range_key)'
@@ -64,9 +64,9 @@ module.exports = async function createDocument(create, opts = undefined) {
     throw err;
   }
 
-  await hooks.emit('afterCreateWrite', this, opts.hooks === true, create, opts);
-  await formatReadData.call(this, properties, create);
-  await hooks.emit('afterCreate', this, opts.hooks === true, create, opts);
+  await hooks.emit('afterCreateWrite', this, opts.hooks === true, item, opts);
+  await formatReadData.call(this, properties, item);
+  await hooks.emit('afterCreate', this, opts.hooks === true, item, opts);
 
-  return create;
+  return item;
 };

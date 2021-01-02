@@ -25,7 +25,7 @@ module.exports = async function deleteBulkDocuments(keys, opts) {
   });
 
   if (keys.length) {
-    await hooks.emit('afterBulkDelete', this, opts.bulkHooks === true, keys, opts);
+    await hooks.emit('beforeBulkDelete', this, opts.bulkHooks === true, keys, opts);
 
     const TransactItems = await Promise.all(keys.map(async where => {
       const Key = await marshallKey(properties, where);

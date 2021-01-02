@@ -26,6 +26,8 @@ function assert(value, err, additional = {}) {
 
     throw err;
   }
+
+  return true;
 }
 
 function createLogger(level = null) {

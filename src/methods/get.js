@@ -1,14 +1,14 @@
 const { assert, isPlainObject, unmarshall } = require('../utils');
 const { formatReadData, marshallKey } = require('../helpers/data');
 
-module.exports = async function getDocument(where, opts) {
+module.exports = async function getDocument(key, opts) {
   const { client, tableName, keySchema, properties, log } = this;
   assert(client && typeof client.getItem === 'function', new TypeError('Expected client to be a DynamoDB client'));
   assert(typeof tableName === 'string', new TypeError('Invalid tableName to be a string'));
   assert(isPlainObject(keySchema), new TypeError('Expected keySchema to be a plain object'));
   assert(isPlainObject(properties), new TypeError('Expected properties to be a plain object'));
 
-  assert(isPlainObject(where), new TypeError('Expected argument to be a plain object'));
+  assert(isPlainObject(key), new TypeError('Expected argument to be a plain object'));
   assert(!opts || isPlainObject(opts), new TypeError('Expected opts to be a plain object'));
 
   const {
@@ -21,10 +21,10 @@ module.exports = async function getDocument(where, opts) {
     new TypeError('Expected consistentRead to be a boolean'));
 
   const { hash, range } = keySchema;
-  assert(where.hasOwnProperty(hash), new Error(`Missing ${hash} hash property from argument`));
-  assert(!range || where.hasOwnProperty(range), new Error(`Missing ${range} range property from argument`));
+  assert(key.hasOwnProperty(hash), new Error(`Missing ${hash} hash property from argument`));
+  assert(!range || key.hasOwnProperty(range), new Error(`Missing ${range} range property from argument`));
 
-  const Key = await marshallKey(properties, where);
+  const Key = await marshallKey(properties, key);
 
   const params = {
     TableName: tableName,
@@ -41,7 +41,7 @@ module.exports = async function getDocument(where, opts) {
 
   assert(item, new Error('Document not found'), {
     code: 'DOCUMENT_NOT_FOUND',
-    key: JSON.stringify(where),
+    key: JSON.stringify(key),
   });
 
   await formatReadData(properties, item);

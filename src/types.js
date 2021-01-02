@@ -44,6 +44,12 @@ const types = {
     validate: {
       type: value => isEmpty(value) || assert(value instanceof Date, new TypeError('Expected value to be a Date'), { value }),
       notNull: value => assert(value !== null, new Error('Expected value to be not-null')),
+      isBefore(value, before) {
+        return isEmpty(value) || assert(value < new Date(before), new Error(`Expected value to be before ${before}`), { value });
+      },
+      isAfter(value, after) {
+        return isEmpty(value) || assert(value > new Date(after), new Error(`Expected value to be after ${after}`), { value });
+      },
     },
   },
   // STRINGSET: {
