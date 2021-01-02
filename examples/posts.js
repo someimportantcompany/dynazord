@@ -1,6 +1,7 @@
 const _kebabCase = require('lodash/kebabCase');
 const assert = require('http-assert');
 const dynazord = require('dynazord');
+const isUUID = require('validator/lib/isUUID');
 const { v4: uuid } = require('uuid');
 
 const createTable = {
@@ -14,14 +15,14 @@ const createTable = {
   //     IndexName: 'blogPostsByTime',
   //     KeySchema: [
   //       { AttributeName: 'blog', KeyType: 'HASH' },
-  //       { AttributeName: 'createdAt', KeyType: 'RANGE' },
+  //       { AttributeName: 'publishedAt', KeyType: 'RANGE' },
   //     ],
   //   },
   // ],
   AttributeDefinitions: [
     { AttributeName: 'id', AttributeType: 'S' },
-    { AttributeName: 'blogID', AttributeType: 'S' },
-    { AttributeName: 'createdAt', AttributeType: 'S' },
+    // { AttributeName: 'blogID', AttributeType: 'S' },
+    // { AttributeName: 'publishedAt', AttributeType: 'N' },
   ],
 };
 
@@ -41,6 +42,11 @@ const posts = dynazord.createModel({
       type: String,
       required: true,
       default: () => uuid(),
+      validate: {
+        notNull: true,
+        notEmpty: true,
+        isUUID: value => isUUID(value, 4),
+      },
     },
     blogID: {
       type: String,
@@ -50,20 +56,31 @@ const posts = dynazord.createModel({
     title: {
       type: String,
       required: true,
+      validate: {
+        notNull: true,
+        notEmpty: true,
+      },
     },
     description: {
       type: String,
-      required: true,
     },
     slug: {
       type: String,
       required: true,
-      default: () => null,
+      default: () => 'EXAMPLE-SLUG',
+      validate: {
+        notNull: true,
+        notEmpty: true,
+      },
     },
     publishedAt: {
       type: Date,
       // Optionally set the underlying format to a Number to assist with sorting
       format: Number,
+      validate: {
+        isBefore: '2099-12-31T23:59:59.00Z',
+        isAfter: '2000-01-01T00:00:00.00Z',
+      }
     },
     status: {
       type: String,
@@ -72,19 +89,28 @@ const posts = dynazord.createModel({
     },
   },
   hooks: {
-    beforeValidateCreate(post, opts) {
-      if (post.title && !post.slug) {
+    beforeValidate(post, opts) {
+      if (post.title && (!post.slug || post.slug === 'EXAMPLE-SLUG')) {
         post.slug = _kebabCase(post.title);
       }
     },
-    async afterValidate(post, opts) {
-      const { id, slug } = post;
-      if (slug) {
-        // Lookup if this slug has been used before
-        const existing = await this.find({ slug });
-        // And if it exists on another post, throw an error
-        assert(!existing || existing.id !== id, 400, new Error('Expected slug to be unique'), { slug });
-      }
+    beforeBulkCreate(entries) {
+      entries.forEach((post, i) => {
+        if (post.title && (!post.slug || post.slug === 'EXAMPLE-SLUG')) {
+          entries[i].slug = _kebabCase(post.title);
+        }
+      });
+    },
+    afterValidate: {
+      async isSlugUnique(post, opts) {
+        const { id, slug } = post;
+        if (slug) {
+          // Lookup if this slug has been used before
+          const existing = await this.find({ slug });
+          // And if it exists on another post, throw an error
+          assert(!existing || existing.id !== id, 400, new Error('Expected slug to be unique'), { slug });
+        }
+      },
     },
   },
   options: {

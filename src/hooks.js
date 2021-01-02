@@ -33,7 +33,7 @@ const hooksProto = {
     assert(typeof fn === 'function', new TypeError('Expected hooks.on function argument to be a function'));
     this.hooks[key] = (Array.isArray(this.hooks[key]) ? this.hooks[key] : []).concat([ fn ]);
   },
-  async emit(model, key, fire = true, ...params) {
+  async emit(key, model, fire = true, ...params) {
     if (fire && this.hooks && Array.isArray(this.hooks[key]) && this.hooks[key].length) {
       await Promise.all(this.hooks[key].map(fn => fn.call(model, ...params)));
     }
