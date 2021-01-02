@@ -16,10 +16,11 @@ const model = dynazord.createModel({
 | Table of Contents |
 | ---- |
 | [Primary Index](#primary-index) |
-<!-- | [Secondary Indexes](#secondary-indexes) | -->
-| [Properties & Types](#properties-types) |
+| [Properties & Types](#properties--types) |
 | [Additional Options](#additional-options) |
 | [Kitchen Sink Example](#kitchen-sink-example) |
+
+<!-- | [Secondary Indexes](#secondary-indexes) | -->
 
 The `createModel` method is the starting point for all models: It is a synchronous method that builds a model from the provided configuration object that defines the keys, indexes & properties the model will support.
 
@@ -460,8 +461,6 @@ Set additional options as the `options` object in the config:
 }
 ```
 
-A common DynamoDB use-case is to use a hash-key (partition key) & range key (sort key), where you'd like your range key to be the automatically-generated `createdAt`
-
 | Option | Type | Default | Description |
 | ---- | ---- | ---- | ---- |
 | `createdAtTimestamp` | Boolean | `false` | See [Created/Updated Timestamps](#created-updated-timestamps) |
@@ -494,7 +493,41 @@ Setting either `createdAtTimestamp` or `updatedAtTimestamp` to `true` will add a
 }
 ```
 
-By default, `Date` fields
+If `createdAtTimestamp` or `updatedAtTimestamp` is set to `true` and you already have `createdAt`/`updatedAt` keys in your `properties` object, they will be merged into the auto-updating definitions that _dynazord_ uses.
+
+A common DynamoDB use-case is to use a hash-key (partition key) & range key (sort key), where you'd like your range key to be the automatically-generated `createdAt`. By default, [the `Date` type](#date-type) stores dates as a string, but to better suit the range key usage you should configure the `createdAt` property to be a number underneath:
+
+```js
+const sessions = dynazord.createModel({
+  tableName: 'dynazord-example-sessions',
+  keySchema: {
+    hash: 'email',
+    range: 'createdAt',
+  },
+  properties: {
+    email: {
+      type: String,
+      required: true,
+    },
+    ipAddress: {
+      type: String,
+      required: true,
+    },
+    userAgent: {
+      type: String,
+      required: true,
+    },
+    createdAt: {
+      type: Date, // All other options get overwritten
+      required: true,
+      format: Number, // Set this to read/write timestamps as millisecond
+    },
+  },
+  options: {
+    createdAtTimestamp: true,
+  },
+});
+```
 
 ## Kitchen Sink Example
 

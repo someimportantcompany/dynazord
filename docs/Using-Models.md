@@ -36,7 +36,9 @@ const users = dynazord.createModel({
 });
 ```
 
-## `model.create(item)`
+## Singular action
+
+### `model.create(item)`
 
 ```js
 const user = await users.create({
@@ -53,7 +55,7 @@ console.log(user);
 //   updatedAt: [Date YYYY-MM-DDTHH:mm:ss.Z] }
 ```
 
-## `model.get(key, [opts])`
+### `model.get(key, [opts])`
 
 ```js
 const user = await users.get({ email: 'jdrydn@github.io' });
@@ -66,7 +68,7 @@ console.log(user);
 //   updatedAt: [Date YYYY-MM-DDTHH:mm:ss.Z] }
 ```
 
-## `model.update(data, key)`
+### `model.update(data, key)`
 
 ```js
 const user = await users.update({ role: 'EDITOR' }, { email: 'jdrydn@github.io' });
@@ -79,10 +81,18 @@ console.log(user);
 //   updatedAt: [Date YYYY-MM-DDTHH:mm:ss.Z] }
 ```
 
-## `model.delete(key)`
+### `model.delete(key)`
 
 ```js
 const user = await users.delete({ email: 'jdrydn@github.io' });
 console.log(user);
 // true
 ```
+
+## Bulk actions
+
+### `model.bulkCreate(items)`
+
+### `model.bulkGet(keys)`
+
+### `model.bulkDelete(keys)`

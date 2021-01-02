@@ -20,15 +20,15 @@ import dynazord from 'dynazord';
 
 ## Configure
 
-_dynazord_ interacts with the AWS-SDK, by default it creates a new `AWS.DynamoDB` instance when you create a model. Check out AWS's "[Setting credentials in Node.js](https://docs.aws.amazon.com/sdk-for-javascript/v2/developer-guide/setting-credentials-node.html)" documentation for more details.
+_dynazord_ interacts with the AWS-SDK, by default it creates a new `AWS.DynamoDB` instance when you create a model. Check out AWS's "[Setting credentials in Node.js](https://docs.aws.amazon.com/sdk-for-javascript/v2/developer-guide/setting-credentials-node.html)" documentation for more details. Since underneath DynamoDB is a handful of HTTPS calls, you can theoretically create as many instances as you like.
 
-Alternatively you can pass a preconfigured `dynamodb` instance:
+Alternatively you can pass a preconfigured `dynamodb` instance to save on memory:
 
 ```js
 const AWS = require('aws-sdk');
 const dynazord = require('dynazord');
 
-// Create a DynamoDB instance in another AWS region:
+// Perhaps the table for this model exists in another AWS region:
 const dynamodb = new AWS.DynamoDB({ region: 'eu-west-2' });
 const entries = dynazord.createModel({
   tableName: 'dynazord-example-entries',
@@ -37,7 +37,7 @@ const entries = dynazord.createModel({
   dynamodb,
 });
 
-// Or create a DynamoDB instance to a local endpoint (such as dynamodb-local or localstack):
+// Or perhaps you want to test your model against a local DynamoDB instance (such as dynamodb-local or localstack):
 const dynamodb = new AWS.DynamoDB({ endpoint: 'http://localhost:8000' });
 const entries = dynazord.createModel({
   tableName: 'dynazord-example-entries',
@@ -60,7 +60,7 @@ const entries = dynazord.createModel({
   // And this will use the dynamodb instance specified
 });
 
-// This is mostly useful for tests, so you can set a local instance of DynamoDB
+// This is mostly useful for tests, so you can point your models to your local DynamoDB instance
 // without littering your codebase with if-tests-then statements!
 ```
 
