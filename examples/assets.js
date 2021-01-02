@@ -1,4 +1,5 @@
 const assert = require('http-assert');
+const crypto = require('crypto');
 const dynazord = require('dynazord');
 const isHash = require('validator/lib/isHash');
 const { customAlphabet } = require('nanoid');
@@ -78,13 +79,19 @@ const assets = dynazord.createModel({
       type: Buffer,
     },
   },
+  hooks: {
+    afterValidate(asset, opts) {
+      if (asset.content) {
+        const sha1 = crypto.createHash('sha1').update(asset.content).digest('hex');
+        assert(!asset.filesha1 || asset.filesha1 === sha1, 400, new Error('Invalid sha1 for uploaded content'));
+        asset.filesha1 = sha1;
+      }
+    },
+  },
   options: {
     createdAtTimestamp: true,
     updatedAtTimestamp: true,
   },
 });
 
-module.exports = {
-  assets,
-  createTable,
-};
+module.exports = assets;

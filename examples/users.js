@@ -41,7 +41,7 @@ const users = dynazord.createModel({
           const isValid = `${value}`.startsWith('https://') ||
             `${value}`.startsWith('data:image/jpg;base64,') || `${value}`.startsWith('data:image/jpeg;base64,') ||
               `${value}`.startsWith('data:image/png;base64,');
-          assert(isValid, 400, new Error('Expected value to be a base64-string or URL'));
+          assert(isValid, 400, new Error('Expected value to be a base64-image or URL'), { value });
         },
       },
     },
@@ -63,7 +63,4 @@ const users = dynazord.createModel({
   },
 });
 
-module.exports = {
-  users,
-  createTable,
-};
+module.exports = users;

@@ -263,7 +263,13 @@ rules:
     - error
     - never
 overrides:
-  # Set a specific environment for test files!
+  - files:
+      - examples/**
+    rules:
+      no-unused-vars:
+        - error
+        - args: none
+          varsIgnorePattern: createTable
   - files:
       - test/**
       - '**/*.test.js'

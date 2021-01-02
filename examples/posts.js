@@ -1,3 +1,5 @@
+const _kebabCase = require('lodash/kebabCase');
+const assert = require('http-assert');
 const dynazord = require('dynazord');
 const { v4: uuid } = require('uuid');
 
@@ -53,6 +55,11 @@ const posts = dynazord.createModel({
       type: String,
       required: true,
     },
+    slug: {
+      type: String,
+      required: true,
+      default: () => null,
+    },
     publishedAt: {
       type: Date,
       // Optionally set the underlying format to a Number to assist with sorting
@@ -64,13 +71,26 @@ const posts = dynazord.createModel({
       required: true,
     },
   },
+  hooks: {
+    beforeValidateCreate(post, opts) {
+      if (post.title && !post.slug) {
+        post.slug = _kebabCase(post.title);
+      }
+    },
+    async afterValidate(post, opts) {
+      const { id, slug } = post;
+      if (slug) {
+        // Lookup if this slug has been used before
+        const existing = await this.find({ slug });
+        // And if it exists on another post, throw an error
+        assert(!existing || existing.id !== id, 400, new Error('Expected slug to be unique'), { slug });
+      }
+    },
+  },
   options: {
     createdAtTimestamp: true,
     updatedAtTimestamp: true,
   },
 });
 
-module.exports = {
-  posts,
-  createTable,
-};
+module.exports = posts;
