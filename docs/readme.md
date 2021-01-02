@@ -9,6 +9,7 @@ _DynamoDB NodeJS ORM_
 - [Getting Started](./Getting-Started.md)
 - [Writing Models](./Writing-Models.md)
 - [Using Models](./Using-Models.md)
+- [Examples](../examples/)
 
 ## Writing
 

@@ -9,6 +9,7 @@ const model = dynazord.createModel({
   keySchema: { /* DYNAMODB KEY SCHEMA */ },
   // secondaryIndexes: { /* DYNAMODB KEY SCHEMA */ },
   properties: { /* INDIVIDUAL PROPERTIES FOR YOUR ENTRIES */ },
+  hooks: { /* HOOKS FOR YOUR ENTRIES */ },
   options: { /* ADDITIONAL OPTIONS */ },
 });
 ```
@@ -54,9 +55,10 @@ const users = dynazord.createModel({
 The `config` object requires & allows the following options:
 
 - `tableName` (**Required**) String setting the table name which will be used to read/write documents from/to.
-- `properties` (**Required**) Object defining each model property. See [Property Types](#property-types) for more details on the types, validators & other options.
+- `properties` (**Required**) Object defining each model property. See [Property Types](#property--types) for more details on the types, validators & other options.
 - `keySchema` (**Optional**) Object defining the primary index on the DynamoDB table. Defaults to using the first property listed in `properties` as the `hash` key. See [Primary Index](#primary-index) for more details.
 - `secondaryIndexes` (**Optional**) Object defining secondary indexes on the DynamoDB table. Defaults to none, as they're also optional in DynamoDB. See [Secondary Indexes](#secondary-indexes) for more details.
+- `hooks` (**Optional**) Object defining hooks for your entries. Defaults to none. See [Hooks](#hooks) for more details.
 - `options` (**Optional**) Object defining individual options with the model. See [Additional Options](#additional-options)
 
 ## Primary Index
@@ -83,7 +85,7 @@ Set the `KeySchema` the same as you would in your DynamoDB config (either via th
       ],
       "AttributeDefinitions": [
         { "AttributeName": "email", "AttributeType": "S" }
-      ],
+      ]
     }
   },
   {
@@ -98,7 +100,7 @@ Set the `KeySchema` the same as you would in your DynamoDB config (either via th
       "AttributeDefinitions": [
         { "AttributeName": "email", "AttributeType": "S" },
         { "AttributeName": "createdAt", "AttributeType": "N" }
-      ],
+      ]
     }
   }
 ]
@@ -322,11 +324,6 @@ Each property should be an object with the following details:
        */
       notNull: true,
 
-      /**
-       * Optionally enforce that the property is greater than 0
-       */
-      isUnsigned: true,
-
     }
   }
 }
@@ -355,16 +352,24 @@ Each property should be an object with the following details:
        */
       notNull: true,
 
+      /**
+       * Optionally enforce that the date is before a specific point in time
+       */
+      isBefore: '2022-01-01',
+      /**
+       * Optionally enforce that the date is after a specific point in time
+       */
+      isAfter: '2020-01-01',
+
     }
   }
 }
 ```
 
-- Translates to DynamoDB string (`S`) type or number (`N`) type.
+- By default translates to DynamoDB string (`S`) type, or set the `format` to `Number` to translate to DynamoDB's number type.
 - Can be referenced as `DATE` string or JS's native `Date` constructor.
-- Optionally set the underlying DynamoDB format to `Number` when you want to use a date value as a Range key!
 
-If you want to store a custom Date format, use a [custom type](#custom-type) with a validator/set function:
+If you want to store a custom Date format, use a [custom type](#custom-type) with custom get/set/validate functions:
 
 ```js
 const assert = require('http-assert');
@@ -401,6 +406,11 @@ const formatDate = require('date-fns/format');
        */
       notNull: true,
 
+      /**
+       * Optionally enforce that the buffer is not empty
+       */
+      notEmpty: true,
+
     }
   }
 }
@@ -422,13 +432,20 @@ By omitting the required
     // type: null,
 
     /**
+     * Custom types will likely want to use the getter/setter to transform the data!
+     */
+    get: value => JSON.parse(value),
+    set: value => JSON.stringify(value),
+
+    /**
      * There are no specific validators for custom types
      * @type {Object}
      */
     validate: {
       /**
-       * But you can write your own using functions!
+       * So you'll likely want to write your own!
        */
+      isPlainObject: value => _.isPlainObject(value),
     }
   }
 }
@@ -438,43 +455,132 @@ By omitting the required
 
 ## Hooks
 
+Often referred to as "lifecycle events", hooks are functions which are called in between core library functions. You can use hooks to perform your own custom validation, for example validating combinations of properties or performing additional/other database lookups.
+
+### Order of operations
+
 ```
-beforeBulkCreate
-beforeBulkUpdate
-beforeBulkDestroy
-beforeBulkUpsert
+create
+  beforeValidateCreate(create, options)
+  beforeValidate(create, options)
+  [ validate ]
+  afterValidateCreate(create, options) OR validateCreateFailed(create, options)
+  afterValidate(create, options) OR validateFailed(create, options)
+  beforeCreate(create, options)
+  [ formatWriteData ]
+  beforeCreateWrite(create, options)
+  [ putItem ]
+  afterCreateWrite(create, options)
+  afterCreate(create, options)
 
-beforeValidateCreate
-beforeValidateUpdate
-beforeValidateUpsert
-afterValidateCreate
-afterValidateUpdate
-afterValidateUpsert
-validateCreateFailed
-validateUpdateFailed
-validateUpsertFailed
+update
+  beforeValidateUpdate(update, key, options)
+  beforeValidate(update, key, options)
+  [ validate ]
+  afterValidateUpdate(update, key, options) OR validateUpdateFailed(update, key, options)
+  afterValidate(update, key, options) OR validateFailed(update, key, options)
+  beforeUpdate(update, key, options)
+  [ formatWriteData ]
+  beforeUpdateWrite(update, key, options)
+  [ putItem ]
+  afterUpdateWrite(update, key, options)
+  afterUpdate(update, key, options)
 
-beforeCreate
-beforeUpdate
-beforeDestroy
-beforeUpsert
-beforeCreateWrite
-beforeUpdateWrite
-beforeDestroyWrite
-beforeUpsertWrite
+delete
+  beforeDelete(key, options)
+  [ deleteItem ]
+  afterDelete(key, options)
 
-afterCreateWrite
-afterUpdateWrite
-afterDestroyWrite
-afterUpsertWrite
-afterCreate
-afterUpdate
-afterDestroy
-afterUpsert
+upsert
+  beforeValidateUpsert(upsert, options)
+  beforeValidate(upsert, options)
+  [ validate ]
+  afterValidateUpsert(upsert, options) OR validateUpsertFailed(upsert, options)
+  afterValidate(upsert, options) OR validateFailed(upsert, options)
+  beforeUpsert(upsert, options)
+  [ formatWriteData ]
+  beforeUpsertWrite(upsert, options)
+  [ putItem ]
+  afterUpsertWrite(upsert, options)
+  afterUpsert(upsert, options)
 
-afterBulkCreate
-afterBulkUpdate
-afterBulkDestroy
+bulkCreate
+  beforeBulkCreate(bulk, options)
+  beforeValidateCreate(create, options)(*)
+  beforeValidate(create, options)(*)
+  [ validate ]
+  afterValidateCreate(create, options)(*) OR validateCreateFailed(create, options)(*)
+  afterValidate(create, options)(*) OR validateFailed(create, options)(*)
+  beforeCreate(create, options)(*)
+  [ formatWriteData ]
+  beforeCreateWrite(create, options)(*)
+  [ transactWrite(Put) ]
+  afterCreateWrite(create, options)(*)
+  afterCreate(create, options)(*)
+  afterBulkCreate(bulk, options)
+
+bulkDelete
+  beforeBulkDelete(keys, options)
+  [ transactWrite(Delete) ]
+  afterBulkDelete(keys, options)
+
+(*) Set { hooks: true } to enable per-entry hooks
+```
+
+Either declare hooks when you create a model:
+
+```js
+const _kebabCase = require('lodash/kebabCase');
+const assert = require('http-assert');
+
+const entries = dynazord.createModel({
+  tableName: 'dynazord-example-entries',
+  keySchema: { hash: 'id' },
+  properties: {
+    id: {
+      type: String,
+      required: true,
+      default: () => '',
+    },
+    title: {
+      type: String,
+    },
+  },
+  hooks: {
+    beforeValidate(entry) {
+      if (entry.title) {
+        entry.id = _kebabCase(entry.title);
+      }
+    },
+    afterValidate: {
+      async uniqueID(entry) {
+        if (entry.id) {
+          const { id, title } = entry;
+          const exists = this.find({ id });
+          assert(!exists, 400, new Error(`Expected ID to be unique: ${id}`), { id, title });
+        }
+      },
+    },
+  },
+});
+```
+
+Or add a hook after the model has been created:
+
+```js
+entries.hooks.on('beforeValidate', entry => {
+  if (entry.title) {
+    entry.id = _kebabCase(entry.title);
+  }
+});
+entries.hooks.on('afterValidate', async function uniqueID(entry) {
+  // Deliberately not an arrow function so that `this === entries`
+  if (entry.id) {
+    const { id, title } = entry;
+    const exists = this.find({ id });
+    assert(!exists, 400, new Error(`Expected ID to be unique: ${id}`), { id, title });
+  }
+});
 ```
 
 ## Additional Options
