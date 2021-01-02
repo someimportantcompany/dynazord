@@ -3,6 +3,7 @@ const { types } = require('../types');
 
 function assertValidProperties(properties, prefix = '') {
   for (const key in properties) {
+    /* istanbul ignore else */
     if (properties.hasOwnProperty(key)) {
       try {
         const { [key]: property } = properties;
@@ -11,7 +12,10 @@ function assertValidProperties(properties, prefix = '') {
         assert(!property.hasOwnProperty('enum') || Array.isArray(property.enum),
           new Error('Expected enum to be an array of values'));
 
-        if (isPlainObject(property.validate)) {
+        assert(!property.hasOwnProperty('validate') || isPlainObject(property.validate),
+          new Error('Expected validate to be an object'));
+
+        if (property.validate) {
           if (property.type && isPlainObject(types[property.type])) {
             const { [property.type]: type } = types;
             const builtIn = Object.keys(property.validate).filter(k => typeof property.validate[k] !== 'function');
@@ -23,11 +27,8 @@ function assertValidProperties(properties, prefix = '') {
             const nonFunctions = Object.keys(property.validate).filter(k => typeof property.validate[k] !== 'function');
             assert(nonFunctions.length === 0, new TypeError('All custom types must have function validators'));
           }
-        } else {
-          assert(!property.hasOwnProperty('validate') || typeof property.validate === 'function',
-            new TypeError('Expected validate to be a function or an object of validators'));
         }
-      } catch (err) {
+      } catch (err) /* istanbul ignore next */ {
         err.message = `${prefix}${key}: ${err.message}`;
         throw err;
       }

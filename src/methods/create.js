@@ -16,13 +16,6 @@ module.exports = async function createDocument(create, opts = undefined) {
   assert(opts === undefined || isPlainObject(opts), new TypeError('Expected opts argument to be a plain object'));
   opts = { ...DEFAULT_OPTS, ...opts };
 
-  const { hash, range } = keySchema;
-  const { [hash]: hashProp, [range]: rangeProp } = properties;
-  assert(hashProp.hasOwnProperty('default') || create.hasOwnProperty(hash),
-    new Error(`Missing ${hash} hash property from argument`));
-  assert(!range || rangeProp.hasOwnProperty('default') || create.hasOwnProperty(range),
-    new Error(`Missing ${range} range property from argument`));
-
   await assertRequiredCreateProps.call(this, properties, create);
   await appendCreateDefaultProps.call(this, properties, create);
 
@@ -47,6 +40,7 @@ module.exports = async function createDocument(create, opts = undefined) {
   await hooks.emit('beforeCreateWrite', this, opts.hooks === true, create, opts);
 
   try {
+    const { hash, range } = keySchema;
     const params = {
       // Specify the name & item to be created
       TableName: tableName,

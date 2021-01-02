@@ -29,6 +29,7 @@ function stringifyUpdateStatement(data) {
   let i = 0;
 
   for (const key in data) {
+    /* istanbul ignore else */
     if (data.hasOwnProperty(key)) {
       i++; // eslint-disable-line no-plusplus
       changes.push(`#u${i} = :u${i}`);

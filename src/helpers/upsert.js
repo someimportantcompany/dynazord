@@ -12,6 +12,7 @@ function stringifyUpsertStatement(data, exactKeys) {
   let i = 0;
 
   for (const key in data) {
+    /* istanbul ignore else */
     if (data.hasOwnProperty(key)) {
       i++; // eslint-disable-line no-plusplus
       changes.push(exactKeys.includes(key) ? `#u${i} = :u${i}` : `#u${i} = if_not_exists(#u${i}, :u${i})`);
