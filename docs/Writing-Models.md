@@ -17,6 +17,7 @@ const model = dynazord.createModel({
 | ---- |
 | [Primary Index](#primary-index) |
 | [Properties & Types](#properties--types) |
+| [Hooks](#hooks) |
 | [Additional Options](#additional-options) |
 | [Kitchen Sink Example](#kitchen-sink-example) |
 
@@ -434,6 +435,47 @@ By omitting the required
 ```
 
 - Translates to a native DynamoDB type using [marshall](https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/Converter.html#marshall-property).
+
+## Hooks
+
+```
+beforeBulkCreate
+beforeBulkUpdate
+beforeBulkDestroy
+beforeBulkUpsert
+
+beforeValidateCreate
+beforeValidateUpdate
+beforeValidateUpsert
+afterValidateCreate
+afterValidateUpdate
+afterValidateUpsert
+validateCreateFailed
+validateUpdateFailed
+validateUpsertFailed
+
+beforeCreate
+beforeUpdate
+beforeDestroy
+beforeUpsert
+beforeCreateWrite
+beforeUpdateWrite
+beforeDestroyWrite
+beforeUpsertWrite
+
+afterCreateWrite
+afterUpdateWrite
+afterDestroyWrite
+afterUpsertWrite
+afterCreate
+afterUpdate
+afterDestroy
+afterUpsert
+
+afterBulkCreate
+afterBulkUpdate
+afterBulkDestroy
+```
 
 ## Additional Options
 
