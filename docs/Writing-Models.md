@@ -17,12 +17,11 @@ const model = dynazord.createModel({
 | Table of Contents |
 | ---- |
 | [Primary Index](#primary-index) |
+| [Secondary Indexes](#secondary-indexes) |
 | [Properties & Types](#properties--types) |
 | [Hooks](#hooks) |
 | [Additional Options](#additional-options) |
 | [Kitchen Sink Example](#kitchen-sink-example) |
-
-<!-- | [Secondary Indexes](#secondary-indexes) | -->
 
 The `createModel` method is the starting point for all models: It is a synchronous method that builds a model from the provided configuration object that defines the keys, indexes & properties the model will support.
 
@@ -65,7 +64,7 @@ The `config` object requires & allows the following options:
 
 DynamoDB can be configured to use a single property as the primary key (like your typical database) or it can be used in a typical DynamoDB partition/sort key pattern.
 
-From [Core Components &raquo; Primary Key](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/HowItWorks.CoreComponents.html#HowItWorks.CoreComponents.PrimaryKey)
+From [Core Components &raquo; Primary Key](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/HowItWorks.CoreComponents.html#HowItWorks.CoreComponents.PrimaryKey):
 
 > The partition key of an item is also known as its hash attribute. The term "hash attribute" derives from DynamoDB's usage of an internal hash function to evenly distribute data items across partitions, based on their partition key values.
 >
@@ -174,13 +173,13 @@ Each property of a model should have a type, optionally enforced with getters/se
 
 | Type | Native Type | DynamoDB Type |
 | ---- |---- | ---- |
-| STRING | String | S |
-| NUMBER | Number | N |
-| BOOLEAN | Boolean | BOOL |
-| BINARY | Buffer | B |
-| DATE | Date | S/N |
-| ARRAY | Array | L |
-| OBJECT | Object | M |
+| [STRING](#string-type) | String | S |
+| [NUMBER](#number-type) | Number | N |
+| [BOOLEAN](#boolean-type) | Boolean | BOOL |
+| [DATE](#date-type) | Date | S/N |
+| [BINARY](#binary-type) | Buffer | B |
+| [ARRAY](#array-type) | Array | L |
+| [OBJECT](#object-type) | Object | M |
 
 Each property should be an object with the following details:
 
@@ -392,7 +391,7 @@ const formatDate = require('date-fns/format');
 }
 ```
 
-### Buffer Type
+### Binary Type
 
 ```js
 {
