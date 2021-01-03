@@ -20,6 +20,15 @@
   "files": [
     "src"
   ],
+  "keywords": [
+    "dynamodb",
+    "dynamo",
+    "aws",
+    "amazon",
+    "model",
+    "schema",
+    "nosql"
+  ],
   "dependencies": {
     "aws-sdk": "^2.802.0",
     "lodash": "^4.17.20"
