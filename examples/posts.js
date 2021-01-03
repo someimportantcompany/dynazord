@@ -129,13 +129,13 @@ const posts = dynazord.createModel({
         post.slug = _kebabCase(post.title);
       }
     },
-    beforeBulkCreate(entries) {
-      entries.forEach((post, i) => {
-        if (post.title && (!post.slug || post.slug === 'EXAMPLE-SLUG')) {
-          entries[i].slug = _kebabCase(post.title);
-        }
-      });
-    },
+    // beforeBulkCreate(entries) {
+    //   entries.forEach((post, i) => {
+    //     if (post.title && (!post.slug || post.slug === 'EXAMPLE-SLUG')) {
+    //       entries[i].slug = _kebabCase(post.title);
+    //     }
+    //   });
+    // },
     afterValidate: {
       async isSlugUnique(post, opts) {
         const { id, slug } = post;
@@ -152,6 +152,14 @@ const posts = dynazord.createModel({
     createdAtTimestamp: true,
     updatedAtTimestamp: true,
   },
+});
+
+posts.hooks.on('beforeBulkCreate', entries => {
+  entries.forEach((post, i) => {
+    if (post.title && (!post.slug || post.slug === 'EXAMPLE-SLUG')) {
+      entries[i].slug = _kebabCase(post.title);
+    }
+  });
 });
 
 module.exports = posts;

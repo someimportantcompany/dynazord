@@ -106,7 +106,7 @@ async function formatWriteData(properties, data, opts = {}) {
         if (data.hasOwnProperty(key) || value !== undefined) {
           data[key] = value;
         }
-      } catch (err) {
+      } catch (err) /* istanbul ignore next */ {
         err.message = `[${err.key}]: ${err.message}`;
         throw err;
       }
@@ -172,7 +172,7 @@ async function validateData(properties, data) {
           }
         }
       }
-    } catch (err) {
+    } catch (err) /* istanbul ignore next */ {
       err.key = key;
       throw err;
     }

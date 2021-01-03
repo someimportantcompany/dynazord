@@ -81,7 +81,7 @@ describe('dynazord', () => describe('types', () => {
 
     it('should validate with notNull', () => {
       const { notNull: assertNotNull } = validate;
-      assert.strictEqual(typeof assertNotNull, 'function', 'Expected validate.NotNull to be a function');
+      assert.strictEqual(typeof assertNotNull, 'function', 'Expected validate.notNull to be a function');
 
       assertNotNull('A');
 
@@ -96,7 +96,7 @@ describe('dynazord', () => describe('types', () => {
 
     it('should validate with notEmpty', () => {
       const { notEmpty: assertNotEmpty } = validate;
-      assert.strictEqual(typeof assertNotEmpty, 'function', 'Expected validate.NotNull to be a function');
+      assert.strictEqual(typeof assertNotEmpty, 'function', 'Expected validate.notNull to be a function');
 
       assertNotEmpty('A');
 
@@ -154,7 +154,7 @@ describe('dynazord', () => describe('types', () => {
 
     it('should validate with notNull', () => {
       const { notNull: assertNotNull } = validate;
-      assert.strictEqual(typeof assertNotNull, 'function', 'Expected validate.NotNull to be a function');
+      assert.strictEqual(typeof assertNotNull, 'function', 'Expected validate.notNull to be a function');
 
       assertNotNull(42);
 
@@ -169,7 +169,7 @@ describe('dynazord', () => describe('types', () => {
 
     it('should validate with isUnsigned', () => {
       const { isUnsigned: assertIsUnsigned } = validate;
-      assert.strictEqual(typeof assertIsUnsigned, 'function', 'Expected validate.NotNull to be a function');
+      assert.strictEqual(typeof assertIsUnsigned, 'function', 'Expected validate.notNull to be a function');
 
       assertIsUnsigned(1);
 
@@ -227,7 +227,7 @@ describe('dynazord', () => describe('types', () => {
 
     it('should validate with notNull', () => {
       const { notNull: assertNotNull } = validate;
-      assert.strictEqual(typeof assertNotNull, 'function', 'Expected validate.NotNull to be a function');
+      assert.strictEqual(typeof assertNotNull, 'function', 'Expected validate.notNull to be a function');
 
       assertNotNull(true);
 
@@ -286,7 +286,7 @@ describe('dynazord', () => describe('types', () => {
 
     it('should validate with notNull', () => {
       const { notNull: assertNotNull } = validate;
-      assert.strictEqual(typeof assertNotNull, 'function', 'Expected validate.NotNull to be a function');
+      assert.strictEqual(typeof assertNotNull, 'function', 'Expected validate.notNull to be a function');
 
       assertNotNull(currentTimestamp);
 
@@ -345,7 +345,7 @@ describe('dynazord', () => describe('types', () => {
 
     it('should validate with notNull', () => {
       const { notNull: assertNotNull } = validate;
-      assert.strictEqual(typeof assertNotNull, 'function', 'Expected validate.NotNull to be a function');
+      assert.strictEqual(typeof assertNotNull, 'function', 'Expected validate.notNull to be a function');
 
       assertNotNull(true);
 
@@ -355,6 +355,172 @@ describe('dynazord', () => describe('types', () => {
       } catch (err) {
         assert(err instanceof Error, 'Expected err to be an instance of Error');
         assert.strictEqual(err.message, 'Expected value to be not-null');
+      }
+    });
+
+    it('should validate with notEmpty', () => {
+      const { notEmpty: assertNotEmpty } = validate;
+      assert.strictEqual(typeof assertNotEmpty, 'function', 'Expected validate.notEmpty to be a function');
+
+      assertNotEmpty(content);
+      assertNotEmpty(true);
+
+      try {
+        assertNotEmpty(Buffer.from(''));
+        assert.fail('Should have failed with a NULL value');
+      } catch (err) {
+        assert(err instanceof Error, 'Expected err to be an instance of Error');
+        assert.strictEqual(err.message, 'Expected value to be not empty');
+      }
+    });
+  });
+
+  describe('LIST', () => {
+    const { LIST: { validate } } = types;
+    const example = [ 1, 2, 3 ];
+
+    it('should validate with type', () => {
+      const { type: assertType } = validate;
+      assert.strictEqual(typeof assertType, 'function', 'Expected validate.type to be a function');
+
+      assertType(example, {});
+      assertType(undefined, {});
+      assertType(null, {});
+
+      try {
+        assertType('A', {});
+        assert.fail('Should have failed with a string');
+      } catch (err) {
+        assert(err instanceof Error, 'Expected err to be an instance of Error');
+        assert.strictEqual(err.message, 'Expected value to be an Array');
+        assert.strictEqual(err.type, 'string');
+        assert.strictEqual(err.value, 'A');
+      }
+
+      try {
+        assertType(1, {});
+        assert.fail('Should have failed with a number');
+      } catch (err) {
+        assert(err instanceof Error, 'Expected err to be an instance of Error');
+        assert.strictEqual(err.message, 'Expected value to be an Array');
+        assert.strictEqual(err.type, 'number');
+        assert.strictEqual(err.value, 1);
+      }
+
+      try {
+        assertType(true, {});
+        assert.fail('Should have failed with a boolean');
+      } catch (err) {
+        assert(err instanceof Error, 'Expected err to be an instance of Error');
+        assert.strictEqual(err.message, 'Expected value to be an Array');
+        assert.strictEqual(err.type, 'boolean');
+        assert.deepStrictEqual(err.value, true);
+      }
+    });
+
+    it('should validate with notNull', () => {
+      const { notNull: assertNotNull } = validate;
+      assert.strictEqual(typeof assertNotNull, 'function', 'Expected validate.notNull to be a function');
+
+      assertNotNull(true);
+
+      try {
+        assertNotNull(null);
+        assert.fail('Should have failed with a NULL value');
+      } catch (err) {
+        assert(err instanceof Error, 'Expected err to be an instance of Error');
+        assert.strictEqual(err.message, 'Expected value to be not-null');
+      }
+    });
+
+    it('should validate with notEmpty', () => {
+      const { notEmpty: assertNotEmpty } = validate;
+      assert.strictEqual(typeof assertNotEmpty, 'function', 'Expected validate.notEmpty to be a function');
+
+      assertNotEmpty([ 1, 2, 3 ]);
+      assertNotEmpty(true);
+
+      try {
+        assertNotEmpty([]);
+        assert.fail('Should have failed with a NULL value');
+      } catch (err) {
+        assert(err instanceof Error, 'Expected err to be an instance of Error');
+        assert.strictEqual(err.message, 'Expected value to be not empty');
+      }
+    });
+  });
+
+  describe('MAP', () => {
+    const { MAP: { validate } } = types;
+    const example = { a: 'b' };
+
+    it('should validate with type', () => {
+      const { type: assertType } = validate;
+      assert.strictEqual(typeof assertType, 'function', 'Expected validate.type to be a function');
+
+      assertType(example, {});
+      assertType(undefined, {});
+      assertType(null, {});
+
+      try {
+        assertType('A', {});
+        assert.fail('Should have failed with a string');
+      } catch (err) {
+        assert(err instanceof Error, 'Expected err to be an instance of Error');
+        assert.strictEqual(err.message, 'Expected value to be an object');
+        assert.strictEqual(err.type, 'string');
+        assert.strictEqual(err.value, 'A');
+      }
+
+      try {
+        assertType(1, {});
+        assert.fail('Should have failed with a number');
+      } catch (err) {
+        assert(err instanceof Error, 'Expected err to be an instance of Error');
+        assert.strictEqual(err.message, 'Expected value to be an object');
+        assert.strictEqual(err.type, 'number');
+        assert.strictEqual(err.value, 1);
+      }
+
+      try {
+        assertType(true, {});
+        assert.fail('Should have failed with a boolean');
+      } catch (err) {
+        assert(err instanceof Error, 'Expected err to be an instance of Error');
+        assert.strictEqual(err.message, 'Expected value to be an object');
+        assert.strictEqual(err.type, 'boolean');
+        assert.deepStrictEqual(err.value, true);
+      }
+    });
+
+    it('should validate with notNull', () => {
+      const { notNull: assertNotNull } = validate;
+      assert.strictEqual(typeof assertNotNull, 'function', 'Expected validate.notNull to be a function');
+
+      assertNotNull(true);
+
+      try {
+        assertNotNull(null);
+        assert.fail('Should have failed with a NULL value');
+      } catch (err) {
+        assert(err instanceof Error, 'Expected err to be an instance of Error');
+        assert.strictEqual(err.message, 'Expected value to be not-null');
+      }
+    });
+
+    it('should validate with notEmpty', () => {
+      const { notEmpty: assertNotEmpty } = validate;
+      assert.strictEqual(typeof assertNotEmpty, 'function', 'Expected validate.notEmpty to be a function');
+
+      assertNotEmpty({ a: 'b' });
+      assertNotEmpty(true);
+
+      try {
+        assertNotEmpty({});
+        assert.fail('Should have failed with a NULL value');
+      } catch (err) {
+        assert(err instanceof Error, 'Expected err to be an instance of Error');
+        assert.strictEqual(err.message, 'Expected value to be not empty');
       }
     });
   });

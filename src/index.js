@@ -14,7 +14,7 @@ const defaultOptions = {
 };
 
 let overwriteDynamoDB = null;
-let overwriteOptions = {};
+let overwriteOptions = null;
 
 function createModel(opts) {
   assert(isPlainObject(opts), new TypeError('Expected opts to be a plain object'));
@@ -37,7 +37,7 @@ function createModel(opts) {
   };
 
   try {
-    const pickTimestampProps = ({ format }) => ({ format });
+    const pickTimestampProps = ({ format, validate }) => ({ format, validate });
 
     if (options.createdAtTimestamp === true) {
       properties.createdAt = {
@@ -62,7 +62,7 @@ function createModel(opts) {
     }
 
     assertValidProperties(properties);
-  } catch (err) {
+  } catch (err) /* istanbul ignore next */ {
     err.message = `[${tableName}] ${err.message}`;
     throw err;
   }

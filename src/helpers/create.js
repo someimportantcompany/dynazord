@@ -98,6 +98,7 @@ async function appendCreateDefaultProps(properties, data) {
   };
 
   for (const key in properties) {
+    /* istanbul ignore else */
     if (properties.hasOwnProperty(key)) {
       try {
         await appendCreateDefaults(properties[key], data, key);
