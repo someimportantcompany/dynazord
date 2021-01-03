@@ -75,6 +75,7 @@ const posts = dynazord.createModel({
     },
     content: {
       type: Array,
+      required: true,
       properties: {
         type: Object,
         required: true,
@@ -93,11 +94,18 @@ const posts = dynazord.createModel({
           },
           embed: {
             type: Object,
+            // Can contain infinite properties
             validate: {
               notEmpty: true,
             },
           },
         },
+        validate: {
+          notEmpty: true,
+        },
+      },
+      validate: {
+        notEmpty: true,
       },
     },
     publishedAt: {

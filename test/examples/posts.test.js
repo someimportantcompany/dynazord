@@ -7,7 +7,11 @@ const { v4: uuid } = require('uuid');
 
 describe('examples', () => describe('posts', () => {
   const posts = rewire('../../examples/posts');
+
   const currentDate = new Date();
+  const link1 = 'https://www.theverge.com/22158504/best-games-2020-ps5-xbox-nintendo-tlou2-animal-crossing-miles-morales';
+  const link2 = 'https://www.theverge.com/22176305/best-movies-2020-first-cow-lovers-rock-bill-and-ted';
+
   const ids = [];
 
   before(async () => {
@@ -26,8 +30,8 @@ describe('examples', () => describe('posts', () => {
       assert.fail('Should have thrown an error');
     } catch (err) {
       assert.ok(err instanceof Error);
-      assert.strictEqual(err.message, 'Expected all required fields to be set');
-      assert.deepStrictEqual(err.fields, [ 'blogID', 'title', 'status' ]);
+      assert.strictEqual(err.message, '[blogID]: Expected required field to be set');
+      assert.strictEqual(err.key, 'blogID');
     }
   });
 
@@ -36,12 +40,13 @@ describe('examples', () => describe('posts', () => {
       await posts.create({
         title: 'Hello, world!',
         blogID: 'news.ycombinator.com',
+        content: [ { html: '<p>Hello, world!</p>' } ],
         status: 'DRAFT',
       });
       assert.fail('Should have thrown an error');
     } catch (err) {
       assert.ok(err instanceof Error);
-      assert.strictEqual(err.message, '[dynazord-example-posts] [blogID]: Expected value to be one of: jdrydn.com, theverge.com');
+      assert.strictEqual(err.message, '[blogID]: Expected value to be one of: jdrydn.com, theverge.com');
       assert.strictEqual(err.value, 'news.ycombinator.com');
     }
   });
@@ -50,6 +55,7 @@ describe('examples', () => describe('posts', () => {
     const entry = await posts.create({
       title: 'Hello, world!',
       blogID: 'jdrydn.com',
+      content: [ { html: '<p>Hello, world!</p>' } ],
       status: 'DRAFT',
     });
 
@@ -65,6 +71,7 @@ describe('examples', () => describe('posts', () => {
       blogID: { S: 'jdrydn.com' },
       title: { S: 'Hello, world!' },
       slug: { S: 'hello-world' },
+      content: { L: [ { M: { html: { S: '<p>Hello, world!</p>' } } } ] },
       status: { S: 'DRAFT' },
       createdAt: { S: currentDate.toISOString() },
       updatedAt: { S: currentDate.toISOString() },
@@ -75,6 +82,7 @@ describe('examples', () => describe('posts', () => {
       title: 'Hello, world!',
       blogID: 'jdrydn.com',
       slug: 'hello-world',
+      content: [ { html: '<p>Hello, world!</p>' } ],
       status: 'DRAFT',
       createdAt: currentDate,
       updatedAt: currentDate,
@@ -95,6 +103,7 @@ describe('examples', () => describe('posts', () => {
       title: 'Hello, world!',
       blogID: 'jdrydn.com',
       slug: 'hello-world',
+      content: [ { html: '<p>Hello, world!</p>' } ],
       status: 'DRAFT',
       createdAt: currentDate,
       updatedAt: currentDate,
@@ -106,6 +115,7 @@ describe('examples', () => describe('posts', () => {
     assert.ok(typeof id === 'string' && id.length, 'Expected posts.create to have succeeded');
 
     const entry = await posts.update({
+      content: [ { html: '<p>Hello, world!</p>' }, { embed: { title: 'Hello, world!' } } ],
       status: 'PUBLISHED',
     }, {
       id,
@@ -121,6 +131,12 @@ describe('examples', () => describe('posts', () => {
       blogID: { S: 'jdrydn.com' },
       title: { S: 'Hello, world!' },
       slug: { S: 'hello-world' },
+      content: {
+        L: [
+          { M: { html: { S: '<p>Hello, world!</p>' } } },
+          { M: { embed: { M: { title: { S: 'Hello, world!' } } } } },
+        ],
+      },
       status: { S: 'PUBLISHED' },
       createdAt: { S: currentDate.toISOString() },
       updatedAt: { S: currentDate.toISOString() },
@@ -131,6 +147,7 @@ describe('examples', () => describe('posts', () => {
       title: 'Hello, world!',
       blogID: 'jdrydn.com',
       slug: 'hello-world',
+      content: [ { html: '<p>Hello, world!</p>' }, { embed: { title: 'Hello, world!' } } ],
       status: 'PUBLISHED',
       createdAt: currentDate,
       updatedAt: currentDate,
@@ -160,6 +177,7 @@ describe('examples', () => describe('posts', () => {
       id,
       title: 'Hello, world!',
       blogID: 'jdrydn.com',
+      content: [ { html: '<p>Hello, world!</p>' } ],
       status: 'DRAFT',
     });
 
@@ -173,6 +191,7 @@ describe('examples', () => describe('posts', () => {
       blogID: { S: 'jdrydn.com' },
       title: { S: 'Hello, world!' },
       slug: { S: 'hello-world' },
+      content: { L: [ { M: { html: { S: '<p>Hello, world!</p>' } } } ] },
       status: { S: 'DRAFT' },
       createdAt: { S: currentDate.toISOString() },
       updatedAt: { S: currentDate.toISOString() },
@@ -183,6 +202,7 @@ describe('examples', () => describe('posts', () => {
       title: 'Hello, world!',
       blogID: 'jdrydn.com',
       slug: 'hello-world',
+      content: [ { html: '<p>Hello, world!</p>' } ],
       status: 'DRAFT',
       createdAt: currentDate,
       updatedAt: currentDate,
@@ -192,6 +212,7 @@ describe('examples', () => describe('posts', () => {
       id,
       title: 'Hello, world!',
       blogID: 'jdrydn.com',
+      content: [ { html: '<p>Hello, world!</p>' } ],
       status: 'PUBLISHED',
     });
 
@@ -205,6 +226,7 @@ describe('examples', () => describe('posts', () => {
       blogID: { S: 'jdrydn.com' },
       title: { S: 'Hello, world!' },
       slug: { S: 'hello-world' },
+      content: { L: [ { M: { html: { S: '<p>Hello, world!</p>' } } } ] },
       status: { S: 'PUBLISHED' },
       createdAt: { S: currentDate.toISOString() },
       updatedAt: { S: currentDate.toISOString() },
@@ -215,6 +237,7 @@ describe('examples', () => describe('posts', () => {
       title: 'Hello, world!',
       blogID: 'jdrydn.com',
       slug: 'hello-world',
+      content: [ { html: '<p>Hello, world!</p>' } ],
       status: 'PUBLISHED',
       createdAt: currentDate,
       updatedAt: currentDate,
@@ -226,14 +249,14 @@ describe('examples', () => describe('posts', () => {
       {
         title: 'The best games of 2020',
         blogID: 'theverge.com',
-        // link: https://www.theverge.com/22158504/best-games-2020-ps5-xbox-nintendo-tlou2-animal-crossing-miles-morales
+        content: [ { embed: { link: link1 } } ],
         publishedAt: new Date('2020-12-19T15:00:00.000Z'),
         status: 'PUBLISHED',
       },
       {
         title: 'The best movies of 2020',
         blogID: 'theverge.com',
-        // link: https://www.theverge.com/22176305/best-movies-2020-first-cow-lovers-rock-bill-and-ted
+        content: [ { embed: { link: link2 } } ],
         publishedAt: new Date('2020-12-19T14:00:00.000Z'),
         status: 'PUBLISHED',
       }
@@ -253,6 +276,7 @@ describe('examples', () => describe('posts', () => {
       blogID: { S: 'theverge.com' },
       publishedAt: { N: '1608390000000' },
       slug: { S: 'the-best-games-of-2020' },
+      content: { L: [ { M: { embed: { M: { link: { S: link1 } } } } } ] },
       status: { S: 'PUBLISHED' },
       createdAt: { S: currentDate.toISOString() },
       updatedAt: { S: currentDate.toISOString() },
@@ -266,6 +290,7 @@ describe('examples', () => describe('posts', () => {
       blogID: { S: 'theverge.com' },
       publishedAt: { N: '1608386400000' },
       slug: { S: 'the-best-movies-of-2020' },
+      content: { L: [ { M: { embed: { M: { link: { S: link2 } } } } } ] },
       status: { S: 'PUBLISHED' },
       createdAt: { S: currentDate.toISOString() },
       updatedAt: { S: currentDate.toISOString() },
@@ -278,6 +303,7 @@ describe('examples', () => describe('posts', () => {
         blogID: 'theverge.com',
         publishedAt: new Date('2020-12-19T15:00:00.000Z'),
         slug: 'the-best-games-of-2020',
+        content: [ { embed: { link: link1 } } ],
         status: 'PUBLISHED',
         createdAt: currentDate,
         updatedAt: currentDate,
@@ -288,6 +314,7 @@ describe('examples', () => describe('posts', () => {
         blogID: 'theverge.com',
         publishedAt: new Date('2020-12-19T14:00:00.000Z'),
         slug: 'the-best-movies-of-2020',
+        content: [ { embed: { link: link2 } } ],
         status: 'PUBLISHED',
         createdAt: currentDate,
         updatedAt: currentDate,
@@ -312,6 +339,7 @@ describe('examples', () => describe('posts', () => {
         blogID: 'theverge.com',
         publishedAt: new Date('2020-12-19T15:00:00.000Z'),
         slug: 'the-best-games-of-2020',
+        content: [ { embed: { link: link1 } } ],
         status: 'PUBLISHED',
         createdAt: currentDate,
         updatedAt: currentDate,
@@ -322,6 +350,7 @@ describe('examples', () => describe('posts', () => {
         blogID: 'theverge.com',
         publishedAt: new Date('2020-12-19T14:00:00.000Z'),
         slug: 'the-best-movies-of-2020',
+        content: [ { embed: { link: link2 } } ],
         status: 'PUBLISHED',
         createdAt: currentDate,
         updatedAt: currentDate,

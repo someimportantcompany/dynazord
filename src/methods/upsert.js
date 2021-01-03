@@ -30,21 +30,15 @@ module.exports = async function upsertDocument(upsert, opts = undefined) {
   await assertRequiredCreateProps.call(this, properties, upsert);
   await appendCreateDefaultProps.call(this, properties, upsert);
 
-  try {
-    await hooks.emit('beforeValidateUpsert', this, opts.hooks === true, upsert, opts);
-    await hooks.emit('beforeValidate', this, opts.hooks === true, upsert, opts);
-    await validateData.call(this, properties, upsert).catch(async err => {
-      await hooks.emit('validateUpsertFailed', this, opts.hooks === true, upsert, err, opts);
-      await hooks.emit('validateFailed', this, opts.hooks === true, upsert, err, opts);
-      throw err;
-    });
-    await hooks.emit('afterValidateUpsert', this, opts.hooks === true, upsert, opts);
-    await hooks.emit('afterValidate', this, opts.hooks === true, upsert, opts);
-  } catch (err) {
-    err.name = 'ValidationError';
-    err.message = `[${tableName}] ${err.message}`;
+  await hooks.emit('beforeValidateUpsert', this, opts.hooks === true, upsert, opts);
+  await hooks.emit('beforeValidate', this, opts.hooks === true, upsert, opts);
+  await validateData.call(this, properties, upsert).catch(async err => {
+    await hooks.emit('validateUpsertFailed', this, opts.hooks === true, upsert, err, opts);
+    await hooks.emit('validateFailed', this, opts.hooks === true, upsert, err, opts);
     throw err;
-  }
+  });
+  await hooks.emit('afterValidateUpsert', this, opts.hooks === true, upsert, opts);
+  await hooks.emit('afterValidate', this, opts.hooks === true, upsert, opts);
 
   await hooks.emit('beforeUpsert', this, opts.hooks === true, upsert, opts);
   await formatWriteData.call(this, properties, upsert, { fieldHook: 'onUpsert' });

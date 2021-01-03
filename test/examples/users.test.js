@@ -24,8 +24,8 @@ describe('examples', () => describe('users', () => {
       assert.fail('Should have thrown an error');
     } catch (err) {
       assert.ok(err instanceof Error);
-      assert.strictEqual(err.message, 'Expected all required fields to be set');
-      assert.deepStrictEqual(err.fields, [ 'email', 'name' ]);
+      assert.strictEqual(err.message, '[email]: Expected required field to be set');
+      assert.strictEqual(err.key, 'email');
     }
   });
 
@@ -39,7 +39,7 @@ describe('examples', () => describe('users', () => {
       assert.fail('Should have thrown an error');
     } catch (err) {
       assert.ok(err instanceof Error);
-      assert.strictEqual(err.message, '[dynazord-example-users] [role]: Expected value to be one of: ADMIN, MODERATOR, EDITOR, USER');
+      assert.strictEqual(err.message, '[role]: Expected value to be one of: ADMIN, MODERATOR, EDITOR, USER');
       assert.strictEqual(err.value, 'HACKER');
     }
   });
@@ -127,7 +127,7 @@ describe('examples', () => describe('users', () => {
       assert.fail('Should have thrown an error');
     } catch (err) {
       assert.ok(err instanceof Error);
-      assert.strictEqual(err.message, '[dynazord-example-users] [avatarUrl]: Expected value to be a base64-image or URL');
+      assert.strictEqual(err.message, '[avatarUrl]: Expected value to be a base64-image or URL');
       assert.strictEqual(err.status, 400);
       assert.strictEqual(err.value, 'data:application/vnd.microsoft.portable-executable,MEGAMAN.EXE');
     }

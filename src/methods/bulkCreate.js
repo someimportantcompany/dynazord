@@ -34,21 +34,15 @@ module.exports = async function createBulkDocuments(items, opts = undefined) {
   });
 
   items = await asyncEach(items, async create => {
-    try {
-      await hooks.emit('beforeValidateCreate', this, opts.hooks === true, create, opts);
-      await hooks.emit('beforeValidate', this, opts.hooks === true, create, opts);
-      await validateData.call(this, properties, create).catch(async err => {
-        await hooks.emit('validateCreateFailed', this, opts.hooks === true, create, err, opts);
-        await hooks.emit('validateFailed', this, opts.hooks === true, create, err, opts);
-        throw err;
-      });
-      await hooks.emit('afterValidateCreate', this, opts.hooks === true, create, opts);
-      await hooks.emit('afterValidate', this, opts.hooks === true, create, opts);
-    } catch (err) {
-      err.name = 'ValidationError';
-      err.message = `[${tableName}] ${err.message}`;
+    await hooks.emit('beforeValidateCreate', this, opts.hooks === true, create, opts);
+    await hooks.emit('beforeValidate', this, opts.hooks === true, create, opts);
+    await validateData.call(this, properties, create).catch(async err => {
+      await hooks.emit('validateCreateFailed', this, opts.hooks === true, create, err, opts);
+      await hooks.emit('validateFailed', this, opts.hooks === true, create, err, opts);
       throw err;
-    }
+    });
+    await hooks.emit('afterValidateCreate', this, opts.hooks === true, create, opts);
+    await hooks.emit('afterValidate', this, opts.hooks === true, create, opts);
   });
 
   items = await asyncEach(items, async create => {

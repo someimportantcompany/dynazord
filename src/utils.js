@@ -46,10 +46,20 @@ function isEmpty(value) {
   return value === null || value === undefined;
 }
 
+function isArrayProperty(property) {
+  return property && (property.type === Array || `${property.type}`.toUpperCase() === 'LIST');
+}
+
+function isObjectProperty(property) {
+  return property && (property.type === Object || `${property.type}`.toUpperCase() === 'MAP');
+}
+
 module.exports = {
   assert,
   createLogger,
   isEmpty,
+  isArrayProperty,
+  isObjectProperty,
   isPlainObject,
   marshall,
   unmarshall,

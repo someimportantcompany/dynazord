@@ -418,6 +418,109 @@ const formatDate = require('date-fns/format');
 - Translates to DynamoDB binary (`B`) type.
 - Can be referenced as `BINARY` string or JS's native `Buffer` constructor.
 
+### Array Type
+
+```js
+{
+  names: {
+    type: Array,
+
+    /**
+     * Arrays have one property type below them, so you can construct an array of strings, numbers, booleans, object, etc.
+     */
+    properties: {
+      type: String,
+      validate: {
+        notNull: true,
+        notEmpty: true,
+      },
+    },
+
+    /**
+     * And Array types have validators too
+     */
+    validate: {
+
+      /**
+       * Optionally enforce that the property is not set to NULL
+       */
+      notNull: true,
+
+      /**
+       * Optionally enforce that the array has items
+       */
+      notEmpty: true,
+
+    }
+  }
+}
+```
+
+- Translates to DynamoDB list (`L`) type.
+- Can be referenced as `LIST` string or JS's native `Array` constructor.
+
+### Object Type
+
+```js
+{
+  categories: {
+    type: Object,
+
+    /**
+     * Objects have one property type below them, so you can construct an array of strings, numbers, booleans, object, etc.
+     */
+    properties: {
+      id: {
+        type: String,
+        required: true,
+        validate: {
+          notNull: true,
+          notEmpty: true,
+        },
+      },
+      name: {
+        type: String,
+        required: true,
+        validate: {
+          notNull: true,
+          notEmpty: true,
+        },
+      },
+      color: {
+        type: String,
+        required: true,
+        enum: [ 'RED', 'BLUE', 'GREEN' ],
+        validate: {
+          notNull: true,
+          notEmpty: true,
+        },
+      },
+    },
+
+    /**
+     * And Object types have validators too
+     */
+    validate: {
+
+      /**
+       * Optionally enforce that the property is not set to NULL
+       */
+      notNull: true,
+
+      /**
+       * Optionally enforce that the object has keys
+       */
+      notEmpty: true,
+
+    }
+  }
+}
+```
+
+- Translates to DynamoDB map (`M`) type.
+- Can be referenced as `MAP` string or JS's native `Object` constructor.
+- Omit the object's `properties` descriptor to skip property validation for the nested object.
+
 ## Hooks
 
 Often referred to as "lifecycle events", hooks are functions which are called in between core library functions. You can use hooks to perform your own custom validation, for example validating combinations of properties or performing additional/other database lookups.

@@ -91,8 +91,53 @@ console.log(user);
 
 ## Bulk actions
 
-### `model.bulkCreate(items)`
+### `model.bulkCreate(items[, opts])`
+
+```js
+const users = await users.bulkCreate([
+  { email: 'jdrydn1@github.io', name: 'James 1' },
+  { email: 'jdrydn2@github.io', name: 'James 2' },
+]);
+console.log(users);
+// [ { email: 'jdrydn@github.io',
+//     name: 'James 1',
+//     role: 'USER',
+//     createdAt: [Date YYYY-MM-DDTHH:mm:ss.Z],
+//     updatedAt: [Date YYYY-MM-DDTHH:mm:ss.Z] },
+//   { email: 'jdrydn2@github.io',
+//     name: 'James 2',
+//     role: 'USER',
+//     createdAt: [Date YYYY-MM-DDTHH:mm:ss.Z],
+//     updatedAt: [Date YYYY-MM-DDTHH:mm:ss.Z] } ]
+```
 
 ### `model.bulkGet(keys)`
 
+```js
+const users = await users.bulkGet([
+  { email: 'jdrydn1@github.io' },
+  { email: 'jdrydn2@github.io' },
+]);
+console.log(users);
+// [ { email: 'jdrydn@github.io',
+//     name: 'James 1',
+//     role: 'USER',
+//     createdAt: [Date YYYY-MM-DDTHH:mm:ss.Z],
+//     updatedAt: [Date YYYY-MM-DDTHH:mm:ss.Z] },
+//   { email: 'jdrydn2@github.io',
+//     name: 'James 2',
+//     role: 'USER',
+//     createdAt: [Date YYYY-MM-DDTHH:mm:ss.Z],
+//     updatedAt: [Date YYYY-MM-DDTHH:mm:ss.Z] } ]
+```
+
 ### `model.bulkDelete(keys)`
+
+```js
+const users = await users.bulkGet([
+  { email: 'jdrydn1@github.io' },
+  { email: 'jdrydn2@github.io' },
+]);
+console.log(users);
+// true
+```
