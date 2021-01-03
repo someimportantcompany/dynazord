@@ -246,6 +246,8 @@ describe('dynazord', () => {
         BOOLEAN: 'BOOLEAN',
         DATE: 'DATE',
         BINARY: 'BINARY',
+        LIST: 'LIST',
+        MAP: 'MAP',
       });
     });
   });

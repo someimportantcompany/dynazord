@@ -73,6 +73,33 @@ const posts = dynazord.createModel({
         notEmpty: true,
       },
     },
+    content: {
+      type: Array,
+      properties: {
+        type: Object,
+        required: true,
+        properties: {
+          html: {
+            type: String,
+            validate: {
+              notEmpty: true,
+            },
+          },
+          image: {
+            type: Buffer,
+            validate: {
+              notEmpty: true,
+            },
+          },
+          embed: {
+            type: Object,
+            validate: {
+              notEmpty: true,
+            },
+          },
+        },
+      },
+    },
     publishedAt: {
       type: Date,
       // Optionally set the underlying format to a Number to assist with sorting

@@ -38,6 +38,7 @@ describe('dynazord', () => describe('types', () => {
       } catch (err) {
         assert(err instanceof Error, 'Expected err to be an instance of Error');
         assert.strictEqual(err.message, 'Expected value to be a string');
+        assert.strictEqual(err.type, 'number');
         assert.strictEqual(err.value, 1);
       }
 
@@ -47,6 +48,7 @@ describe('dynazord', () => describe('types', () => {
       } catch (err) {
         assert(err instanceof Error, 'Expected err to be an instance of Error');
         assert.strictEqual(err.message, 'Expected value to be a string');
+        assert.strictEqual(err.type, 'boolean');
         assert.strictEqual(err.value, true);
       }
 
@@ -56,6 +58,7 @@ describe('dynazord', () => describe('types', () => {
       } catch (err) {
         assert(err instanceof Error, 'Expected err to be an instance of Error');
         assert.strictEqual(err.message, 'Expected value to be a string');
+        assert.strictEqual(err.type, 'object');
         assert.deepStrictEqual(err.value, { a: 'b' });
       }
     });
@@ -124,6 +127,7 @@ describe('dynazord', () => describe('types', () => {
       } catch (err) {
         assert(err instanceof Error, 'Expected err to be an instance of Error');
         assert.strictEqual(err.message, 'Expected value to be a number');
+        assert.strictEqual(err.type, 'string');
         assert.strictEqual(err.value, 'A');
       }
 
@@ -133,6 +137,7 @@ describe('dynazord', () => describe('types', () => {
       } catch (err) {
         assert(err instanceof Error, 'Expected err to be an instance of Error');
         assert.strictEqual(err.message, 'Expected value to be a number');
+        assert.strictEqual(err.type, 'boolean');
         assert.strictEqual(err.value, true);
       }
 
@@ -142,6 +147,7 @@ describe('dynazord', () => describe('types', () => {
       } catch (err) {
         assert(err instanceof Error, 'Expected err to be an instance of Error');
         assert.strictEqual(err.message, 'Expected value to be a number');
+        assert.strictEqual(err.type, 'object');
         assert.deepStrictEqual(err.value, { a: 'b' });
       }
     });
@@ -194,6 +200,7 @@ describe('dynazord', () => describe('types', () => {
       } catch (err) {
         assert(err instanceof Error, 'Expected err to be an instance of Error');
         assert.strictEqual(err.message, 'Expected value to be a boolean');
+        assert.strictEqual(err.type, 'string');
         assert.strictEqual(err.value, 'A');
       }
 
@@ -203,6 +210,7 @@ describe('dynazord', () => describe('types', () => {
       } catch (err) {
         assert(err instanceof Error, 'Expected err to be an instance of Error');
         assert.strictEqual(err.message, 'Expected value to be a boolean');
+        assert.strictEqual(err.type, 'number');
         assert.strictEqual(err.value, 1);
       }
 
@@ -212,6 +220,7 @@ describe('dynazord', () => describe('types', () => {
       } catch (err) {
         assert(err instanceof Error, 'Expected err to be an instance of Error');
         assert.strictEqual(err.message, 'Expected value to be a boolean');
+        assert.strictEqual(err.type, 'object');
         assert.deepStrictEqual(err.value, { a: 'b' });
       }
     });
@@ -250,6 +259,7 @@ describe('dynazord', () => describe('types', () => {
       } catch (err) {
         assert(err instanceof Error, 'Expected err to be an instance of Error');
         assert.strictEqual(err.message, 'Expected value to be a Date');
+        assert.strictEqual(err.type, 'string');
         assert.strictEqual(err.value, 'A');
       }
 
@@ -259,6 +269,7 @@ describe('dynazord', () => describe('types', () => {
       } catch (err) {
         assert(err instanceof Error, 'Expected err to be an instance of Error');
         assert.strictEqual(err.message, 'Expected value to be a Date');
+        assert.strictEqual(err.type, 'number');
         assert.strictEqual(err.value, 1);
       }
 
@@ -268,6 +279,7 @@ describe('dynazord', () => describe('types', () => {
       } catch (err) {
         assert(err instanceof Error, 'Expected err to be an instance of Error');
         assert.strictEqual(err.message, 'Expected value to be a Date');
+        assert.strictEqual(err.type, 'boolean');
         assert.deepStrictEqual(err.value, true);
       }
     });
@@ -306,6 +318,7 @@ describe('dynazord', () => describe('types', () => {
       } catch (err) {
         assert(err instanceof Error, 'Expected err to be an instance of Error');
         assert.strictEqual(err.message, 'Expected value to be a Buffer');
+        assert.strictEqual(err.type, 'string');
         assert.strictEqual(err.value, 'A');
       }
 
@@ -315,6 +328,7 @@ describe('dynazord', () => describe('types', () => {
       } catch (err) {
         assert(err instanceof Error, 'Expected err to be an instance of Error');
         assert.strictEqual(err.message, 'Expected value to be a Buffer');
+        assert.strictEqual(err.type, 'number');
         assert.strictEqual(err.value, 1);
       }
 
@@ -324,6 +338,7 @@ describe('dynazord', () => describe('types', () => {
       } catch (err) {
         assert(err instanceof Error, 'Expected err to be an instance of Error');
         assert.strictEqual(err.message, 'Expected value to be a Buffer');
+        assert.strictEqual(err.type, 'boolean');
         assert.deepStrictEqual(err.value, true);
       }
     });

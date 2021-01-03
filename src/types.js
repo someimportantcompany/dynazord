@@ -1,10 +1,13 @@
-const { assert, isEmpty } = require('./utils');
+const { assert, isEmpty, isPlainObject } = require('./utils');
 
 const types = {
   STRING: {
     validate: {
       type(value, field) {
-        assert(isEmpty(value) || typeof value === 'string', new Error('Expected value to be a string'), { value });
+        assert(isEmpty(value) || typeof value === 'string', new Error('Expected value to be a string'), {
+          type: typeof value,
+          value,
+        });
 
         if (field.hasOwnProperty('enum')) {
           const { enum: values } = field;
@@ -18,14 +21,20 @@ const types = {
   },
   NUMBER: {
     validate: {
-      type: value => isEmpty(value) || assert(typeof value === 'number', new Error('Expected value to be a number'), { value }),
+      type: value => isEmpty(value) || assert(typeof value === 'number', new Error('Expected value to be a number'), {
+        type: typeof value,
+        value,
+      }),
       notNull: value => assert(value !== null, new Error('Expected value to be not-null')),
       isUnsigned: value => isEmpty(value) || assert(parseInt(value, 10) > 0, new Error('Expected value to be unsigned'), { value }),
     },
   },
   BOOLEAN: {
     validate: {
-      type: value => isEmpty(value) || assert(typeof value === 'boolean', new Error('Expected value to be a boolean'), { value }),
+      type: value => isEmpty(value) || assert(typeof value === 'boolean', new Error('Expected value to be a boolean'), {
+        type: typeof value,
+        value,
+      }),
       notNull: value => assert(value !== null, new Error('Expected value to be not-null')),
     },
   },
@@ -42,7 +51,10 @@ const types = {
       return formatAsNumber ? value.getTime() : value.toISOString();
     },
     validate: {
-      type: value => isEmpty(value) || assert(value instanceof Date, new TypeError('Expected value to be a Date'), { value }),
+      type: value => isEmpty(value) || assert(value instanceof Date, new TypeError('Expected value to be a Date'), {
+        type: typeof value,
+        value,
+      }),
       notNull: value => assert(value !== null, new Error('Expected value to be not-null')),
       isBefore(value, before) {
         return isEmpty(value) || assert(value < new Date(before), new Error(`Expected value to be before ${before}`), { value });
@@ -75,9 +87,32 @@ const types = {
       return value.toString('binary');
     },
     validate: {
-      type: value => isEmpty(value) || assert(value instanceof Buffer, new TypeError('Expected value to be a Buffer'), { value }),
+      type: value => isEmpty(value) || assert(value instanceof Buffer, new TypeError('Expected value to be a Buffer'), {
+        type: typeof value,
+        value,
+      }),
       notNull: value => assert(value !== null, new Error('Expected value to be not-null')),
       notEmpty: value => !(value instanceof Buffer) || assert(value.length > 0, new TypeError('Expected value to be not empty')),
+    },
+  },
+  LIST: {
+    validate: {
+      type: value => isEmpty(value) || assert(Array.isArray(value), new TypeError('Expected value to be an Array'), {
+        type: typeof value,
+        value,
+      }),
+      notNull: value => assert(value !== null, new Error('Expected value to be not-null')),
+      notEmpty: value => !Array.isArray(value) || assert(value.length > 0, new TypeError('Expected value to be not empty')),
+    },
+  },
+  MAP: {
+    validate: {
+      type: value => isEmpty(value) || assert(isPlainObject(value), new TypeError('Expected value to be an object'), {
+        type: typeof value,
+        value,
+      }),
+      notNull: value => assert(value !== null, new Error('Expected value to be not-null')),
+      notEmpty: value => !isPlainObject(value) || assert(Object.keys(value).length > 0, new TypeError('Expected value to be not empty')),
     },
   },
 };
@@ -96,3 +131,5 @@ types[Boolean] = types.BOOLEAN;
 types[Date] = types.DATE;
 // types[Set] = types.SET;
 types[Buffer] = types.BINARY;
+types[Array] = types.LIST;
+types[Object] = types.MAP;

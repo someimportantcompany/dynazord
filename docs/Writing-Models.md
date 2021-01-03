@@ -179,11 +179,8 @@ Each property of a model should have a type, optionally enforced with getters/se
 | BOOLEAN | Boolean | BOOL |
 | BINARY | Buffer | B |
 | DATE | Date | S/N |
-
-**Note:** Array & Nested Object types will be introduced soon.
-
-<!-- | ARRAY | Array | L | -->
-<!-- | OBJECT | Object | M | -->
+| ARRAY | Array | L |
+| OBJECT | Object | M |
 
 Each property should be an object with the following details:
 
@@ -369,26 +366,28 @@ Each property should be an object with the following details:
 - By default translates to DynamoDB string (`S`) type, or set the `format` to `Number` to translate to DynamoDB's number type.
 - Can be referenced as `DATE` string or JS's native `Date` constructor.
 
-If you want to store a custom Date format, use a [custom type](#custom-type) with custom get/set/validate functions:
+If you want to store a custom Date format, use a [string type](#string-type) with custom get/set/validate functions:
 
 ```js
-const assert = require('http-assert');
 const formatDate = require('date-fns/format');
 
 {
   publishedDay: {
-    format: 'YYYY-MM-DD',
-    get(value) {
-      return new Date(value);
-    },
-    set(value) {
-      return formatDate(value, this.format);
-    },
-    validate: {
-      isDateType(value) {
-        assert(value instanceof Date, new Error('Expected value to be a Date object'));
-      },
-    }
+    type: String,
+    set: value => formatDate(value, 'YYYY-MM-DD'),
+  }
+}
+```
+
+You could also just have a custom `get` function to format the date at the last moment:
+
+```js
+const formatDate = require('date-fns/format');
+
+{
+  publishedDay: {
+    type: Date,
+    get: value => formatDate(value, 'YYYY-MM-DD'),
   }
 }
 ```
@@ -418,40 +417,6 @@ const formatDate = require('date-fns/format');
 
 - Translates to DynamoDB binary (`B`) type.
 - Can be referenced as `BINARY` string or JS's native `Buffer` constructor.
-
-### Custom Type
-
-By omitting the required
-
-```js
-{
-  somethingComplex: {
-    /**
-     * Omit the type key to avoid using any type-checking
-     */
-    // type: null,
-
-    /**
-     * Custom types will likely want to use the getter/setter to transform the data!
-     */
-    get: value => JSON.parse(value),
-    set: value => JSON.stringify(value),
-
-    /**
-     * There are no specific validators for custom types
-     * @type {Object}
-     */
-    validate: {
-      /**
-       * So you'll likely want to write your own!
-       */
-      isPlainObject: value => _.isPlainObject(value),
-    }
-  }
-}
-```
-
-- Translates to a native DynamoDB type using [marshall](https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/Converter.html#marshall-property).
 
 ## Hooks
 
