@@ -5,7 +5,9 @@
   "main": "src/index.js",
   "scripts": {
     "lint": "eslint --ext .js .",
-    "test": "nyc --reporter=lcov --reporter=text mocha --config ./.mocharc.json"
+    "test": "nyc --reporter=lcov --reporter=text mocha --config ./.mocharc.json",
+    "preversion": "npm test",
+    "postversion": "git push && git push --tags"
   },
   "author": "James D <james@jdrydn.com> (https://jdrydn.com)",
   "license": "SEE LICENSE IN ./LICENSE",
