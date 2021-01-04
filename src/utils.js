@@ -1,5 +1,5 @@
 const AWS = require('aws-sdk');
-const isPlainObject = require('lodash/isPlainObject');
+const isPlainObject = require('lodash.isplainobject');
 
 const { marshall, unmarshall } = AWS.DynamoDB.Converter;
 

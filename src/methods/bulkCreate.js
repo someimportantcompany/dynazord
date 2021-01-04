@@ -59,7 +59,7 @@ module.exports = async function createBulkDocuments(items, opts = undefined) {
         Item: marshall(create),
         // Specify a condition to ensure this doesn't write an item that already exists
         ConditionExpression: hash && range
-          ? 'attribute_not_exists(#_hash_key) && attribute_not_exists(#_range_key)'
+          ? 'attribute_not_exists(#_hash_key) AND attribute_not_exists(#_range_key)'
           : 'attribute_not_exists(#_hash_key)',
         ExpressionAttributeNames: hash && range
           ? { '#_hash_key': hash, '#_range_key': range }

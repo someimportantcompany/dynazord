@@ -31,7 +31,7 @@
   ],
   "dependencies": {
     "aws-sdk": "^2.802.0",
-    "lodash": "^4.17.20"
+    "lodash.isplainobject": "^4.0.6"
   },
   "devDependencies": {
     "babel-eslint": "^10.1.0",
@@ -42,6 +42,7 @@
     "faker": "^5.1.0",
     "http-assert": "^1.4.1",
     "js-yaml": "^3.14.1",
+    "lodash": "^4.17.20",
     "mocha": "^6.2.3",
     "mockdate": "^3.0.2",
     "module-alias": "^2.2.2",

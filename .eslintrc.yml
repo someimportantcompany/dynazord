@@ -283,3 +283,4 @@ overrides:
       func-names: off
       no-console: off
       no-invalid-this: off
+      mocha/no-exclusive-tests: error

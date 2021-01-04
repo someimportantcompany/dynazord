@@ -40,12 +40,12 @@ module.exports = async function upsertDocument(upsert, opts = undefined) {
   await hooks.emit('afterValidateUpsert', this, opts.hooks === true, upsert, opts);
   await hooks.emit('afterValidate', this, opts.hooks === true, upsert, opts);
 
-  await hooks.emit('beforeUpsert', this, opts.hooks === true, upsert, opts);
-  await formatWriteData.call(this, properties, upsert, { fieldHook: 'onUpsert' });
-  await hooks.emit('beforeUpsertWrite', this, opts.hooks === true, upsert, opts);
-
   const { [hash]: hashValue, [range || 'null']: rangeValue, ...upsertValues } = upsert;
   const where = { [hash]: hashValue, ...(range ? { [range]: rangeValue } : {}) };
+
+  await hooks.emit('beforeUpsert', this, opts.hooks === true, upsertValues, opts);
+  await formatWriteData.call(this, properties, upsertValues, { fieldHook: 'onUpsert' });
+  await hooks.emit('beforeUpsertWrite', this, opts.hooks === true, upsertValues, opts);
 
   const { expression, names, values } = stringifyUpsertStatement.call(this, upsertValues, specifiedUpsertKeys) || {};
   assert(typeof expression === 'string', new TypeError('Expected update expression to be a string'));

@@ -103,6 +103,7 @@ module.exports = {
     endpoint: process.env.AWS_DYNAMODB_ENDPOINT,
     region: process.env.AWS_REGION || 'us-east-1',
   }),
+  logger,
   createTestModel,
   deleteThenCreateTable,
 };

@@ -72,6 +72,32 @@ describe('examples', () => describe('users', () => {
     });
   });
 
+  it('should throw an error when creating another entry with the same hash/range key', async () => {
+    try {
+      await users.create({
+        email: 'jdrydn@github.io',
+        name: 'James 2',
+        role: 'ADMIN',
+      });
+      assert.fail('Should have errored');
+    } catch (err) {
+      assert.ok(err instanceof Error);
+      assert.strictEqual(err.message, 'The conditional request failed');
+      // @TODO Rewrite these error messages into something more suitable!
+    }
+
+    await assertItem(dynamodb, {
+      TableName: users.tableName,
+      Key: { email: { S: 'jdrydn@github.io' } },
+    }, {
+      email: { S: 'jdrydn@github.io' },
+      name: { S: 'James' },
+      role: { S: 'USER' },
+      createdAt: { S: currentDate.toISOString() },
+      updatedAt: { S: currentDate.toISOString() },
+    });
+  });
+
   it('should get the entry', async () => {
     const entry = await users.get({ email: 'jdrydn@github.io' });
 
