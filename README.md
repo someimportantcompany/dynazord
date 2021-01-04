@@ -86,7 +86,7 @@ npm install --save dynazord
 
 | Version | Links |
 | ---- | ---- |
-| [`v0.0.2`](https://github.com/jdrydn/dynazord/tree/master) (master) | [Documentation](https://github.com/jdrydn/dynazord/tree/master/docs) |
+| [`v0.1.0`](https://github.com/jdrydn/dynazord/tree/master) (master) | [Documentation](https://github.com/jdrydn/dynazord/tree/master/docs) |
 
 - All major work should be in feature branches, include tests & finish with a PR into `master`.
 - To run tests, fire up [`amazon/dynamodb-local`](https://hub.docker.com/r/amazon/dynamodb-local)
