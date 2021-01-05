@@ -3,7 +3,7 @@ const { assert, createLogger, isPlainObject } = require('./utils');
 const { assertValidProperties } = require('./helpers/validate');
 const { createHooks } = require('./hooks');
 const { keys: typeKeys } = require('./types');
-const { methods, bulkMethods } = require('./methods');
+const { methods, bulkMethods, transactionMethods, runTransaction } = require('./methods');
 const { operators } = require('./helpers/where');
 
 const { name: PACKAGE_NAME } = require('../package.json');
@@ -81,12 +81,19 @@ function createModel(opts) {
 
   return Object.create({ ...methods, ...bulkMethods }, {
     tableName: { enumerable: true, value: tableName },
-    keySchema: { enumerable: true, value: Object.freeze({ hash, range, ...keySchemaOpts }) },
-    properties: { enumerable: true, value: Object.freeze(opts.properties) },
+    keySchema: { enumerable: true, value: { hash, range, ...keySchemaOpts } },
+    properties: { enumerable: true, value: opts.properties },
     client: { value: validateDynamoDB(opts.dynamodb) || overwriteDynamoDB || new AWS.DynamoDB() },
-    hooks: { enumerable: true, value: Object.freeze(hooks) },
+    hooks: { enumerable: true, value: hooks },
     log: { value: opts.log || createLogger(opts.logLevel) },
-    options: { enumerable: true, value: Object.freeze(options) },
+    options: { enumerable: true, value: options },
+
+    transaction: {
+      get() {
+        const { create: c, update: u, delete: d } = transactionMethods;
+        return { create: c.bind(this), update: u.bind(this), delete: d.bind(this) };
+      },
+    },
   });
 }
 
@@ -106,12 +113,13 @@ function validateDynamoDB(client) {
 
 module.exports = {
   createModel,
-  methods: { ...methods, ...bulkMethods },
-  types: Object.freeze(typeKeys.reduce((r, t) => ({ ...r, [t]: t }), {})),
-  operators: Object.freeze(operators),
   setDynamoDB: client => overwriteDynamoDB = validateDynamoDB(client),
   setOptions(overwrite) {
     assert(isPlainObject(overwrite), new TypeError('Expected argument to be a plain object'));
     overwriteOptions = overwrite;
   },
+  transaction: runTransaction,
+  methods: { ...methods, ...bulkMethods, transaction: transactionMethods },
+  types: typeKeys.reduce((r, t) => ({ ...r, [t]: t }), {}),
+  operators,
 };

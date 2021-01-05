@@ -198,12 +198,23 @@ describe('dynazord', () => {
       assert.deepStrictEqual(Object.keys(dynazord.methods), [
         'create', 'get', 'find', 'update', 'delete', 'upsert',
         'bulkCreate', 'bulkGet', /* 'bulkUpdate', */ 'bulkDelete', /* 'bulkUpsert', */
+        'transaction',
       ]);
+      assert.deepStrictEqual(Object.keys(dynazord.methods.transaction), [ 'create', 'update', 'delete' ]);
 
       for (const key in dynazord.methods) {
         if (dynazord.methods.hasOwnProperty(key)) {
-          const { [key]: method } = dynazord.methods;
-          assert.ok(typeof method === 'function', `Expected ${key} to be a function`);
+          if (key === 'transaction') {
+            for (const key2 in dynazord.methods[key]) {
+              if (dynazord.methods[key].hasOwnProperty(key2)) {
+                const { [key2]: method } = dynazord.methods[key];
+                assert.ok(typeof method === 'function', `Expected ${key}.${key2} to be a function`);
+              }
+            }
+          } else {
+            const { [key]: method } = dynazord.methods;
+            assert.ok(typeof method === 'function', `Expected ${key} to be a function`);
+          }
         }
       }
     });

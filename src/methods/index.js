@@ -14,7 +14,11 @@ const bulkMethods = {
   bulkDelete: require('./bulkDelete'),
 };
 
+const { runTransaction, ...transactionMethods } = require('./transaction');
+
 module.exports = {
   methods,
   bulkMethods,
+  transactionMethods,
+  runTransaction,
 };
