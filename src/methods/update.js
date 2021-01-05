@@ -2,10 +2,6 @@ const { assert, isPlainObject, marshall, unmarshall } = require('../utils');
 const { assertRequiredUpdateProps, stringifyUpdateStatement } = require('../helpers/update');
 const { formatReadData, formatWriteData, marshallKey, validateData } = require('../helpers/data');
 
-const DEFAULT_OPTS = {
-  hooks: true,
-};
-
 module.exports = async function updateDocument(update, where, opts = undefined) {
   const { tableName, keySchema, properties, client, hooks, log } = this;
   assert(client && typeof client.updateItem === 'function', new TypeError('Expected client to be a DynamoDB client'));
@@ -16,7 +12,7 @@ module.exports = async function updateDocument(update, where, opts = undefined) 
   assert(isPlainObject(update), new TypeError('Expected update to be a plain object'));
   assert(isPlainObject(where), new TypeError('Expected where to be a plain object'));
   assert(opts === undefined || isPlainObject(opts), new TypeError('Expected opts argument to be a plain object'));
-  opts = { ...DEFAULT_OPTS, ...opts };
+  opts = { hooks: true, ...opts };
 
   const { hash, range } = keySchema;
   assert(where.hasOwnProperty(hash), new Error(`Missing ${hash} hash property from where`));

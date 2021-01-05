@@ -20,12 +20,13 @@ function createModel(opts) {
   assert(isPlainObject(opts), new TypeError('Expected opts to be a plain object'));
 
   // Required
-  const { tableName, keySchema, properties } = opts;
+  const { tableName, properties } = opts;
   assert(typeof tableName === 'string', new TypeError('Expected { tableName } to be a string'));
   assert(isPlainObject(properties), new TypeError('Expected { properties } to be a plain object'));
   assert(Object.keys(properties).length, new TypeError('Expected { properties } to have properties'));
   // Optional
-  assert(!keySchema || isPlainObject(keySchema) || typeof keySchema === 'string',
+  opts.keySchema = opts.keySchema || Object.keys(properties).shift();
+  assert(isPlainObject(opts.keySchema) || typeof opts.keySchema === 'string',
     new TypeError('Expected { keySchema } to be a string or a plain object'));
   assert(!opts.hooks || isPlainObject(opts.hooks), new TypeError('Expected { hooks } to be a plain object'));
   assert(!opts.options || isPlainObject(opts.options), new TypeError('Expected { options } to be a plain object'));
@@ -67,9 +68,8 @@ function createModel(opts) {
     throw err;
   }
 
-  const { hash, range, ...keySchemaOpts } = isPlainObject(keySchema)
-    ? (({ hash: h, range: r }) => ({ hash: h, range: r }))(keySchema)
-    : { hash: (keySchema && typeof keySchema === 'string') ? keySchema : Object.keys(properties).shift() };
+  opts.keySchema = opts.keySchema || Object.keys(properties).shift();
+  const { hash, range, ...keySchemaOpts } = isPlainObject(opts.keySchema) ? opts.keySchema : { hash: opts.keySchema };
   assert(typeof hash === 'string', new TypeError('Expected keySchema hash property to be a string'));
   assert(properties[hash], new TypeError(`Expected ${hash} to be a property`));
   assert(properties[hash].required === true, new TypeError(`Expected ${hash} property to be required`));
@@ -90,8 +90,8 @@ function createModel(opts) {
 
     transaction: {
       get() {
-        const { create: c, update: u, delete: d } = transactionMethods;
-        return { create: c.bind(this), update: u.bind(this), delete: d.bind(this) };
+        assert(!opts.dynamodb, new Error('Model cannot take part in transactions with specific DynamoDB instances'));
+        return (tm => Object.keys(tm).reduce((r, k) => ({ ...r, [k]: tm[k].bind(this) })))(transactionMethods);
       },
     },
   });
@@ -113,13 +113,23 @@ function validateDynamoDB(client) {
 
 module.exports = {
   createModel,
-  setDynamoDB: client => overwriteDynamoDB = validateDynamoDB(client),
+  setDynamoDB(client) {
+    overwriteDynamoDB = validateDynamoDB(client);
+    return overwriteDynamoDB;
+  },
   setOptions(overwrite) {
     assert(isPlainObject(overwrite), new TypeError('Expected argument to be a plain object'));
     overwriteOptions = overwrite;
   },
-  transaction: runTransaction,
+  transaction(client, blocks, opts = undefined) {
+    if (arguments.length === 1) {
+      blocks = client;
+      client = null;
+    }
+
+    return runTransaction(validateDynamoDB(client) || overwriteDynamoDB || new AWS.DynamoDB(), blocks, opts);
+  },
   methods: { ...methods, ...bulkMethods, transaction: transactionMethods },
-  types: typeKeys.reduce((r, t) => ({ ...r, [t]: t }), {}),
   operators,
+  types: typeKeys.reduce((r, t) => ({ ...r, [t]: t }), {}),
 };

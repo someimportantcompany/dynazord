@@ -1,11 +1,13 @@
-const { assert } = require('../utils');
+const { assert, isPlainObject } = require('../utils');
 
 class DynazordTransactionBlock {
-  constructor(beforeFn, afterFn) {
-    assert(typeof beforeFn === 'function', new TypeError('Expected first argument to be a function'));
-    assert(afterFn === undefined || typeof afterFn === 'function', new TypeError('Expected second argument to be a function'));
+  constructor(model, beforeFn, afterFn) {
+    assert(isPlainObject(model) && model.transaction, new TypeError('Expected first argument to be a model'));
+    assert(typeof beforeFn === 'function', new TypeError('Expected second argument to be a function'));
+    assert(afterFn === undefined || typeof afterFn === 'function', new TypeError('Expected third argument to be a function'));
 
     Object.defineProperties(this, {
+      model: { enumerable: true, value: model },
       before: { enumerable: true, value: beforeFn },
       after: { enumerable: true, value: afterFn },
     });

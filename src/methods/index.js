@@ -12,6 +12,7 @@ const bulkMethods = {
   bulkCreate: require('./bulkCreate'),
   bulkGet: require('./bulkGet'),
   bulkDelete: require('./bulkDelete'),
+  bulkUpsert: require('./bulkUpsert'),
 };
 
 const { runTransaction, ...transactionMethods } = require('./transaction');

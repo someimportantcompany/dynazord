@@ -21,6 +21,7 @@ const model = dynazord.createModel({
 | [Properties & Types](#properties--types) |
 | [Hooks](#hooks) |
 | [Additional Options](#additional-options) |
+| [Overwriting Methods](#overwriting-methods) |
 | [Kitchen Sink Example](#kitchen-sink-example) |
 
 The `createModel` method is the starting point for all models: It is a synchronous method that builds a model from the provided configuration object that defines the keys, indexes & properties the model will support.
@@ -743,6 +744,8 @@ const sessions = dynazord.createModel({
   },
 });
 ```
+
+## Overwriting Methods
 
 ## Kitchen Sink Example
 

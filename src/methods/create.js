@@ -2,10 +2,6 @@ const { assert, isPlainObject, marshall } = require('../utils');
 const { assertRequiredCreateProps, appendCreateDefaultProps } = require('../helpers/create');
 const { formatReadData, formatWriteData, validateData } = require('../helpers/data');
 
-const DEFAULT_OPTS = {
-  hooks: true,
-};
-
 module.exports = async function createDocument(item, opts = undefined) {
   const { tableName, keySchema, properties, client, hooks, log } = this;
   assert(client && typeof client.putItem === 'function', new TypeError('Expected client to be a DynamoDB client'));
@@ -14,7 +10,7 @@ module.exports = async function createDocument(item, opts = undefined) {
   assert(isPlainObject(properties), new TypeError('Expected properties to be a plain object'));
   assert(isPlainObject(item), new TypeError('Expected item argument to be a plain object'));
   assert(opts === undefined || isPlainObject(opts), new TypeError('Expected opts argument to be a plain object'));
-  opts = { ...DEFAULT_OPTS, ...opts };
+  opts = { hooks: true, ...opts };
 
   await assertRequiredCreateProps.call(this, properties, item);
   await appendCreateDefaultProps.call(this, properties, item);

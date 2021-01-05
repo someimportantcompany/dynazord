@@ -1,4 +1,4 @@
-const { assert, isPlainObject, marshall } = require('../utils');
+const { assert, isPlainObject, marshall, promiseMapAll } = require('../utils');
 const { assertRequiredCreateProps, appendCreateDefaultProps } = require('../helpers/create');
 const { formatReadData, formatWriteData, validateData } = require('../helpers/data');
 
@@ -21,12 +21,12 @@ module.exports = async function createBulkDocuments(items, opts = undefined) {
 
   await hooks.emit('beforeBulkCreate', this, opts.bulkHooks === true, items, opts);
 
-  items = await asyncEach(items, async create => {
+  items = await promiseMapAll(items, async create => {
     await assertRequiredCreateProps.call(this, properties, create);
     await appendCreateDefaultProps.call(this, properties, create);
   });
 
-  items = await asyncEach(items, async create => {
+  items = await promiseMapAll(items, async create => {
     await hooks.emit('beforeValidateCreate', this, opts.hooks === true, create, opts);
     await hooks.emit('beforeValidate', this, opts.hooks === true, create, opts);
     await validateData.call(this, properties, create).catch(async err => {
@@ -38,7 +38,7 @@ module.exports = async function createBulkDocuments(items, opts = undefined) {
     await hooks.emit('afterValidate', this, opts.hooks === true, create, opts);
   });
 
-  items = await asyncEach(items, async create => {
+  items = await promiseMapAll(items, async create => {
     await hooks.emit('beforeCreate', this, opts.hooks === true, create, opts);
     await formatWriteData.call(this, properties, create, { fieldHook: 'onCreate' });
     await hooks.emit('beforeCreateWrite', this, opts.hooks === true, create, opts);
@@ -68,7 +68,7 @@ module.exports = async function createBulkDocuments(items, opts = undefined) {
     log.debug({ transactWriteItems: results });
   }
 
-  items = await asyncEach(items, async create => {
+  items = await promiseMapAll(items, async create => {
     await hooks.emit('afterCreateWrite', this, opts.hooks === true, create, opts);
     await formatReadData.call(this, properties, create);
     await hooks.emit('afterCreate', this, opts.hooks === true, create, opts);
@@ -78,10 +78,3 @@ module.exports = async function createBulkDocuments(items, opts = undefined) {
 
   return items;
 };
-
-function asyncEach(array, eachItem) {
-  return Promise.all(array.map(async item => {
-    await eachItem(item);
-    return item;
-  }));
-}
