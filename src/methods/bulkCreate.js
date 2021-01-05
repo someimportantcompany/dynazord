@@ -21,14 +21,7 @@ module.exports = async function createBulkDocuments(items, opts = undefined) {
 
   await hooks.emit('beforeBulkCreate', this, opts.bulkHooks === true, items, opts);
 
-  const { hash, range } = keySchema;
-  const { [hash]: hashProp, [range]: rangeProp } = properties;
   items = await asyncEach(items, async create => {
-    assert(hashProp.hasOwnProperty('default') || create.hasOwnProperty(hash),
-      new Error(`Missing ${hash} hash property from argument`));
-    assert(!range || rangeProp.hasOwnProperty('default') || create.hasOwnProperty(range),
-      new Error(`Missing ${range} range property from argument`));
-
     await assertRequiredCreateProps.call(this, properties, create);
     await appendCreateDefaultProps.call(this, properties, create);
   });
@@ -52,6 +45,7 @@ module.exports = async function createBulkDocuments(items, opts = undefined) {
   });
 
   if (items.length) {
+    const { hash, range } = keySchema;
     const TransactItems = items.map(create => ({
       Put: {
         // Specify the name & item to be created

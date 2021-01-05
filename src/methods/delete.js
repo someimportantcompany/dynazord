@@ -11,6 +11,7 @@ module.exports = async function deleteDocument(key, opts = undefined) {
   assert(typeof tableName === 'string', new TypeError('Invalid tableName to be a string'));
   assert(isPlainObject(keySchema), new TypeError('Expected keySchema to be a plain object'));
   assert(isPlainObject(properties), new TypeError('Expected properties to be a plain object'));
+
   assert(isPlainObject(key), new TypeError('Expected key to be a plain object'));
   assert(opts === undefined || isPlainObject(opts), new TypeError('Expected opts argument to be a plain object'));
   opts = { ...DEFAULT_OPTS, ...opts };
