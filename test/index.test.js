@@ -2,7 +2,7 @@ const _ = require('lodash');
 const assert = require('assert');
 const AWS = require('aws-sdk');
 const isUUID = require('validator/lib/isUUID');
-const { createTestModel } = require('./utils');
+const { dynamodb: testDynamoDB, createTestModel } = require('./utils');
 const { v4: uuid } = require('uuid');
 
 describe('dynazord', () => {
@@ -200,7 +200,9 @@ describe('dynazord', () => {
         'bulkCreate', 'bulkGet', /* 'bulkUpdate', */ 'bulkDelete', 'bulkUpsert',
         'transaction',
       ]);
-      assert.deepStrictEqual(Object.keys(dynazord.methods.transaction), [ 'create', 'update', 'delete', 'upsert' ]);
+      assert.deepStrictEqual(Object.keys(dynazord.methods.transaction), [
+        'create', 'get', 'update', 'delete', 'upsert',
+      ]);
 
       for (const key in dynazord.methods) {
         if (dynazord.methods.hasOwnProperty(key)) {
@@ -246,7 +248,7 @@ describe('dynazord', () => {
       }
     });
 
-    after(() => dynazord.setDynamoDB(null));
+    after(() => dynazord.setDynamoDB(testDynamoDB));
   });
 
   describe('types', () => {

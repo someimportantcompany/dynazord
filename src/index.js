@@ -16,6 +16,10 @@ const defaultOptions = {
 let overwriteDynamoDB = null;
 let overwriteOptions = null;
 
+/**
+ * @param {Object} opts
+ * @return {Object}
+ */
 function createModel(opts) {
   assert(isPlainObject(opts), new TypeError('Expected opts to be a plain object'));
 
@@ -91,7 +95,7 @@ function createModel(opts) {
     transaction: {
       get() {
         assert(!opts.dynamodb, new Error('Model cannot take part in transactions with specific DynamoDB instances'));
-        return (tm => Object.keys(tm).reduce((r, k) => ({ ...r, [k]: tm[k].bind(this) })))(transactionMethods);
+        return (tm => Object.keys(tm).reduce((r, k) => ({ ...r, [k]: tm[k].bind(this) }), []))(transactionMethods);
       },
     },
   });
@@ -113,23 +117,54 @@ function validateDynamoDB(client) {
 
 module.exports = {
   createModel,
+
+  /**
+   * @param {(AWS.DynamoDB|Object)}
+   * @return {(AWS.DynamoDB|null)}
+   */
   setDynamoDB(client) {
     overwriteDynamoDB = validateDynamoDB(client);
     return overwriteDynamoDB;
   },
+
+  /**
+   * @param {Object<string, (string|number|boolean)>}
+   * @return void
+   */
   setOptions(overwrite) {
     assert(isPlainObject(overwrite), new TypeError('Expected argument to be a plain object'));
     overwriteOptions = overwrite;
   },
+
+  /**
+   * Run a transaction
+   *
+   * @param {(AWS.DynamoDB|Object)} [client] Defaults to the global or a clean DynamoDB instance
+   * @param {DynazordTransactionBlock[]} blocks The array
+   * @param {(Object|undefined)} [opts]
+   * @return {(Object|null)[]}
+   */
   transaction(client, blocks, opts = undefined) {
-    if (arguments.length === 1) {
+    if (Array.isArray(client)) {
+      // client => blocks
+      opts = blocks;
       blocks = client;
       client = null;
     }
 
     return runTransaction(validateDynamoDB(client) || overwriteDynamoDB || new AWS.DynamoDB(), blocks, opts);
   },
+
+  /**
+   * @type {Object<string, function>}
+   */
   methods: { ...methods, ...bulkMethods, transaction: transactionMethods },
+  /**
+   * @type {Object<string, Symbol>}
+   */
   operators,
+  /**
+   * @type {Object<string, string>}
+   */
   types: typeKeys.reduce((r, t) => ({ ...r, [t]: t }), {}),
 };

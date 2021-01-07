@@ -15,8 +15,7 @@ describe('examples', () => describe('posts', () => {
   const ids = [];
 
   before(async () => {
-    const createTable = posts.__get__('createTable');
-    await deleteThenCreateTable(dynamodb, createTable);
+    await deleteThenCreateTable(dynamodb, posts.__get__('createTable'));
     mockdate.set(currentDate);
   });
 
