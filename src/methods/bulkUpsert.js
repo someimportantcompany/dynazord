@@ -1,6 +1,6 @@
 const { assert, isPlainObject, marshall, unmarshall, promiseMapAll } = require('../utils');
 const { assertRequiredCreateProps, appendCreateDefaultProps } = require('../helpers/create');
-const { formatReadData, formatWriteData, marshallKey, validateData } = require('../helpers/data');
+const { formatReadData, formatWriteData, validateData } = require('../helpers/data');
 const { stringifyUpsertStatement } = require('../helpers/upsert');
 
 const DEFAULT_OPTS = {
@@ -20,7 +20,7 @@ module.exports = async function upsertBulkDocuments(items, opts = undefined) {
   assert(opts === undefined || isPlainObject(opts), new TypeError('Expected opts argument to be a plain object'));
   opts = { ...DEFAULT_OPTS, ...opts };
 
-  await hooks.emit('beforeBulkCreate', this, opts.bulkHooks === true, items, opts);
+  await hooks.emit('beforeBulkUpsert', this, opts.bulkHooks === true, items, opts);
 
   const specifiedUpsertKeys = items.map(item => Object.keys(item));
 
@@ -32,29 +32,29 @@ module.exports = async function upsertBulkDocuments(items, opts = undefined) {
   items = await promiseMapAll(items, async item => {
     await hooks.emit('beforeValidateUpsert', this, opts.hooks === true, item, opts);
     await hooks.emit('beforeValidate', this, opts.hooks === true, item, opts);
-    await validateData.call(this, properties, item).catch(async err => {
+    try {
+      await validateData.call(this, properties, item);
+    } catch (err) /* istanbul ignore next */ {
       await hooks.emit('validateUpsertFailed', this, opts.hooks === true, item, err, opts);
       await hooks.emit('validateFailed', this, opts.hooks === true, item, err, opts);
       throw err;
-    });
+    }
     await hooks.emit('afterValidateUpsert', this, opts.hooks === true, item, opts);
     await hooks.emit('afterValidate', this, opts.hooks === true, item, opts);
   });
 
   items = await promiseMapAll(items, async item => {
-    const { hash, range } = keySchema;
-    const { [hash]: hashValue, [range || 'null']: rangeValue, ...upsertValues } = item;
-    const key = { [hash]: hashValue, ...(range ? { [range]: rangeValue } : {}) };
-
-    await hooks.emit('beforeUpsert', this, opts.hooks === true, upsertValues, opts);
-    await formatWriteData.call(this, properties, upsertValues, { fieldHook: 'onUpsert' });
-    await hooks.emit('beforeUpsertWrite', this, opts.hooks === true, upsertValues, opts);
-
-    return { key: await marshallKey(properties, key), upsertValues };
+    await hooks.emit('beforeUpsert', this, opts.hooks === true, item, opts);
+    await formatWriteData.call(this, properties, item, { fieldHook: 'onUpsert' });
+    await hooks.emit('beforeUpsertWrite', this, opts.hooks === true, item, opts);
   });
 
   if (items.length) {
-    const TransactWriteItems = items.map(({ key: Key, upsertValues }) => {
+    const TransactWriteItems = items.map(item => {
+      const { hash, range } = keySchema;
+      const { [hash]: hashValue, [range || 'null']: rangeValue, ...upsertValues } = item;
+      const key = { [hash]: hashValue, ...(range ? { [range]: rangeValue } : {}) };
+
       const { expression, names, values } = stringifyUpsertStatement.call(this, upsertValues, specifiedUpsertKeys) || {};
       assert(typeof expression === 'string', new TypeError('Expected update expression to be a string'));
       assert(isPlainObject(names), new TypeError('Expected update names to be a plain object'));
@@ -63,7 +63,7 @@ module.exports = async function upsertBulkDocuments(items, opts = undefined) {
       return {
         Update: {
           TableName: tableName,
-          Key,
+          Key: marshall(key),
           UpdateExpression: expression,
           ExpressionAttributeNames: names,
           ExpressionAttributeValues: marshall(values),
@@ -76,7 +76,7 @@ module.exports = async function upsertBulkDocuments(items, opts = undefined) {
     const transactWriteResults = await client.transactWriteItems({ TransactItems: TransactWriteItems }).promise();
     log.debug({ transactWriteItems: transactWriteResults });
 
-    const TransactGetItems = items.map(({ key: Key }) => ({ Get: { TableName: tableName, Key } }));
+    const TransactGetItems = TransactWriteItems.map(({ Update: { TableName, Key } }) => ({ Get: { TableName, Key } }));
     log.debug({ transactGetItems: { TransactGetItems } });
     const results = await client.transactGetItems({ TransactItems: TransactGetItems }).promise();
     log.debug({ transactGetItems: results });
@@ -96,7 +96,7 @@ module.exports = async function upsertBulkDocuments(items, opts = undefined) {
     });
   }
 
-  await hooks.emit('afterBulkCreate', this, opts.bulkHooks === true, items, opts);
+  await hooks.emit('afterBulkUpsert', this, opts.bulkHooks === true, items, opts);
 
   return items;
 };

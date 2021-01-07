@@ -21,36 +21,38 @@ module.exports = async function createBulkDocuments(items, opts = undefined) {
 
   await hooks.emit('beforeBulkCreate', this, opts.bulkHooks === true, items, opts);
 
-  items = await promiseMapAll(items, async create => {
-    await assertRequiredCreateProps.call(this, properties, create);
-    await appendCreateDefaultProps.call(this, properties, create);
+  items = await promiseMapAll(items, async item => {
+    await assertRequiredCreateProps.call(this, properties, item);
+    await appendCreateDefaultProps.call(this, properties, item);
   });
 
-  items = await promiseMapAll(items, async create => {
-    await hooks.emit('beforeValidateCreate', this, opts.hooks === true, create, opts);
-    await hooks.emit('beforeValidate', this, opts.hooks === true, create, opts);
-    await validateData.call(this, properties, create).catch(async err => {
-      await hooks.emit('validateCreateFailed', this, opts.hooks === true, create, err, opts);
-      await hooks.emit('validateFailed', this, opts.hooks === true, create, err, opts);
+  items = await promiseMapAll(items, async item => {
+    await hooks.emit('beforeValidateCreate', this, opts.hooks === true, item, opts);
+    await hooks.emit('beforeValidate', this, opts.hooks === true, item, opts);
+    try {
+      await validateData.call(this, properties, item);
+    } catch (err) /* istanbul ignore next */ {
+      await hooks.emit('validateCreateFailed', this, opts.hooks === true, item, err, opts);
+      await hooks.emit('validateFailed', this, opts.hooks === true, item, err, opts);
       throw err;
-    });
-    await hooks.emit('afterValidateCreate', this, opts.hooks === true, create, opts);
-    await hooks.emit('afterValidate', this, opts.hooks === true, create, opts);
+    }
+    await hooks.emit('afterValidateCreate', this, opts.hooks === true, item, opts);
+    await hooks.emit('afterValidate', this, opts.hooks === true, item, opts);
   });
 
-  items = await promiseMapAll(items, async create => {
-    await hooks.emit('beforeCreate', this, opts.hooks === true, create, opts);
-    await formatWriteData.call(this, properties, create, { fieldHook: 'onCreate' });
-    await hooks.emit('beforeCreateWrite', this, opts.hooks === true, create, opts);
+  items = await promiseMapAll(items, async item => {
+    await hooks.emit('beforeCreate', this, opts.hooks === true, item, opts);
+    await formatWriteData.call(this, properties, item, { fieldHook: 'onCreate' });
+    await hooks.emit('beforeCreateWrite', this, opts.hooks === true, item, opts);
   });
 
   if (items.length) {
     const { hash, range } = keySchema;
-    const TransactItems = items.map(create => ({
+    const TransactItems = items.map(item => ({
       Put: {
-        // Specify the name & item to be created
+        // Specify the name & item to be itemd
         TableName: tableName,
-        Item: marshall(create),
+        Item: marshall(item),
         // Specify a condition to ensure this doesn't write an item that already exists
         ConditionExpression: hash && range
           ? 'attribute_not_exists(#_hash_key) AND attribute_not_exists(#_range_key)'
@@ -68,10 +70,10 @@ module.exports = async function createBulkDocuments(items, opts = undefined) {
     log.debug({ transactWriteItems: results });
   }
 
-  items = await promiseMapAll(items, async create => {
-    await hooks.emit('afterCreateWrite', this, opts.hooks === true, create, opts);
-    await formatReadData.call(this, properties, create);
-    await hooks.emit('afterCreate', this, opts.hooks === true, create, opts);
+  items = await promiseMapAll(items, async item => {
+    await hooks.emit('afterCreateWrite', this, opts.hooks === true, item, opts);
+    await formatReadData.call(this, properties, item);
+    await hooks.emit('afterCreate', this, opts.hooks === true, item, opts);
   });
 
   await hooks.emit('afterBulkCreate', this, opts.bulkHooks === true, items, opts);

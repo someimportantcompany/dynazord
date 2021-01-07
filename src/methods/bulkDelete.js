@@ -1,5 +1,5 @@
-const { assert, isPlainObject } = require('../utils');
-const { marshallKey } = require('../helpers/data');
+const { assert, isPlainObject, marshall } = require('../utils');
+const { formatWriteData } = require('../helpers/data');
 
 const DEFAULT_OPTS = {
   bulkHooks: true,
@@ -27,12 +27,12 @@ module.exports = async function deleteBulkDocuments(keys, opts) {
   if (keys.length) {
     await hooks.emit('beforeBulkDelete', this, opts.bulkHooks === true, keys, opts);
 
-    const TransactItems = await Promise.all(keys.map(async where => {
-      const Key = await marshallKey(properties, where);
+    const TransactItems = await Promise.all(keys.map(async key => {
+      await formatWriteData.call(this, properties, key);
       return {
         Delete: {
           TableName: tableName,
-          Key,
+          Key: marshall(key),
           ReturnValuesOnConditionCheckFailure: 'NONE',
         }
       };
