@@ -9,8 +9,7 @@ describe('examples', () => describe('users', () => {
   const currentDate = new Date();
 
   before(async () => {
-    const createTable = users.__get__('createTable');
-    await deleteThenCreateTable(dynamodb, createTable);
+    await deleteThenCreateTable(dynamodb, users.__get__('createTable'));
     mockdate.set(currentDate);
   });
 

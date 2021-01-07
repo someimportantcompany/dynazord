@@ -1,9 +1,5 @@
-const { assert, isPlainObject } = require('../utils');
-const { marshallKey } = require('../helpers/data');
-
-const DEFAULT_OPTS = {
-  hooks: true,
-};
+const { assert, isPlainObject, marshall } = require('../utils');
+const { formatWriteData } = require('../helpers/data');
 
 module.exports = async function deleteDocument(key, opts = undefined) {
   const { tableName, keySchema, properties, client, hooks, log } = this;
@@ -11,9 +7,10 @@ module.exports = async function deleteDocument(key, opts = undefined) {
   assert(typeof tableName === 'string', new TypeError('Invalid tableName to be a string'));
   assert(isPlainObject(keySchema), new TypeError('Expected keySchema to be a plain object'));
   assert(isPlainObject(properties), new TypeError('Expected properties to be a plain object'));
+
   assert(isPlainObject(key), new TypeError('Expected key to be a plain object'));
   assert(opts === undefined || isPlainObject(opts), new TypeError('Expected opts argument to be a plain object'));
-  opts = { ...DEFAULT_OPTS, ...opts };
+  opts = { hooks: true, ...opts };
 
   const { hash, range } = keySchema;
   assert(key.hasOwnProperty(hash), new Error(`Missing ${hash} hash property from key`));
@@ -21,9 +18,11 @@ module.exports = async function deleteDocument(key, opts = undefined) {
 
   await hooks.emit('beforeDelete', this, opts.hooks === true, key, opts);
 
+  await formatWriteData(properties, key);
+
   const params = {
     TableName: tableName,
-    Key: await marshallKey(properties, key),
+    Key: marshall(key),
     ReturnValues: 'NONE',
   };
 

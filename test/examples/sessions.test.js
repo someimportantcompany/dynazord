@@ -11,8 +11,7 @@ describe('examples', () => describe('sessions', () => {
   const userAgent = 'Safari (Macintosh; Intel Mac OS X 10_15) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1 Safari/605.1.15';
 
   before(async () => {
-    const createTable = sessions.__get__('createTable');
-    await deleteThenCreateTable(dynamodb, createTable);
+    await deleteThenCreateTable(dynamodb, sessions.__get__('createTable'));
     mockdate.set(currentDate);
   });
 

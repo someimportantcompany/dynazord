@@ -1,5 +1,5 @@
-const { assert, isPlainObject, unmarshall } = require('../utils');
-const { formatReadData, marshallKey } = require('../helpers/data');
+const { assert, isPlainObject, marshall, unmarshall } = require('../utils');
+const { formatReadData, formatWriteData } = require('../helpers/data');
 
 module.exports = async function getDocument(key, opts) {
   const { client, tableName, keySchema, properties, log } = this;
@@ -23,12 +23,11 @@ module.exports = async function getDocument(key, opts) {
   const { hash, range } = keySchema;
   assert(key.hasOwnProperty(hash), new Error(`Missing ${hash} hash property from argument`));
   assert(!range || key.hasOwnProperty(range), new Error(`Missing ${range} range property from argument`));
-
-  const Key = await marshallKey(properties, key);
+  await formatWriteData(properties, key);
 
   const params = {
     TableName: tableName,
-    Key,
+    Key: marshall(key),
     AttributesToGet: attributesToGet,
     ConsistentRead: consistentRead,
   };

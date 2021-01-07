@@ -2,7 +2,7 @@ const _ = require('lodash');
 const assert = require('assert');
 const AWS = require('aws-sdk');
 const isUUID = require('validator/lib/isUUID');
-const { createTestModel } = require('./utils');
+const { dynamodb: testDynamoDB, createTestModel } = require('./utils');
 const { v4: uuid } = require('uuid');
 
 describe('dynazord', () => {
@@ -197,13 +197,26 @@ describe('dynazord', () => {
       assert.ok(_.isPlainObject(dynazord.methods), 'Expected dynazord.methods to be a plain object');
       assert.deepStrictEqual(Object.keys(dynazord.methods), [
         'create', 'get', 'find', 'update', 'delete', 'upsert',
-        'bulkCreate', 'bulkGet', /* 'bulkUpdate', */ 'bulkDelete', /* 'bulkUpsert', */
+        'bulkCreate', 'bulkGet', /* 'bulkUpdate', */ 'bulkDelete', 'bulkUpsert',
+        'transaction',
+      ]);
+      assert.deepStrictEqual(Object.keys(dynazord.methods.transaction), [
+        'create', 'get', 'update', 'delete', 'upsert',
       ]);
 
       for (const key in dynazord.methods) {
         if (dynazord.methods.hasOwnProperty(key)) {
-          const { [key]: method } = dynazord.methods;
-          assert.ok(typeof method === 'function', `Expected ${key} to be a function`);
+          if (key === 'transaction') {
+            for (const key2 in dynazord.methods[key]) {
+              if (dynazord.methods[key].hasOwnProperty(key2)) {
+                const { [key2]: method } = dynazord.methods[key];
+                assert.ok(typeof method === 'function', `Expected ${key}.${key2} to be a function`);
+              }
+            }
+          } else {
+            const { [key]: method } = dynazord.methods;
+            assert.ok(typeof method === 'function', `Expected ${key} to be a function`);
+          }
         }
       }
     });
@@ -235,7 +248,7 @@ describe('dynazord', () => {
       }
     });
 
-    after(() => dynazord.setDynamoDB(null));
+    after(() => dynazord.setDynamoDB(testDynamoDB));
   });
 
   describe('types', () => {

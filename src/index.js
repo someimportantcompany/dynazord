@@ -3,7 +3,7 @@ const { assert, createLogger, isPlainObject } = require('./utils');
 const { assertValidProperties } = require('./helpers/validate');
 const { createHooks } = require('./hooks');
 const { keys: typeKeys } = require('./types');
-const { methods, bulkMethods } = require('./methods');
+const { methods, bulkMethods, transactionMethods, runTransaction } = require('./methods');
 const { operators } = require('./helpers/where');
 
 const { name: PACKAGE_NAME } = require('../package.json');
@@ -16,16 +16,21 @@ const defaultOptions = {
 let overwriteDynamoDB = null;
 let overwriteOptions = null;
 
+/**
+ * @param {Object} opts
+ * @return {Object}
+ */
 function createModel(opts) {
   assert(isPlainObject(opts), new TypeError('Expected opts to be a plain object'));
 
   // Required
-  const { tableName, keySchema, properties } = opts;
+  const { tableName, properties } = opts;
   assert(typeof tableName === 'string', new TypeError('Expected { tableName } to be a string'));
   assert(isPlainObject(properties), new TypeError('Expected { properties } to be a plain object'));
   assert(Object.keys(properties).length, new TypeError('Expected { properties } to have properties'));
   // Optional
-  assert(!keySchema || isPlainObject(keySchema) || typeof keySchema === 'string',
+  opts.keySchema = opts.keySchema || Object.keys(properties).shift();
+  assert(isPlainObject(opts.keySchema) || typeof opts.keySchema === 'string',
     new TypeError('Expected { keySchema } to be a string or a plain object'));
   assert(!opts.hooks || isPlainObject(opts.hooks), new TypeError('Expected { hooks } to be a plain object'));
   assert(!opts.options || isPlainObject(opts.options), new TypeError('Expected { options } to be a plain object'));
@@ -67,9 +72,8 @@ function createModel(opts) {
     throw err;
   }
 
-  const { hash, range, ...keySchemaOpts } = isPlainObject(keySchema)
-    ? (({ hash: h, range: r }) => ({ hash: h, range: r }))(keySchema)
-    : { hash: (keySchema && typeof keySchema === 'string') ? keySchema : Object.keys(properties).shift() };
+  opts.keySchema = opts.keySchema || Object.keys(properties).shift();
+  const { hash, range, ...keySchemaOpts } = isPlainObject(opts.keySchema) ? opts.keySchema : { hash: opts.keySchema };
   assert(typeof hash === 'string', new TypeError('Expected keySchema hash property to be a string'));
   assert(properties[hash], new TypeError(`Expected ${hash} to be a property`));
   assert(properties[hash].required === true, new TypeError(`Expected ${hash} property to be required`));
@@ -81,12 +85,19 @@ function createModel(opts) {
 
   return Object.create({ ...methods, ...bulkMethods }, {
     tableName: { enumerable: true, value: tableName },
-    keySchema: { enumerable: true, value: Object.freeze({ hash, range, ...keySchemaOpts }) },
-    properties: { enumerable: true, value: Object.freeze(opts.properties) },
+    keySchema: { enumerable: true, value: { hash, range, ...keySchemaOpts } },
+    properties: { enumerable: true, value: opts.properties },
     client: { value: validateDynamoDB(opts.dynamodb) || overwriteDynamoDB || new AWS.DynamoDB() },
-    hooks: { enumerable: true, value: Object.freeze(hooks) },
+    hooks: { enumerable: true, value: hooks },
     log: { value: opts.log || createLogger(opts.logLevel) },
-    options: { enumerable: true, value: Object.freeze(options) },
+    options: { enumerable: true, value: options },
+
+    transaction: {
+      get() {
+        assert(!opts.dynamodb, new Error('Model cannot take part in transactions with specific DynamoDB instances'));
+        return (tm => Object.keys(tm).reduce((r, k) => ({ ...r, [k]: tm[k].bind(this) }), []))(transactionMethods);
+      },
+    },
   });
 }
 
@@ -106,12 +117,54 @@ function validateDynamoDB(client) {
 
 module.exports = {
   createModel,
-  methods: { ...methods, ...bulkMethods },
-  types: Object.freeze(typeKeys.reduce((r, t) => ({ ...r, [t]: t }), {})),
-  operators: Object.freeze(operators),
-  setDynamoDB: client => overwriteDynamoDB = validateDynamoDB(client),
+
+  /**
+   * @param {(AWS.DynamoDB|Object)}
+   * @return {(AWS.DynamoDB|null)}
+   */
+  setDynamoDB(client) {
+    overwriteDynamoDB = validateDynamoDB(client);
+    return overwriteDynamoDB;
+  },
+
+  /**
+   * @param {Object<string, (string|number|boolean)>}
+   * @return void
+   */
   setOptions(overwrite) {
     assert(isPlainObject(overwrite), new TypeError('Expected argument to be a plain object'));
     overwriteOptions = overwrite;
   },
+
+  /**
+   * Run a transaction
+   *
+   * @param {(AWS.DynamoDB|Object)} [client] Defaults to the global or a clean DynamoDB instance
+   * @param {DynazordTransactionBlock[]} blocks The array
+   * @param {(Object|undefined)} [opts]
+   * @return {(Object|null)[]}
+   */
+  transaction(client, blocks, opts = undefined) {
+    if (Array.isArray(client)) {
+      // client => blocks
+      opts = blocks;
+      blocks = client;
+      client = null;
+    }
+
+    return runTransaction(validateDynamoDB(client) || overwriteDynamoDB || new AWS.DynamoDB(), blocks, opts);
+  },
+
+  /**
+   * @type {Object<string, function>}
+   */
+  methods: { ...methods, ...bulkMethods, transaction: transactionMethods },
+  /**
+   * @type {Object<string, Symbol>}
+   */
+  operators,
+  /**
+   * @type {Object<string, string>}
+   */
+  types: typeKeys.reduce((r, t) => ({ ...r, [t]: t }), {}),
 };

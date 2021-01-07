@@ -54,6 +54,37 @@ function isObjectProperty(property) {
   return property && (property.type === Object || `${property.type}`.toUpperCase() === 'MAP');
 }
 
+function promiseEachSeries(a, fn) {
+  assert(Array.isArray(a), new TypeError('Expected argument to be an array'));
+  assert(typeof fn === 'function', new TypeError('Expected argument to be a function'));
+
+  return a.reduce((p, v, i) => p.then(() => fn(v, i, a)), Promise.resolve());
+}
+
+function promiseMapAll(a, fn) {
+  assert(Array.isArray(a), new TypeError('Expected argument to be an array'));
+  assert(typeof fn === 'function', new TypeError('Expected argument to be a function'));
+
+  return Promise.all(a.map(async item => {
+    await fn(item);
+    return item;
+  }));
+}
+
+function promiseMapSeries(a, fn) {
+  assert(Array.isArray(a), new TypeError('Expected argument to be an array'));
+  assert(typeof fn === 'function', new TypeError('Expected argument to be a function'));
+
+  return a.reduce((p, v, i) => p.then(async r => r.concat(await fn(v, i, a))), Promise.resolve([]));
+}
+
+function promiseReduceSeries(a, fn, s = undefined) {
+  assert(Array.isArray(a), new TypeError('Expected argument to be an array'));
+  assert(typeof fn === 'function', new TypeError('Expected argument to be a function'));
+
+  return a.reduce((p, v, i) => p.then(r => fn(r, v, i, a)), Promise.resolve(s === undefined ? a[0] || null : s));
+}
+
 module.exports = {
   assert,
   createLogger,
@@ -63,4 +94,8 @@ module.exports = {
   isPlainObject,
   marshall,
   unmarshall,
+  promiseEachSeries,
+  promiseMapAll,
+  promiseMapSeries,
+  promiseReduceSeries,
 };

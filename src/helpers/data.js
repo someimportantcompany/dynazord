@@ -114,36 +114,6 @@ async function formatWriteData(properties, data, opts = {}) {
   }
 }
 
-async function marshallKey(properties, input) {
-  assert(isPlainObject(properties), new TypeError('Expected properties to be a plain object'));
-  assert(isPlainObject(input), new TypeError('Expected input to be a plain object'));
-
-  const output = {};
-
-  for (const key in input) {
-    /* istanbul ignore else */
-    if (input.hasOwnProperty(key)) {
-      const { [key]: property } = properties;
-      const { [property ? property.type : 'null']: type } = types;
-      let { [key]: value } = input;
-
-      if (property && typeof property.set === 'function') {
-        value = await property.set.call(property, value); // eslint-disable-line no-useless-call
-      }
-      if (type && typeof type.set === 'function') {
-        value = await type.set.call(type, value, property); // eslint-disable-line no-useless-call
-      }
-
-      assert([ 'string', 'number' ].includes(typeof value),
-        new Error(`Expected key value at ${key} to be a string or number`));
-
-      output[key] = { [typeof value === 'number' ? 'N' : 'S']: `${value}` };
-    }
-  }
-
-  return output;
-}
-
 async function validateData(properties, data) {
   assert(isPlainObject(properties), new TypeError('Expected properties to be a plain object'));
   assert(isPlainObject(data), new TypeError('Expected create to be a plain object'));
@@ -221,6 +191,5 @@ async function validateData(properties, data) {
 module.exports = {
   formatReadData,
   formatWriteData,
-  marshallKey,
   validateData,
 };
