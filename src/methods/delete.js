@@ -1,5 +1,5 @@
-const { assert, isPlainObject } = require('../utils');
-const { marshallKey } = require('../helpers/data');
+const { assert, isPlainObject, marshall } = require('../utils');
+const { formatWriteData } = require('../helpers/data');
 
 module.exports = async function deleteDocument(key, opts = undefined) {
   const { tableName, keySchema, properties, client, hooks, log } = this;
@@ -18,9 +18,11 @@ module.exports = async function deleteDocument(key, opts = undefined) {
 
   await hooks.emit('beforeDelete', this, opts.hooks === true, key, opts);
 
+  await formatWriteData(properties, key);
+
   const params = {
     TableName: tableName,
-    Key: await marshallKey(properties, key),
+    Key: marshall(key),
     ReturnValues: 'NONE',
   };
 
