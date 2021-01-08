@@ -141,7 +141,7 @@ const posts = dynazord.createModel({
         const { id, slug } = post;
         if (slug) {
           // Lookup if this slug has been used before
-          const existing = await this.find({ slug });
+          const existing = await this.scan({ slug });
           // And if it exists on another post, throw an error
           assert(!existing || existing.id !== id, 400, new Error('Expected slug to be unique'), { slug });
         }

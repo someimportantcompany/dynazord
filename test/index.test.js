@@ -77,7 +77,7 @@ describe('dynazord', () => {
         assert(model, 'Failed to create the model');
         assert(id, 'Failed to initially create the entry');
 
-        const docs = await model.find({ email });
+        const docs = await model.scan({ email });
         assert.deepStrictEqual(docs, [ { id, email, name } ]);
       });
 
@@ -86,7 +86,7 @@ describe('dynazord', () => {
         assert(id, 'Failed to initially create the entry');
 
         const { or: $or } = dynazord.operators;
-        const docs = await model.find({ [$or]: [ { email }, { email } ] });
+        const docs = await model.scan({ [$or]: [ { email }, { email } ] });
         assert.deepStrictEqual(docs, [ { id, email, name } ]);
       });
 
@@ -155,7 +155,7 @@ describe('dynazord', () => {
         assert(model, 'Failed to create the model');
         assert(ids.length, 'Failed to initially create entries');
 
-        const docs = await model.find({ email: body[0].email });
+        const docs = await model.scan({ email: body[0].email });
         assert.deepStrictEqual(docs, [ { id: ids[0], ...body[0] } ]);
       });
 
@@ -164,7 +164,7 @@ describe('dynazord', () => {
         assert(ids.length, 'Failed to initially create entries');
 
         const { or: $or } = dynazord.operators;
-        const docs = await model.find({ [$or]: [ { email: body[0].email }, { email: body[1].email } ] });
+        const docs = await model.scan({ [$or]: [ { email: body[0].email }, { email: body[1].email } ] });
         assert.strictEqual(docs.length, 2, 'Expected find to return 2 documents');
 
         const first = docs.find(d => d && d.email === body[0].email);
@@ -196,7 +196,7 @@ describe('dynazord', () => {
     it('should export a static object of methods', () => {
       assert.ok(_.isPlainObject(dynazord.methods), 'Expected dynazord.methods to be a plain object');
       assert.deepStrictEqual(Object.keys(dynazord.methods), [
-        'create', 'get', 'find', 'update', 'delete', 'upsert',
+        'create', 'get', 'scan', 'update', 'delete', 'upsert',
         'bulkCreate', 'bulkGet', /* 'bulkUpdate', */ 'bulkDelete', 'bulkUpsert',
         'transaction',
       ]);
