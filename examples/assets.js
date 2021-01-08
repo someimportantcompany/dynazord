@@ -1,8 +1,12 @@
 const assert = require('http-assert');
+const AWS = require('aws-sdk');
 const crypto = require('crypto');
 const dynazord = require('dynazord');
+const formatDate = require('date-fns/format');
 const isHash = require('validator/lib/isHash');
+const ms = require('ms');
 const { customAlphabet } = require('nanoid');
+const { v4: uuid } = require('uuid');
 
 // @link https://zelark.github.io/nano-id-cc/
 const nanoid = customAlphabet('0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz', 15);
@@ -47,7 +51,7 @@ const assets = dynazord.createModel({
         hasValidExtension(filename) {
           assert(typeof filename === 'string' && filename.includes('.'), new Error('Expected a filename with an extension'));
           const ext = filename.split('.').pop();
-          assert(Object.keys(VALID_EXTS).incldues(`.${ext}`), new Error('Expected filename to have a valid extension'), { ext });
+          assert(Object.keys(VALID_EXTS).includes(`.${ext}`), new Error('Expected filename to have a valid extension'), { ext });
         },
       },
     },
@@ -58,13 +62,12 @@ const assets = dynazord.createModel({
         notNull: true,
         hasValidMimetype(filemime) {
           assert(typeof filemime === 'string' && filemime.includes('/'), new Error('Expected a filemime'));
-          assert(Object.values(VALID_EXTS).incldues(filemime), new Error('Expected filename to have a valid extension'), { filemime });
+          assert(Object.values(VALID_EXTS).includes(filemime), new Error('Expected filename to have a valid extension'), { filemime });
         },
       },
     },
     filesize: {
       type: Number,
-      required: true,
     },
     filesha1: {
       type: String,
@@ -93,5 +96,23 @@ const assets = dynazord.createModel({
     updatedAtTimestamp: true,
   },
 });
+
+assets.getUploadUrl = async function getUploadUrl({ filename, filemime, filesize }) {
+  const s3 = new AWS.S3();
+
+  const params = {
+    Bucket: 'dynazord-example-assets',
+    Key: `uploads/${formatDate(new Date(), 'YYYY-MM')}${uuid()}/${filename}`,
+    ContentLength: filesize,
+    ContentType: filemime,
+    Expires: new Date(Date.now() + ms('5m')),
+  };
+
+  const signedUrl = await s3.getSignedUrl('putObject', params).promise();
+  assert(typeof signedUrl === 'string' && signedUrl.startsWith('https://'),
+    new Error('Expected signedUrl to be a HTTPS string'));
+
+  return signedUrl;
+};
 
 module.exports = assets;
