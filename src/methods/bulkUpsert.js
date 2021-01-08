@@ -83,16 +83,12 @@ module.exports = async function upsertBulkDocuments(items, opts = undefined) {
 
     assert(results && Array.isArray(results.Responses), new TypeError('Expected results to be an array'));
 
-    items = await promiseMapAll(results.Responses, async ({ Item }) => {
-      if (Item) {
-        Item = unmarshall(Item);
-        await hooks.emit('afterUpsertWrite', this, opts.hooks === true, Item, opts);
-        await formatReadData(properties, Item);
-        await hooks.emit('afterUpsert', this, opts.hooks === true, Item, opts);
-        return Item;
-      } else {
-        return null;
-      }
+    items = results.Responses.filter(r => r && isPlainObject(r.Item)).map(({ Item }) => unmarshall(Item));
+
+    items = await promiseMapAll(items, async item => {
+      await hooks.emit('afterUpsertWrite', this, opts.hooks === true, item, opts);
+      await formatReadData(properties, item);
+      await hooks.emit('afterUpsert', this, opts.hooks === true, item, opts);
     });
   }
 

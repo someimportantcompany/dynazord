@@ -2,22 +2,17 @@ const _ = require('lodash');
 const assert = require('assert');
 const AWS = require('aws-sdk');
 const isUUID = require('validator/lib/isUUID');
-const { dynamodb: testDynamoDB, createTestModel } = require('./utils');
+const { dynamodb, createTestModel } = require('./utils');
 const { v4: uuid } = require('uuid');
 
 describe('dynazord', () => {
-  const dynazord = require('../src');
+  const dynazord = require('dynazord');
 
   describe('createModel', () => {
     let model = null;
 
     before(async () => {
       assert.strictEqual(typeof dynazord.createModel, 'function', 'Expected createModel to be a function');
-
-      const dynamodb = new AWS.DynamoDB({
-        endpoint: process.env.AWS_DYNAMODB_ENDPOINT,
-        region: 'us-east-1',
-      });
 
       model = await createTestModel({
         dynamodb,
@@ -48,7 +43,7 @@ describe('dynazord', () => {
       assert(model, 'Failed to create model');
     });
 
-    const email = 'james@jdrydn.com';
+    const email = 'jdrydn@github.io';
     const name = 'James D';
     const avatar = 'http://github.com/jdrydn.png';
 
@@ -73,7 +68,7 @@ describe('dynazord', () => {
         assert.deepStrictEqual(doc, { id, email, name });
       });
 
-      it('should find an entry #1', async () => {
+      it('should scan for an entry', async () => {
         assert(model, 'Failed to create the model');
         assert(id, 'Failed to initially create the entry');
 
@@ -81,12 +76,39 @@ describe('dynazord', () => {
         assert.deepStrictEqual(docs, [ { id, email, name } ]);
       });
 
-      it('should find an entry #2', async () => {
+      it('should scan for an entry (AND)', async () => {
         assert(model, 'Failed to create the model');
         assert(id, 'Failed to initially create the entry');
 
-        const { or: $or } = dynazord.operators;
-        const docs = await model.scan({ [$or]: [ { email }, { email } ] });
+        const { and } = dynazord.operators;
+        const docs = await model.scan({ [and]: [ { email }, { name } ] });
+        assert.deepStrictEqual(docs, [ { id, email, name } ]);
+      });
+
+      it('should scan for an entry (OR)', async () => {
+        assert(model, 'Failed to create the model');
+        assert(id, 'Failed to initially create the entry');
+
+        const { or } = dynazord.operators;
+        const docs = await model.scan({ [or]: [ { email }, { email: 'jdrydn1@github.io' } ] });
+        assert.deepStrictEqual(docs, [ { id, email, name } ]);
+      });
+
+      it('should scan for an entry (NOT)', async () => {
+        assert(model, 'Failed to create the model');
+        assert(id, 'Failed to initially create the entry');
+
+        const { not } = dynazord.operators;
+        const docs = await model.scan({ [not]: { email: 'jdrydn1@github.io' } });
+        assert.deepStrictEqual(docs, [ { id, email, name } ]);
+      });
+
+      it('should scan for an entry (IN)', async () => {
+        assert(model, 'Failed to create the model');
+        assert(id, 'Failed to initially create the entry');
+
+        const { in: $in } = dynazord.operators;
+        const docs = await model.scan({ email: { [$in]: [ 'jdrydn@github.io', 'jdrydn1@github.io' ] } });
         assert.deepStrictEqual(docs, [ { id, email, name } ]);
       });
 
@@ -188,6 +210,30 @@ describe('dynazord', () => {
 
         const deleted = await model.bulkDelete(ids.map(id => ({ id })));
         assert.strictEqual(deleted, true);
+        ids.splice(0, ids.length);
+      });
+
+      it('should upsert entries', async () => {
+        assert(model, 'Failed to create the model');
+        assert(!ids.length, 'Failed to initially create then delete entries');
+
+        const docs1 = await model.bulkUpsert(body);
+        docs1.forEach((doc, i) => {
+          assert.ok(_.isPlainObject(doc), `Expected document #${i} to be a plain object`);
+          assert.ok(typeof doc.id === 'string' && isUUID(doc.id, 4), `Expected id #${i} to be a UUID-v4 string`);
+          assert.deepStrictEqual(doc, { id: doc.id, ...body[i] });
+        });
+        assert.deepStrictEqual(body.length, docs1.length, `Expected bulkUpsert to create ${body.length} documents`);
+
+        const docs2 = await model.bulkUpsert(body.map((b, i) => ({ id: docs1[i].id, ...b, avatar })));
+        docs2.forEach((doc, i) => {
+          assert.ok(_.isPlainObject(doc), `Expected document #${i} to be a plain object`);
+          assert.ok(typeof doc.id === 'string' && isUUID(doc.id, 4), `Expected id #${i} to be a UUID-v4 string`);
+          assert.ok(docs1[i].id === docs2[i].id, `Expected id #${i} to be match with other docs array`);
+          ids[i] = doc.id;
+          assert.deepStrictEqual(doc, { id: doc.id, ...body[i], avatar });
+        });
+        assert.deepStrictEqual(body.length, docs2.length, `Expected bulkUpsert to create ${body.length} documents`);
       });
     });
   });
@@ -226,7 +272,10 @@ describe('dynazord', () => {
     const { operators } = require('../src/helpers/where');
 
     it('should export a static object of operators', () => {
-      assert.deepStrictEqual(Object.keys(dynazord.operators), [ 'and', 'or', 'eq', 'gt', 'gte', 'lt', 'lte', 'btw' ]);
+      assert.deepStrictEqual(Object.keys(dynazord.operators), [
+        'and', 'or', 'not',
+        'eq', 'ne', 'gt', 'gte', 'lt', 'lte', 'in',
+      ]);
       assert.deepStrictEqual(dynazord.operators, operators);
     });
   });
@@ -248,7 +297,7 @@ describe('dynazord', () => {
       }
     });
 
-    after(() => dynazord.setDynamoDB(testDynamoDB));
+    after(() => dynazord.setDynamoDB(dynamodb));
   });
 
   describe('types', () => {

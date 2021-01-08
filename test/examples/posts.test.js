@@ -109,6 +109,26 @@ describe('examples', () => describe('posts', () => {
     });
   });
 
+  it('should scan for the entry', async () => {
+    const [ id ] = ids;
+    assert.ok(typeof id === 'string' && id.length, 'Expected posts.create to have succeeded');
+
+    const results = await posts.scan({ title: 'Hello, world!' });
+    assert.ok(Array.isArray(results) && results.length === 1, 'Expected posts.scan to return results');
+    assert.ok(_.isPlainObject(results[0]) && results[0].id, 'Expected posts.scan to return an entry');
+
+    assert.deepStrictEqual(results[0], {
+      id,
+      title: 'Hello, world!',
+      blogID: 'jdrydn.com',
+      slug: 'hello-world',
+      content: [ { html: '<p>Hello, world!</p>' } ],
+      status: 'DRAFT',
+      createdAt: currentDate,
+      updatedAt: currentDate,
+    });
+  });
+
   it('should update the entry', async () => {
     const [ id ] = ids;
     assert.ok(typeof id === 'string' && id.length, 'Expected posts.create to have succeeded');

@@ -2,7 +2,7 @@ const { assert, isPlainObject } = require('../utils');
 const { types } = require('../types');
 
 function assertValidProperties(properties) {
-  const assertValidProperty = (key, property) => {
+  const assertEachProperty = (key, property) => {
     assert(isPlainObject(property), new TypeError('Expected property to be a plain object'), { key });
 
     const { [property.type]: type } = types;
@@ -12,7 +12,7 @@ function assertValidProperties(properties) {
     assert(!property.hasOwnProperty('enum') || Array.isArray(property.enum),
       new Error('Expected enum to be an array of values'), { key });
 
-    assert(!property.hasOwnProperty('validate') || isPlainObject(property.validate),
+    assert(!property.hasOwnProperty('validate') || property.validate === undefined || isPlainObject(property.validate),
       new Error('Expected validate to be an object'), { key });
 
     if (property.validate) {
@@ -26,7 +26,7 @@ function assertValidProperties(properties) {
 
     if (property.properties && (property.type === Array || `${property.type}`.toUpperCase() === 'LIST')) {
       assert(isPlainObject(property.properties), new TypeError('Expected Array properties to be a plain object'), { key });
-      assertValidProperty(`${key}[i]`, property.properties);
+      assertEachProperty(`${key}[i]`, property.properties);
     }
 
     if (property.properties && (property.type === Object || `${property.type}`.toUpperCase() === 'MAP')) {
@@ -35,7 +35,9 @@ function assertValidProperties(properties) {
       for (const key2 in property.properties) {
         /* istanbul ignore else */
         if (property.properties.hasOwnProperty(key2)) {
-          assertValidProperty(`${key}.${key2}`, property.properties[key2]);
+          assert(typeof key2 === 'string', new TypeError('Expected key to be a string'), { key: `${key}.${key2}` });
+          assert(!key2.includes('.'), new TypeError('A nested property key cannot include a dot'), { key: `${key}.${key2}` });
+          assertEachProperty(`${key}.${key2}`, property.properties[key2]);
         }
       }
     }
@@ -45,9 +47,12 @@ function assertValidProperties(properties) {
     /* istanbul ignore else */
     if (properties.hasOwnProperty(key)) {
       try {
-        assertValidProperty(key, properties[key]);
-      } catch (err) {
+        assert(typeof key === 'string', new TypeError('Expected key to be a string'), { key });
+        assert(!key.includes('.'), new TypeError('A property key cannot include a dot'), { key });
+        assertEachProperty(key, properties[key]);
+      } catch (err) /* istanbul ignore next */ {
         err.message = `${err.key}: ${err.message}`;
+        throw err;
       }
     }
   }

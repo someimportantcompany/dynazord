@@ -1,4 +1,4 @@
-const { assert, isPlainObject, marshall, unmarshall } = require('../utils');
+const { assert, isPlainObject, marshall, unmarshall, promiseMapAll } = require('../utils');
 const { buildFilterExpression, buildProjectionExpression } = require('../helpers/where');
 const { formatReadData } = require('../helpers/data');
 
@@ -21,7 +21,7 @@ module.exports = async function findDocument(where, opts) {
   assert(consistentRead === undefined || typeof consistentRead === 'boolean',
     new TypeError('Expected consistentRead to be a boolean'));
 
-  const filters = buildFilterExpression(where) || {};
+  const filters = (await buildFilterExpression(properties, where)) || {};
   const projected = attributesToGet ? buildProjectionExpression(attributesToGet) : {};
 
   const params = {
@@ -37,9 +37,9 @@ module.exports = async function findDocument(where, opts) {
   const result = await client.scan(params).promise();
   log.debug({ scan: result });
 
-  return result && Array.isArray(result.Items) ? Promise.all(result.Items.map(async item => {
-    item = unmarshall(item);
-    await formatReadData(properties, item);
-    return item;
-  })) : [];
+  assert(result && Array.isArray(result.Items), new Error('Expected scan to return an array of Items'));
+
+  let items = result.Items.map(item => unmarshall(item));
+  items = promiseMapAll(items, item => formatReadData(properties, item));
+  return items;
 };

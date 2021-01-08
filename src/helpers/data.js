@@ -114,6 +114,32 @@ async function formatWriteData(properties, data, opts = {}) {
   }
 }
 
+function getPropertyForKey(properties, path, prefix = '') {
+  assert(isPlainObject(properties), new TypeError('Expected properties to be a plain object'));
+  assert(typeof path === 'string' && path.length, new TypeError('Expected path to be a string'));
+
+  const [ key, ...children ] = path.split('.');
+  assert(key.length, new TypeError('Expected key to be a string'));
+
+  const { [key]: property } = properties;
+  assert(isPlainObject(property), new Error(`Expected ${prefix}${key} to be a valid property`));
+  assert(children.length === 0 || isObjectProperty(property),
+    new Error(`Expected ${prefix}${key} to be an object since it has child keys: ${children.join('.')}`));
+
+  if (isObjectProperty(property)) {
+    assert(children.length > 1, new Error(`Expected ${prefix}${key} to have child keys since it is an object property`));
+    if (property.properties) {
+      assert(isPlainObject(properties), new TypeError(`Expected ${prefix}${key}.properties to be a plain object`));
+      return getPropertyForKey(property.properties, children.join('.'), `${prefix}${key}.`);
+    } else {
+      return property;
+    }
+  } else {
+    assert(children.length === 0, new Error(`Expected ${prefix}${key} is not an object & cannot have child keys`));
+    return property;
+  }
+}
+
 async function validateData(properties, data) {
   assert(isPlainObject(properties), new TypeError('Expected properties to be a plain object'));
   assert(isPlainObject(data), new TypeError('Expected create to be a plain object'));
@@ -191,5 +217,6 @@ async function validateData(properties, data) {
 module.exports = {
   formatReadData,
   formatWriteData,
+  getPropertyForKey,
   validateData,
 };

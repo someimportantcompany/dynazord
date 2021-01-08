@@ -77,6 +77,21 @@ describe('examples', () => describe('sessions', () => {
     });
   });
 
+  it('should scan for the entry', async () => {
+    const results = await sessions.scan({ email: 'jdrydn@github.io', createdAt: currentDate });
+    assert.ok(Array.isArray(results) && results.length === 1, 'Expected posts.scan to return results');
+    assert.ok(_.isPlainObject(results[0]) && results[0].accessToken, 'Expected posts.scan to return an entry');
+
+    assert.deepStrictEqual(results[0], {
+      email: 'jdrydn@github.io',
+      accessToken: results[0].accessToken,
+      ipAddress: '127.0.0.1',
+      userAgent,
+      createdAt: currentDate,
+      updatedAt: currentDate,
+    });
+  });
+
   it('should update the entry', async () => {
     const entry = await sessions.update({
       lastActiveAt: new Date(),

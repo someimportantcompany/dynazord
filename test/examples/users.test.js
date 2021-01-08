@@ -5,7 +5,9 @@ const rewire = require('rewire');
 const { dynamodb, assertItem, deleteThenCreateTable } = require('../utils');
 
 describe('examples', () => describe('users', () => {
+  const dynazord = require('dynazord');
   const users = rewire('../../examples/users');
+
   const currentDate = new Date();
 
   before(async () => {
@@ -102,6 +104,65 @@ describe('examples', () => describe('users', () => {
 
     assert.ok(_.isPlainObject(entry), 'Expected users.get to return a plain object');
     assert.deepStrictEqual(entry, {
+      email: 'jdrydn@github.io',
+      name: 'James',
+      role: 'USER',
+      createdAt: currentDate,
+      updatedAt: currentDate,
+    });
+  });
+
+  it('should scan for the entry', async () => {
+    const results = await users.scan({ name: 'James' });
+    assert.ok(Array.isArray(results) && results.length === 1, 'Expected users.scan to return results');
+    assert.ok(_.isPlainObject(results[0]) && results[0].email, 'Expected users.scan to return an entry');
+
+    assert.deepStrictEqual(results[0], {
+      email: 'jdrydn@github.io',
+      name: 'James',
+      role: 'USER',
+      createdAt: currentDate,
+      updatedAt: currentDate,
+    });
+  });
+
+  it('should scan for the entry (AND)', async () => {
+    const { and } = dynazord.operators;
+    const results = await users.scan({ [and]: [ { email: 'jdrydn@github.io' }, { name: 'James' } ] });
+    assert.ok(Array.isArray(results) && results.length === 1, 'Expected users.scan to return results');
+    assert.ok(_.isPlainObject(results[0]) && results[0].email, 'Expected users.scan to return an entry');
+
+    assert.deepStrictEqual(results[0], {
+      email: 'jdrydn@github.io',
+      name: 'James',
+      role: 'USER',
+      createdAt: currentDate,
+      updatedAt: currentDate,
+    });
+  });
+
+  it('should scan for the entry (OR)', async () => {
+    const { or } = dynazord.operators;
+    const results = await users.scan({ [or]: [ { email: 'jdrydn@github.io' }, { email: 'jdrydn2@github.io' } ] });
+    assert.ok(Array.isArray(results) && results.length === 1, 'Expected users.scan to return results');
+    assert.ok(_.isPlainObject(results[0]) && results[0].email, 'Expected users.scan to return an entry');
+
+    assert.deepStrictEqual(results[0], {
+      email: 'jdrydn@github.io',
+      name: 'James',
+      role: 'USER',
+      createdAt: currentDate,
+      updatedAt: currentDate,
+    });
+  });
+
+  it('should scan for the entry (NOT)', async () => {
+    const { not } = dynazord.operators;
+    const results = await users.scan({ [not]: [ { email: 'jdrydn1@github.io' } ] });
+    assert.ok(Array.isArray(results) && results.length === 1, 'Expected users.scan to return results');
+    assert.ok(_.isPlainObject(results[0]) && results[0].email, 'Expected users.scan to return an entry');
+
+    assert.deepStrictEqual(results[0], {
       email: 'jdrydn@github.io',
       name: 'James',
       role: 'USER',
