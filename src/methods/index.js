@@ -2,7 +2,7 @@
 const methods = {
   create: require('./create'),
   get: require('./get'),
-  // query: require('./query'),
+  query: require('./query'),
   scan: require('./scan'),
   update: require('./update'),
   delete: require('./delete'),
