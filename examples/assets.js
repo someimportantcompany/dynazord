@@ -4,7 +4,6 @@ const crypto = require('crypto');
 const dynazord = require('dynazord');
 const formatDate = require('date-fns/format');
 const isHash = require('validator/lib/isHash');
-const ms = require('ms');
 const { customAlphabet } = require('nanoid');
 const { v4: uuid } = require('uuid');
 
