@@ -10,19 +10,20 @@ const createTable = {
   KeySchema: [
     { AttributeName: 'id', KeyType: 'HASH' },
   ],
-  // GlobalSecondaryIndexes: [
-  //   {
-  //     IndexName: 'blogPostsByTime',
-  //     KeySchema: [
-  //       { AttributeName: 'blog', KeyType: 'HASH' },
-  //       { AttributeName: 'publishedAt', KeyType: 'RANGE' },
-  //     ],
-  //   },
-  // ],
+  GlobalSecondaryIndexes: [
+    {
+      IndexName: 'blogPostsByTime',
+      KeySchema: [
+        { AttributeName: 'blogID', KeyType: 'HASH' },
+        { AttributeName: 'publishedAt', KeyType: 'RANGE' },
+      ],
+      Projection: { ProjectionType: 'KEYS_ONLY' },
+    },
+  ],
   AttributeDefinitions: [
     { AttributeName: 'id', AttributeType: 'S' },
-    // { AttributeName: 'blogID', AttributeType: 'S' },
-    // { AttributeName: 'publishedAt', AttributeType: 'N' },
+    { AttributeName: 'blogID', AttributeType: 'S' },
+    { AttributeName: 'publishedAt', AttributeType: 'N' },
   ],
 };
 
@@ -31,12 +32,12 @@ const posts = dynazord.createModel({
   keySchema: {
     hash: 'id',
   },
-  // secondaryIndexes: {
-  //   blogPostsByTime: {
-  //     hash: 'blog',
-  //     range: 'publishedAt',
-  //   },
-  // },
+  secondaryIndexes: {
+    blogPostsByTime: {
+      hash: 'blogID',
+      range: 'publishedAt',
+    },
+  },
   properties: {
     id: {
       type: String,

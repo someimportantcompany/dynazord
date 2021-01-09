@@ -30,8 +30,10 @@ function createModel(opts) {
   assert(Object.keys(properties).length, new TypeError('Expected { properties } to have properties'));
   // Optional
   opts.keySchema = opts.keySchema || Object.keys(properties).shift();
-  assert(isPlainObject(opts.keySchema) || typeof opts.keySchema === 'string',
+  assert(isPlainObject(opts.keySchema) || (typeof opts.keySchema === 'string' && opts.keySchema.length),
     new TypeError('Expected { keySchema } to be a string or a plain object'));
+  assert(!opts.secondaryIndexes || isPlainObject(opts.secondaryIndexes),
+    new TypeError('Expected { secondaryIndexes } to be a plain object'));
   assert(!opts.hooks || isPlainObject(opts.hooks), new TypeError('Expected { hooks } to be a plain object'));
   assert(!opts.options || isPlainObject(opts.options), new TypeError('Expected { options } to be a plain object'));
 
@@ -72,7 +74,6 @@ function createModel(opts) {
     throw err;
   }
 
-  opts.keySchema = opts.keySchema || Object.keys(properties).shift();
   const { hash, range, ...keySchemaOpts } = isPlainObject(opts.keySchema) ? opts.keySchema : { hash: opts.keySchema };
   assert(typeof hash === 'string', new TypeError('Expected keySchema hash property to be a string'));
   assert(properties[hash], new TypeError(`Expected ${hash} to be a property`));
@@ -80,6 +81,19 @@ function createModel(opts) {
   assert(!range || typeof range === 'string', new TypeError('Expected keySchema range property to be a string'));
   assert(!range || properties[range], new TypeError(`Expected ${range} to be a property`));
   assert(!range || properties[range].required === true, new TypeError(`Expected ${range} property to be required`));
+
+  if (opts.secondaryIndexes) {
+    for (const name in opts.secondaryIndexes) {
+      if (opts.secondaryIndexes.hasOwnProperty(name)) {
+        assert(isPlainObject(opts.secondaryIndexes[name]), new TypeError(`Expected secondaryIndexes.${name} to be an object`));
+        const { hash: shash, range: srange } = opts.secondaryIndexes[name];
+        assert(typeof shash === 'string', new TypeError(`Expected secondaryIndexes ${name} hash property to be a string`));
+        assert(properties[shash], new TypeError(`Expected ${hash} to be a property`));
+        assert(typeof srange === 'string', new TypeError(`Expected secondaryIndexes ${name} range property to be a string`));
+        assert(properties[srange], new TypeError(`Expected ${range} to be a property`));
+      }
+    }
+  }
 
   const hooks = createHooks(opts.hooks || {});
 
