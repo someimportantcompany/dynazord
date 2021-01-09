@@ -100,6 +100,7 @@ function createModel(opts) {
   return Object.create({ ...methods, ...bulkMethods }, {
     tableName: { enumerable: true, value: tableName },
     keySchema: { enumerable: true, value: { hash, range, ...keySchemaOpts } },
+    secondaryIndexes: { enumerable: true, value: opts.secondaryIndexes },
     properties: { enumerable: true, value: opts.properties },
     client: { value: validateDynamoDB(opts.dynamodb) || overwriteDynamoDB || new AWS.DynamoDB() },
     hooks: { enumerable: true, value: hooks },

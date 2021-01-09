@@ -3,11 +3,12 @@ const { buildFilterExpression, buildAttributesExpression } = require('../helpers
 const { formatReadData } = require('../helpers/data');
 
 module.exports = async function findDocument(where, opts = undefined) {
-  const { client, tableName, keySchema, properties, log } = this;
+  const { client, tableName, keySchema, secondaryIndexes, properties, log } = this;
   assert(client && typeof client.scan === 'function', new TypeError('Expected client to be a DynamoDB client'));
   assert(typeof tableName === 'string', new TypeError('Invalid tableName to be a string'));
   assert(isPlainObject(keySchema), new TypeError('Expected keySchema to be a plain object'));
   assert(isPlainObject(properties), new TypeError('Expected properties to be a plain object'));
+  assert(!secondaryIndexes || isPlainObject(secondaryIndexes), new TypeError('Expected secondaryIndexes to be a plain object'));
 
   assert(isPlainObject(where), new TypeError('Expected argument to be a plain object'));
   assert(opts === undefined || isPlainObject(opts), new TypeError('Expected opts to be a plain object'));
@@ -19,6 +20,8 @@ module.exports = async function findDocument(where, opts = undefined) {
     new TypeError('Expected opts.filter to be a plain object'));
   assert(opts.consistentRead === undefined || typeof opts.consistentRead === 'boolean',
     new TypeError('Expected opts.consistentRead to be a boolean'));
+  assert(opts.scanIndexForward === undefined || typeof opts.scanIndexForward === 'boolean',
+    new TypeError('Expected opts.scanIndexForward to be a boolean'));
   assert(opts.indexName === undefined || typeof opts.indexName === 'string',
     new TypeError('Expected opts.indexName to be a string'));
   assert(opts.exclusiveStartKey === undefined || isPlainObject(opts.exclusiveStartKey),
@@ -29,6 +32,15 @@ module.exports = async function findDocument(where, opts = undefined) {
     new TypeError('Expected opts.select to be a string'));
   assert(opts.select !== 'ALL_PROJECTED_ATTRIBUTES' || opts.indexName,
     new TypeError('opts.select can only be ALL_PROJECTED_ATTRIBUTES if indexName is set'));
+  assert(opts.attributesToGet === undefined || opts.select === 'SPECIFIC_ATTRIBUTES',
+    new TypeError('Cannot use attributesToGet with select'));
+
+  assert(!opts.indexName || (secondaryIndexes && isPlainObject(secondaryIndexes[opts.indexName])),
+    new Error(`Unknown secondary index ${opts.indexName}`));
+
+  const { hash, range } = opts.indexName ? secondaryIndexes[opts.indexName] : keySchema;
+  assert(where.hasOwnProperty(hash), new Error(`Missing ${hash} hash property from argument`));
+  assert(!range || where.hasOwnProperty(range), new Error(`Missing ${range} range property from argument`));
 
   const keyCondition = (await buildFilterExpression('k', properties, where)) || {};
   const filter = (opts.filter && (await buildFilterExpression('f', properties, opts.filter))) || {};
@@ -45,7 +57,8 @@ module.exports = async function findDocument(where, opts = undefined) {
     Select: opts.select,
     ExpressionAttributeNames: { ...keyCondition.names, ...filter.names, ...projected.names },
     ExpressionAttributeValues: marshall({ ...keyCondition.values, ...filter.values }),
-    ConsistentRead: opts.consistentRead,
+    ConsistentRead: opts.consistentRead || true,
+    ScanIndexForward: opts.scanIndexForward || true,
   };
 
   log.debug({ query: params });

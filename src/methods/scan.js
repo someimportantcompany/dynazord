@@ -3,7 +3,7 @@ const { buildFilterExpression, buildAttributesExpression } = require('../helpers
 const { formatReadData } = require('../helpers/data');
 
 module.exports = async function findDocument(where, opts = undefined) {
-  const { client, tableName, keySchema, properties, log } = this;
+  const { client, tableName, keySchema, secondaryIndexes, properties, log } = this;
   assert(client && typeof client.scan === 'function', new TypeError('Expected client to be a DynamoDB client'));
   assert(typeof tableName === 'string', new TypeError('Invalid tableName to be a string'));
   assert(isPlainObject(keySchema), new TypeError('Expected keySchema to be a plain object'));
@@ -29,6 +29,11 @@ module.exports = async function findDocument(where, opts = undefined) {
     new TypeError('Expected opts.select to be a string'));
   assert(opts.select !== 'ALL_PROJECTED_ATTRIBUTES' || opts.indexName,
     new TypeError('opts.select can only be ALL_PROJECTED_ATTRIBUTES if indexName is set'));
+  assert(opts.attributesToGet === undefined || opts.select === 'SPECIFIC_ATTRIBUTES',
+    new TypeError('Cannot use attributesToGet with select'));
+
+  assert(!opts.indexName || (secondaryIndexes && isPlainObject(secondaryIndexes[opts.indexName])),
+    new Error(`Unknown secondary index ${opts.indexName}`));
 
   const filters = (await buildFilterExpression('f', properties, where)) || {};
   const projected = opts.attributesToGet ? buildAttributesExpression('p', opts.attributesToGet) : {};
