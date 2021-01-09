@@ -97,18 +97,16 @@ const assets = dynazord.createModel({
   },
 });
 
-assets.getUploadUrl = async function getUploadUrl({ filename, filemime, filesize }) {
+assets.getUploadUrl = function getUploadUrl({ filename, filemime }) {
   const s3 = new AWS.S3();
 
   const params = {
     Bucket: 'dynazord-example-assets',
-    Key: `uploads/${formatDate(new Date(), 'YYYY-MM')}${uuid()}/${filename}`,
-    ContentLength: filesize,
+    Key: `uploads/${formatDate(new Date(), 'yyyy-MM')}/${uuid()}/${filename}`,
     ContentType: filemime,
-    Expires: new Date(Date.now() + ms('5m')),
   };
 
-  const signedUrl = await s3.getSignedUrl('putObject', params).promise();
+  const signedUrl = s3.getSignedUrl('putObject', params);
   assert(typeof signedUrl === 'string' && signedUrl.startsWith('https://'),
     new Error('Expected signedUrl to be a HTTPS string'));
 

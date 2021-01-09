@@ -1,6 +1,8 @@
 const _ = require('lodash');
 const assert = require('assert');
+const fs = require('fs');
 const mockdate = require('mockdate');
+const path = require('path');
 const rewire = require('rewire');
 const { dynamodb, assertItem, deleteThenCreateTable } = require('../utils');
 
@@ -59,6 +61,48 @@ describe('examples', () => describe('assets', () => {
     });
 
     ids.push(entry.id);
+  });
+
+  it('should create a new entry with a buffer', async () => {
+    const content = fs.readFileSync(path.resolve(__dirname, '../middle-out.jpg'));
+    assert.ok(content instanceof Buffer, 'Expected middle-out.jpg to be a Buffer');
+
+    const entry = await assets.create({
+      filename: 'middle-out.jpg',
+      filemime: 'image/jpg',
+      filesize: 26285,
+      content,
+      filesha1: '7d57cdcf81ccd30b2c2a863dcec66fc420b1cfe6',
+    });
+
+    assert.ok(_.isPlainObject(entry), 'Expected assets.create to return a plain object');
+    assert.ok(typeof entry.id === 'string' && entry.id.length, 'Expected assets.create to return an ID');
+    const { id } = entry;
+
+    await assertItem(dynamodb, {
+      TableName: assets.tableName,
+      Key: { id: { S: id } },
+    }, {
+      id: { S: id },
+      filename: { S: 'middle-out.jpg' },
+      filemime: { S: 'image/jpg' },
+      filesize: { N: '26285' },
+      content: { S: content.toString('binary') },
+      filesha1: { S: '7d57cdcf81ccd30b2c2a863dcec66fc420b1cfe6' },
+      createdAt: { S: currentDate.toISOString() },
+      updatedAt: { S: currentDate.toISOString() },
+    });
+
+    assert.deepStrictEqual(entry, {
+      id,
+      filename: 'middle-out.jpg',
+      filemime: 'image/jpg',
+      filesize: content.length,
+      content,
+      filesha1: '7d57cdcf81ccd30b2c2a863dcec66fc420b1cfe6',
+      createdAt: currentDate,
+      updatedAt: currentDate,
+    });
   });
 
   it('should get the entry', async () => {
@@ -203,6 +247,27 @@ describe('examples', () => describe('assets', () => {
       createdAt: currentDate,
       updatedAt: currentDate,
     });
+  });
+
+  describe('getUploadUrl', () => {
+
+    before(() => {
+      assert.strictEqual(typeof assets.getUploadUrl, 'function', 'Expected assets.getUploadUrl to be a function');
+    });
+
+    it('should get a signed S3 URL', () => {
+      const signedUrl = assets.getUploadUrl({
+        filename: 'image.jpg',
+        filemime: 'image/jpg',
+        filesize: 1024,
+      });
+
+      assert.ok(typeof signedUrl === 'string', 'Expected signedUrl to be a string');
+      assert.ok(signedUrl.startsWith('https://'), 'Expected signedUrl to start with https://');
+      assert.ok(signedUrl.startsWith('https://dynazord-example-assets.s3.amazonaws.com/uploads'),
+        'Expected signedUrl to start with Bucket & Prefix');
+    });
+
   });
 
 }));
