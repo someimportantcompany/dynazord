@@ -242,7 +242,7 @@ describe('dynazord', () => {
     it('should export a static object of methods', () => {
       assert.ok(_.isPlainObject(dynazord.methods), 'Expected dynazord.methods to be a plain object');
       assert.deepStrictEqual(Object.keys(dynazord.methods), [
-        'create', 'get', 'scan', 'update', 'delete', 'upsert',
+        'create', 'get', 'query', 'scan', 'update', 'delete', 'upsert',
         'bulkCreate', 'bulkGet', /* 'bulkUpdate', */ 'bulkDelete', 'bulkUpsert',
         'transaction',
       ]);

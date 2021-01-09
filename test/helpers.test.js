@@ -12,7 +12,7 @@ describe('helpers', () => {
 
       function assertFilter(properties, args, expected) {
         return async () => {
-          const actual = await buildFilterExpression(properties, args);
+          const actual = await buildFilterExpression('f', properties, args);
           assert.deepStrictEqual(actual, expected);
         };
       }

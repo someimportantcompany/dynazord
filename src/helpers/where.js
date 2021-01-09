@@ -16,7 +16,8 @@ const operators = {
   in: Symbol('IN'),
 };
 
-async function buildFilterExpression(properties, where) {
+async function buildFilterExpression(prefix, properties, where) {
+  assert(typeof prefix === 'string', new TypeError('Expected prefix to be a string'));
   assert(isPlainObject(properties), new TypeError('Expected properties to be a plain object'));
   assert(isPlainObject(where), new TypeError('Expected where to be a plain object'));
 
@@ -45,14 +46,14 @@ async function buildFilterExpression(properties, where) {
     return value;
   };
 
-  const pushVariables = (prefix, key, op, value) => {
+  const pushVariables = (p1, key, op, value) => {
     i++; // eslint-disable-line no-plusplus
-    names[`#${prefix}${i}`] = key;
-    values[`:${prefix}${i}`] = value;
-    return `#${prefix}${i} ${op} :${prefix}${i}`;
+    names[`#${p1}${i}`] = key;
+    values[`:${p1}${i}`] = value;
+    return `#${p1}${i} ${op} :${p1}${i}`;
   };
 
-  const buildFilterSegment = async (prefix, block) => {
+  const buildFilterSegment = async (p1, block) => {
     const { [operators.and]: and, [operators.or]: or, [operators.not]: not, ...rest } = block;
     const segments = [];
 
@@ -60,7 +61,7 @@ async function buildFilterExpression(properties, where) {
       assert(Array.isArray(and) || isPlainObject(and), new TypeError('Expected where { and } to be an array or plain object'));
       const blocks = await Promise.all((Array.isArray(and) ? and : [ and ]).map(b => {
         assert(isPlainObject(b), new TypeError('Expected each where { and } to be a plain object'));
-        return buildFilterSegment(`${prefix}a`, b);
+        return buildFilterSegment(`${p1}a`, b);
       }));
       // eslint-disable-next-line no-unused-expressions
       blocks.length ? segments.push(`(${blocks.join(' AND ')})`) : undefined;
@@ -70,7 +71,7 @@ async function buildFilterExpression(properties, where) {
       assert(Array.isArray(or) || isPlainObject(or), new TypeError('Expected where { or } to be an array or plain object'));
       const blocks = await Promise.all((Array.isArray(or) ? or : [ or ]).map(b => {
         assert(isPlainObject(b), new TypeError('Expected each where { or } to be a plain object'));
-        return buildFilterSegment(`${prefix}o`, b);
+        return buildFilterSegment(`${p1}o`, b);
       }));
       // eslint-disable-next-line no-unused-expressions
       blocks.length ? segments.push(`(${blocks.join(' OR ')})`) : undefined;
@@ -80,7 +81,7 @@ async function buildFilterExpression(properties, where) {
       assert(Array.isArray(not) || isPlainObject(not), new TypeError('Expected where { not } to be an array or plain object'));
       const blocks = await Promise.all((Array.isArray(not) ? not : [ not ]).map(b => {
         assert(isPlainObject(b), new TypeError('Expected each where { or } to be a plain object'));
-        return buildFilterSegment(`${prefix}n`, b);
+        return buildFilterSegment(`${p1}n`, b);
       }));
       // eslint-disable-next-line no-unused-expressions
       blocks.length ? segments.push(`NOT (${blocks.join(' AND ')})`) : undefined;
@@ -94,10 +95,10 @@ async function buildFilterExpression(properties, where) {
           const { eq, ne, gt, gte, lt, lte, in: $in } = operators;
           if (value.hasOwnProperty(eq)) {
             assertValueType(value[eq]);
-            segments.push(pushVariables(prefix, key, '=', await formatValue(key, value[eq])));
+            segments.push(pushVariables(p1, key, '=', await formatValue(key, value[eq])));
           } else if (value.hasOwnProperty(ne)) {
             assertValueType(value[ne]);
-            segments.push(pushVariables(prefix, key, '<>', await formatValue(key, value[ne])));
+            segments.push(pushVariables(p1, key, '<>', await formatValue(key, value[ne])));
           } else if (value.hasOwnProperty(gt) || value.hasOwnProperty(gte) ||
             value.hasOwnProperty(lt) || value.hasOwnProperty(lte)) {
               assert(!(value.hasOwnProperty(gt) && value.hasOwnProperty(gte)),
@@ -113,15 +114,15 @@ async function buildFilterExpression(properties, where) {
               };
 
               i++; // eslint-disable-line no-plusplus
-              names[`#${prefix}${i}`] = key;
+              names[`#${p1}${i}`] = key;
 
               if (value.hasOwnProperty(lt) || value.hasOwnProperty(lte)) {
-                segments.push(`#${prefix}${i} ${value.hasOwnProperty(lte) ? '<=' : '<'} :${prefix}${i}l`);
-                values[`:${prefix}${i}l`] = value.hasOwnProperty(lte) ? formatted[lte] : formatted[lt];
+                segments.push(`#${p1}${i} ${value.hasOwnProperty(lte) ? '<=' : '<'} :${p1}${i}l`);
+                values[`:${p1}${i}l`] = value.hasOwnProperty(lte) ? formatted[lte] : formatted[lt];
               }
               if (value.hasOwnProperty(gt) || value.hasOwnProperty(gte)) {
-                segments.push(`#${prefix}${i} ${value.hasOwnProperty(gte) ? '>=' : '>'} :${prefix}${i}r`);
-                values[`:${prefix}${i}r`] = value.hasOwnProperty(gte) ? formatted[gte] : formatted[gt];
+                segments.push(`#${p1}${i} ${value.hasOwnProperty(gte) ? '>=' : '>'} :${p1}${i}r`);
+                values[`:${p1}${i}r`] = value.hasOwnProperty(gte) ? formatted[gte] : formatted[gt];
               }
           } else if (value.hasOwnProperty($in)) {
             assert(Array.isArray(value[$in]) && value[$in].length, new TypeError(`Expected ${key} to be an array for { in }`));
@@ -129,16 +130,16 @@ async function buildFilterExpression(properties, where) {
             const params = await Promise.all(value[$in].map(v => formatValue(key, v)));
 
             i++; // eslint-disable-line no-plusplus
-            names[`#${prefix}${i}`] = key;
+            names[`#${p1}${i}`] = key;
             const vals = params.map((v, j) => {
-              values[`:${prefix}${i}l${j}`] = v;
-              return `:${prefix}${i}l${j}`;
+              values[`:${p1}${i}l${j}`] = v;
+              return `:${p1}${i}l${j}`;
             });
-            segments.push(`#${prefix}${i} IN (${vals.join(', ')})`);
+            segments.push(`#${p1}${i} IN (${vals.join(', ')})`);
           }
         } else {
           assertValueType(rest[key]);
-          segments.push(pushVariables(prefix, key, '=', await formatValue(key, rest[key])));
+          segments.push(pushVariables(p1, key, '=', await formatValue(key, rest[key])));
         }
       }
     }
@@ -151,9 +152,10 @@ async function buildFilterExpression(properties, where) {
   return expression ? { expression, names, values } : null;
 }
 
-function buildProjectionExpression(attributes) {
+function buildAttributesExpression(prefix, attributes) {
+  assert(typeof prefix === 'string', new TypeError('Expected prefix to be a string'));
   assert(Array.isArray(attributes) && attributes.length, new TypeError('Expected attributes to be an array'));
-  const names = attributes.reduce((r, v, i) => ({ ...r, [`#a${i + 1}`]: v }), {});
+  const names = attributes.reduce((r, v, i) => ({ ...r, [`#${prefix}${i + 1}`]: v }), {});
   const expression = Object.keys(names).join(', ');
   return { expression, names };
 }
@@ -161,5 +163,5 @@ function buildProjectionExpression(attributes) {
 module.exports = {
   operators,
   buildFilterExpression,
-  buildProjectionExpression,
+  buildAttributesExpression,
 };
