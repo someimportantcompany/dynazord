@@ -76,13 +76,13 @@ npm install --save dynazord
 
 ## Documentation
 
-- [Getting Started](https://github.com/jdrydn/dynazord/blob/v1.0.0/docs/Getting-Started.md)
-- [Writing Models](https://github.com/jdrydn/dynazord/blob/v1.0.0/docs/Writing-Models.md)
-- [Using Models](https://github.com/jdrydn/dynazord/blob/v1.0.0/docs/Using-Models.md)
-- [Examples](https://github.com/jdrydn/dynazord/blob/v1.0.0/examples/)
-- [Alternatives](https://github.com/jdrydn/dynazord/blob/v1.0.0/docs/#alternatives)
+- [Getting Started](https://github.com/jdrydn/dynazord/blob/v1.0.1/docs/Getting-Started.md)
+- [Writing Models](https://github.com/jdrydn/dynazord/blob/v1.0.1/docs/Writing-Models.md)
+- [Using Models](https://github.com/jdrydn/dynazord/blob/v1.0.1/docs/Using-Models.md)
+- [Examples](https://github.com/jdrydn/dynazord/blob/v1.0.1/examples/)
+- [Alternatives](https://github.com/jdrydn/dynazord/blob/v1.0.1/docs/#alternatives)
 
-| Version | Links |
+| Release | Links |
 | ---- | ---- |
-| [`v1.0.0`](https://github.com/jdrydn/dynazord/tree/v1.0.0) (master) | [Documentation](https://github.com/jdrydn/dynazord/tree/v1.0.0/docs) |
+| [`v1.0.1`](https://github.com/jdrydn/dynazord/tree/v1.0.1) (master) | [Documentation](https://github.com/jdrydn/dynazord/tree/v1.0.1/docs) |
 | [`v0.1.0`](https://github.com/jdrydn/dynazord/tree/v0.1.0) | [Documentation](https://github.com/jdrydn/dynazord/tree/v0.1.0/docs) |
