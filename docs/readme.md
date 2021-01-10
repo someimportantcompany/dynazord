@@ -29,4 +29,4 @@ Yet another [DynamoDB](https://aws.amazon.com/dynamodb) [NodeJS](https://nodejs.
 
 ---
 
-<small>Any product names, logos, and brands are property of their respective owners, used for identification purposes only & does not imply endorsement.</small>
+_Any product names, logos, and brands are property of their respective owners, used for identification purposes only & does not imply endorsement._

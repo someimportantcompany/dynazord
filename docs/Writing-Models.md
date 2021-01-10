@@ -11,7 +11,6 @@ A "model" represents a table in DynamoDB, providing a collection of methods desi
 | [Properties & Types](#properties--types) |
 | [Hooks](#hooks) |
 | [Additional Options](#additional-options) |
-| [Overwriting Methods](#overwriting-methods) |
 | [Kitchen Sink Example](#kitchen-sink-example) |
 | [Further Reading](#further-reading) |
 
@@ -171,6 +170,10 @@ const sessions = dynazord.createModel({
 ## Secondary Indexes
 
 Secondary indexes are alternative properties on your model that you can use to query your data. The majority of the config is set when you create your table / add your index, including properties your index holds. Models created here will be able to use these indexes & format your return properties, but will stay out of the way!
+
+From [Core Components &raquo; Secondary Indexes](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/HowItWorks.CoreComponents.html#HowItWorks.CoreComponents.SecondaryIndexes):
+
+> A secondary index lets you query the data in the table using an alternate key, in addition to queries against the primary key. DynamoDB doesn't require that you use indexes, but they give your applications more flexibility when querying your data. After you create a secondary index on a table, you can read data from the index in much the same way as you do from the table.
 
 Just like the primary index, set the `GlobalSecondaryIndexes` or `LocalSecondaryIndexes` in your [Cloudformation stack](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-dynamodb-table.html), [createTable call](https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB.html#createTable-property) or [console UI](https://console.aws.amazon.com/dynamodb/home):
 
@@ -646,7 +649,7 @@ update
   beforeUpdate(data, opts)
   [ formatWriteData ]
   beforeUpdateWrite(data, opts)
-  [ putItem ]
+  [ updateItem ]
   afterUpdateWrite(item, opts)
   afterUpdate(item, opts)
 
@@ -664,7 +667,7 @@ upsert
   beforeUpsert(item, opts)
   [ formatWriteData ]
   beforeUpsertWrite(item, opts)
-  [ putItem ]
+  [ updateItem ]
   afterUpsertWrite(item, opts)
   afterUpsert(item, opts)
 
@@ -693,7 +696,7 @@ bulkUpdate
   beforeUpdate(data, opts)
   [ formatWriteData ]
   beforeUpdateWrite(data, opts)
-  [ putItem ]
+  [ transactWrite(Update) ]
   afterUpdateWrite(data, opts)
   afterUpdate(data, opts)
   afterBulkUpdate(items, opts)
@@ -713,10 +716,58 @@ bulkUpsert
   beforeUpsert(item, opts)(*)
   [ formatWriteData ]
   beforeUpsertWrite(item, opts)(*)
-  [ putItem ]
+  [ transactWrite(Update) ]
   afterUpsertWrite(item, opts)(*)
   afterUpsert(item, opts)(*)
   afterBulkUpsert(items, opts)
+
+transaction
+  create
+    beforeValidateCreate(item, opts)
+    beforeValidate(item, opts)
+    [ validate ]
+    afterValidateCreate(item, opts) OR validateCreateFailed(item, opts)
+    afterValidate(item, opts) OR validateFailed(item, opts)
+    beforeCreate(item, opts)
+    [ formatWriteData ]
+    beforeCreateWrite(item, opts)
+    [ ...transactWrite(Put) ]
+    afterCreateWrite(item, opts)
+    afterCreate(item, opts)
+
+transaction
+  update
+    beforeValidateUpdate(data, opts)
+    beforeValidate(data, opts)
+    [ validate ]
+    afterValidateUpdate(data, opts) OR validateUpdateFailed(data, opts)
+    afterValidate(data, opts) OR validateFailed(data, opts)
+    beforeUpdate(data, opts)
+    [ formatWriteData ]
+    beforeUpdateWrite(data, opts)
+    [ ...transactWrite(Update) ]
+    afterUpdateWrite(item, opts)
+    afterUpdate(item, opts)
+
+transaction
+  delete
+    beforeDelete(key, opts)
+    [ ...transactWrite(Delete) ]
+    afterDelete(key, opts)
+
+transaction
+  upsert
+    beforeValidateUpsert(item, opts)
+    beforeValidate(item, opts)
+    [ validate ]
+    afterValidateUpsert(item, opts) OR validateUpsertFailed(item, opts)
+    afterValidate(item, opts) OR validateFailed(item, opts)
+    beforeUpsert(item, opts)
+    [ formatWriteData ]
+    beforeUpsertWrite(item, opts)
+    [ ...transactWrite(Update) ]
+    afterUpsertWrite(item, opts)
+    afterUpsert(item, opts)
 
 (*) Set { hooks: true } to enable per-entry hooks
 ```
@@ -751,7 +802,10 @@ const entries = dynazord.createModel({
         if (entry.id) {
           const { id, title } = entry;
           const exists = this.find({ id });
-          assert(!exists, 400, new Error(`Expected ID to be unique: ${id}`), { id, title });
+          assert(!exists, 400, new Error(`Expected ID to be unique: ${id}`), {
+            id,
+            title,
+          });
         }
       },
     },
@@ -772,7 +826,10 @@ entries.hooks.on('afterValidate', async function uniqueID(entry) {
   if (entry.id) {
     const { id, title } = entry;
     const exists = this.find({ id });
-    assert(!exists, 400, new Error(`Expected ID to be unique: ${id}`), { id, title });
+    assert(!exists, 400, new Error(`Expected ID to be unique: ${id}`), {
+      id,
+      title,
+    });
   }
 });
 ```
@@ -886,8 +943,6 @@ const sessions = dynazord.createModel({
 });
 ```
 
-## Overwriting Methods
-
 ## Kitchen Sink Example
 
 ```js
@@ -899,12 +954,12 @@ const posts = dynazord.createModel({
   keySchema: {
     hash: 'id',
   },
-  // secondaryIndexes: {
-  //   blogPostsByTime: {
-  //     hash: 'blog',
-  //     range: 'publishedAt',
-  //   },
-  // },
+  secondaryIndexes: {
+    blogPostsByTime: {
+      hash: 'blog',
+      range: 'publishedAt',
+    },
+  },
   properties: {
     id: {
       type: String,
@@ -948,9 +1003,9 @@ const posts = dynazord.createModel({
 ## Further Reading
 
 - [Core DynamoDB Concepts](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/HowItWorks.CoreComponents.html)
+- [Improving Data Access with Secondary Indexes](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/SecondaryIndexes.html)
+- [Working with DynamoDB Streams](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Streams.html)
 
 ---
 
 Next, [start using models](./Using-Models.md).
-
-<small>Any product names, logos, and brands are property of their respective owners, used for identification purposes only & does not imply endorsement.</small>

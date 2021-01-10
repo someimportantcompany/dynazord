@@ -83,5 +83,3 @@ const entries = dynazord.createModel({
 ---
 
 Next, [start writing models](./Writing-Models.md).
-
-<small>Any product names, logos, and brands are property of their respective owners, used for identification purposes only & does not imply endorsement.</small>

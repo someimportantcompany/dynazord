@@ -746,5 +746,3 @@ console.log(user);
 ---
 
 Next, check out some [examples](../examples/).
-
-<small>Any product names, logos, and brands are property of their respective owners, used for identification purposes only & does not imply endorsement.</small>

@@ -76,11 +76,11 @@ npm install --save dynazord
 
 ## Documentation
 
-- [Getting Started](./docs/Getting-Started.md)
-- [Writing Models](./docs/Writing-Models.md)
-- [Using Models](./docs/Using-Models.md)
-- [Examples](./examples/)
-- [Alternatives](./docs/#alternatives)
+- [Getting Started](https://github.com/jdrydn/dynazord/blob/v1.0.0/docs/Getting-Started.md)
+- [Writing Models](https://github.com/jdrydn/dynazord/blob/v1.0.0/docs/Writing-Models.md)
+- [Using Models](https://github.com/jdrydn/dynazord/blob/v1.0.0/docs/Using-Models.md)
+- [Examples](https://github.com/jdrydn/dynazord/blob/v1.0.0/examples/)
+- [Alternatives](https://github.com/jdrydn/dynazord/blob/v1.0.0/docs/#alternatives)
 
 | Version | Links |
 | ---- | ---- |
