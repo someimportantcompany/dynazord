@@ -10,7 +10,7 @@
     "postversion": "git push && git push --tags"
   },
   "author": "James D <james@jdrydn.com> (https://jdrydn.com)",
-  "license": "SEE LICENSE IN ./LICENSE",
+  "license": "MIT",
   "homepage": "https://github.com/jdrydn/dynazord#readme",
   "repository": {
     "type": "git",
