@@ -82,15 +82,6 @@ npm install --save dynazord
 - [Examples](./examples/)
 - [Alternatives](./docs/#alternatives)
 
-## Development
-
 | Version | Links |
 | ---- | ---- |
 | [`v0.1.0`](https://github.com/jdrydn/dynazord/tree/master) (master) | [Documentation](https://github.com/jdrydn/dynazord/tree/master/docs) |
-
-- All major work should be in feature branches, include tests & finish with a PR into `master`.
-- To run tests, fire up [`amazon/dynamodb-local`](https://hub.docker.com/r/amazon/dynamodb-local)
-  ```
-  docker run --name dynamodb --rm -d -p 8000:8000 amazon/dynamodb-local
-  ```
-  - If you've not read through them, take note of [the differences](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/DynamoDBLocal.UsageNotes.html#DynamoDBLocal.Differences) between the production AWS DynamoDB platform & local Docker container.

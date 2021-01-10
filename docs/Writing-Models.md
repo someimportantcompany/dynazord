@@ -1,18 +1,8 @@
 # Writing Models
 
-A "model" represents a table in DynamoDB, providing a collection of methods designed to fetch, search, validate & write items following a specific schema. All models returns native JS objects, **there are no documents** as you'd expect from a more traditional ORM. Create your model with `dynazord.createModel`:
+A "model" represents a table in DynamoDB, providing a collection of methods designed to fetch, search, validate & write items following a specific schema.
 
-```js
-const dynazord = require('dynazord');
-const model = dynazord.createModel({
-  tableName: /* DYNAMODB TABLE NAME */,
-  keySchema: { /* DYNAMODB KEY SCHEMA */ },
-  // secondaryIndexes: { /* DYNAMODB KEY SCHEMA */ },
-  properties: { /* INDIVIDUAL PROPERTIES FOR YOUR ENTRIES */ },
-  hooks: { /* HOOKS FOR YOUR ENTRIES */ },
-  options: { /* ADDITIONAL OPTIONS */ },
-});
-```
+**Important reminder:** All models work with native JS object, **instead of documents** as you'd expect from a more traditional ORM. Hence you'll find the documentation refers to **items**, not documents.
 
 | Table of Contents |
 | ---- |
@@ -52,6 +42,17 @@ const users = dynazord.createModel({
 });
 ```
 
+```js
+const model = dynazord.createModel({
+  tableName: /* DYNAMODB TABLE NAME */,
+  keySchema: { /* DYNAMODB KEY SCHEMA */ },
+  secondaryIndexes: { /* DYNAMODB KEY SCHEMA */ },
+  properties: { /* INDIVIDUAL PROPERTIES FOR YOUR ENTRIES */ },
+  hooks: { /* HOOKS FOR YOUR ENTRIES */ },
+  options: { /* ADDITIONAL OPTIONS */ },
+});
+```
+
 The `config` object requires & allows the following options:
 
 - `tableName` (**Required**) String setting the table name which will be used to read/write documents from/to.
@@ -71,7 +72,7 @@ From [Core Components &raquo; Primary Key](https://docs.aws.amazon.com/amazondyn
 >
 > The sort key of an item is also known as its range attribute. The term "range attribute" derives from the way DynamoDB stores items with the same partition key physically close together, in sorted order by the sort key value.
 
-Set the `KeySchema` the same as you would in your DynamoDB config (either via the console UI or Cloudformation template):
+Set the `KeySchema` in your [Cloudformation stack](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-dynamodb-table.html), [createTable call](https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB.html#createTable-property) or [console UI](https://console.aws.amazon.com/dynamodb/home):
 
 ```json
 [
@@ -166,7 +167,99 @@ const sessions = dynazord.createModel({
 - `createModel` will throw an error if the `keySchema` is invalid.
 - `createModel` expects hash & range properties to be `required`, although they can have `default` values.
 
-<!-- ## Secondary Indexes -->
+## Secondary Indexes
+
+Secondary indexes are alternative properties on your model that you can use to query your data. The majority of the config is set when you create your table / add your index, including properties your index holds. Models created here will be able to use these indexes & format your return properties, but will stay out of the way!
+
+Just like the primary index, set the `GlobalSecondaryIndexes` or `LocalSecondaryIndexes` in your [Cloudformation stack](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-dynamodb-table.html), [createTable call](https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB.html#createTable-property) or [console UI](https://console.aws.amazon.com/dynamodb/home):
+
+```json
+[
+  {
+    "Type": "AWS::DynamoDB::Table",
+    "Properties": {
+      "TableName": "dynazord-example-sessions",
+      "BillingMode": "PAY_PER_REQUEST",
+      "KeySchema": [
+        { "AttributeName": "email", "KeyType": "HASH" },
+        { "AttributeName": "accessToken", "KeyType": "RANGE" }
+      ],
+      "GlobalSecondaryIndexes": [
+        {
+          "IndexName": "sessionsByTime",
+          "KeySchema": [
+            { "AttributeName": "email", "KeyType": "HASH" },
+            { "AttributeName": "createdAt", "KeyType": "RANGE" },
+          ],
+          "Projection": { "ProjectionType": "KEYS_ONLY" },
+        },
+      ],
+      "AttributeDefinitions": [
+        { "AttributeName": "email", "AttributeType": "S" },
+        { "AttributeName": "accessToken", "AttributeType": "S" }
+        { "AttributeName": "createdAt", "AttributeType": "N" }
+      ]
+    }
+  }
+]
+```
+
+And set the `secondaryIndexes` property in your `createModel` call. Secondary indexes require both `hash` & `range` properties, so omitting either will throw an error.
+
+```js
+const sessions = dynazord.createModel({
+  tableName: 'dynazord-example-sessions',
+  // "Primary" index of email + accessToken
+  keySchema: { hash: 'email', range: 'accessToken' },
+  secondaryIndexes: {
+    // "Secondary" index called "sessionsByTime" of email + createdAt
+    sessionsByTime: { hash: 'email', range: 'createdAt' },
+  },
+  properties: {
+    email: {
+      type: String,
+      required: true,
+    },
+    accessToken: {
+      type: String,
+      required: true,
+      default: () => uuid(),
+    },
+    ipAddress: {
+      type: String,
+      required: true,
+    },
+    userAgent: {
+      type: String,
+      required: true,
+    },
+    createdAt: {
+      type: Date,
+      // This sets the underlying `createdAt` property to a number format underneath
+      format: Number,
+    },
+    lastActiveAt: {
+      type: Date,
+    },
+  },
+  options: {
+    createdAtTimestamp: true,
+    updatedAtTimestamp: true,
+  },
+});
+```
+
+Then use the indexes in your [`model.query`](./Using-Models.md#modelquerykey-opts) like so:
+
+```js
+const { gt } = dynazord.operators;
+const entries = await sessions.query({
+  email: 'jdrydn@github.io',
+  createdAt: { [gt]: new Date('2021-01-01') },
+}, {
+  indexName: 'sessionsByTime',
+});
+```
 
 ## Properties & Types
 
