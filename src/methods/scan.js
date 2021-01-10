@@ -15,36 +15,40 @@ module.exports = async function findDocument(where, opts = undefined) {
 
   assert(opts.attributesToGet === undefined || (Array.isArray(opts.attributesToGet) && opts.attributesToGet.length),
     new TypeError('Expected opts.attributesToGet to be an array'));
-  assert(opts.filter === undefined || isPlainObject(opts.filter),
-    new TypeError('Expected opts.filter to be a plain object'));
   assert(opts.consistentRead === undefined || typeof opts.consistentRead === 'boolean',
     new TypeError('Expected opts.consistentRead to be a boolean'));
-  assert(opts.indexName === undefined || typeof opts.indexName === 'string',
-    new TypeError('Expected opts.indexName to be a string'));
   assert(opts.exclusiveStartKey === undefined || isPlainObject(opts.exclusiveStartKey),
     new TypeError('Expected opts.exclusiveStartKey to be a plain object'));
+  assert(opts.filter === undefined || isPlainObject(opts.filter),
+    new TypeError('Expected opts.filter to be a plain object'));
+  assert(opts.indexName === undefined || typeof opts.indexName === 'string',
+    new TypeError('Expected opts.indexName to be a string'));
   assert(opts.limit === undefined || typeof opts.limit === 'number',
     new TypeError('Expected opts.limit to be a string'));
   assert(opts.select === undefined || typeof opts.select === 'string',
     new TypeError('Expected opts.select to be a string'));
+
+  assert(!opts.indexName || (secondaryIndexes && isPlainObject(secondaryIndexes[opts.indexName])),
+    new Error(`Unknown secondary index ${opts.indexName}`));
   assert(opts.select !== 'ALL_PROJECTED_ATTRIBUTES' || opts.indexName,
     new TypeError('opts.select can only be ALL_PROJECTED_ATTRIBUTES if indexName is set'));
   assert(opts.attributesToGet === undefined || opts.select === 'SPECIFIC_ATTRIBUTES',
     new TypeError('Cannot use attributesToGet with select'));
 
-  assert(!opts.indexName || (secondaryIndexes && isPlainObject(secondaryIndexes[opts.indexName])),
-    new Error(`Unknown secondary index ${opts.indexName}`));
-
-  const filters = (await buildFilterExpression(properties, where)) || {};
+  const filter = (await buildFilterExpression(properties, where)) || {};
   const projected = opts.attributesToGet ? buildProjectionExpression(properties, opts.attributesToGet) : {};
 
   const params = {
     TableName: tableName,
     IndexName: opts.indexName,
-    FilterExpression: filters.expression || undefined,
+    FilterExpression: filter.expression || undefined,
     ProjectionExpression: projected.expression || undefined,
-    ExpressionAttributeNames: { ...filters.names, ...projected.names },
-    ExpressionAttributeValues: marshall({ ...filters.values }),
+    ExpressionAttributeNames: (filter.expression || projected.expression)
+      ? { ...filter.names, ...projected.names }
+      : undefined,
+    ExpressionAttributeValues: filter.expression
+      ? marshall({ ...filter.values })
+      : undefined,
     ExclusiveStartKey: opts.exclusiveStartKey ? marshall(opts.exclusiveStartKey) : undefined,
     ConsistentRead: opts.consistentRead,
     Limit: opts.limit,

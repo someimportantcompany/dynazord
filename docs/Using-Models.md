@@ -4,6 +4,29 @@ So, you've [wrote your model](./Writing-Models), and now it's time to use it!
 
 **Important reminder:** All models work with native JS object, **instead of documents** as you'd expect from a more traditional ORM. Hence you'll find the documentation refers to **items**, not documents.
 
+| Table of Contents |
+| ---- |
+| [Singular CRUD](#singular-crud) |
+| [`model.create(item[, opts])`](#modelcreateitem-opts) |
+| [`model.get(key[, opts])`](#modelgetkey-opts) |
+| [`model.update(data, key[, opts])`](#modelupdatedata-key-opts) |
+| [`model.upsert(item[, opts])`](#modelupsertitem-opts) |
+| [Bulk CRUD](#bulk-crud) |
+| [`model.bulkCreate(items[, opts])`](#modelbulkcreateitems-opts) |
+| [`model.bulkGet(keys[, opts])`](#modelbulkgetkeys-opts) |
+| [`model.bulkUpdate(data, keys[, opts])`](#modelbulkupdatedata-keys-opts) |
+| [`model.bulkDelete(keys[, opts])`](#modelbulkdeletekeys-opts) |
+| [`model.bulkUpsert(items[, opts])`](#modelbulkupsertitems-opts) |
+| [Query & Scans](#query--scans) |
+| [`model.query(key[, opts])`](#modelquerykey-opts) |
+| [`model.scan(filter[, opts])`](#modelscanfilter-opts) |
+| [Transactions](#transactions) |
+| [`model.transaction.create(item[, opts])`](#modeltransactioncreateitem-opts) |
+| [`model.transaction.get(key[, opts])`](#modeltransactiongetkey-opts) |
+| [`model.transaction.update(data, key[, opts])`](#modeltransactionupdatedatakey-opts) |
+| [`model.transaction.delete(key[, opts])`](#modeltransactiondeletekey-opts) |
+| [`model.transaction.upsert(item[, opts])`](#modeltransactionupsertitem-opts) |
+
 ```js
 const dynazord = require('dynazord');
 
@@ -116,6 +139,12 @@ console.log(session);
 //   updatedAt: [Date YYYY-MM-DDTHH:mm:ss.Z] }
 ```
 
+`opts` is an optional object, passed to hooks & sets the following:
+
+| Option | Description |
+| ---- | ---- |
+| `hooks` | Boolean to execute hooks, defaults to `true` |
+
 ### `model.get(key[, opts])`
 
 - Fetches an item by hash/range combination, throwing an error if the hash/range combination does not exists.
@@ -131,6 +160,13 @@ console.log(user);
 //   createdAt: [Date YYYY-MM-DDTHH:mm:ss.Z],
 //   updatedAt: [Date YYYY-MM-DDTHH:mm:ss.Z] }
 ```
+
+`opts` is an optional object, sets the following:
+
+| Option | Description |
+| ---- | ---- |
+| `attributesToGet` | An array of properties to build a ProjectedExpression underneath. |
+| `consistentRead` | A boolean to [determine consistency](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/HowItWorks.ReadConsistency.html). |
 
 ### `model.update(data, key[, opts])`
 
@@ -148,6 +184,12 @@ console.log(user);
 //   updatedAt: [Date YYYY-MM-DDTHH:mm:ss.Z] }
 ```
 
+`opts` is an optional object, passed to hooks & sets the following:
+
+| Option | Description |
+| ---- | ---- |
+| `hooks` | Boolean to execute hooks, defaults to `true` |
+
 ### `model.delete(key[, opts])`
 
 ```js
@@ -156,6 +198,12 @@ const user = await users.delete({ email: 'jdrydn@github.io' });
 console.log(user);
 // true
 ```
+
+`opts` is an optional object, passed to hooks & sets the following:
+
+| Option | Description |
+| ---- | ---- |
+| `hooks` | Boolean to execute hooks, defaults to `true` |
 
 ### `model.upsert(item[, opts])`
 
@@ -178,6 +226,12 @@ console.log(user);
 //   createdAt: [Date YYYY-MM-DDTHH:mm:ss.Z],
 //   updatedAt: [Date YYYY-MM-DDTHH:mm:ss.Z] }
 ```
+
+`opts` is an optional object, passed to hooks & sets the following:
+
+| Option | Description |
+| ---- | ---- |
+| `hooks` | Boolean to execute hooks, defaults to `true` |
 
 ## Bulk CRUD
 
@@ -207,6 +261,13 @@ console.log(users);
 //     updatedAt: [Date YYYY-MM-DDTHH:mm:ss.Z] } ]
 ```
 
+`opts` is an optional object, passed to hooks & sets the following:
+
+| Option | Description |
+| ---- | ---- |
+| `bulkHooks` | Boolean to execute bulk-hooks, defaults to `true` |
+| `hooks` | Boolean to execute hooks, defaults to `false` |
+
 ### `model.bulkGet(keys[, opts])`
 
 - Fetch up to 25 items at a time, specified by their [primary key](./Writing-Models.md#primary-index), returning `null` if they do not exist.
@@ -232,7 +293,7 @@ console.log(users);
 //     updatedAt: [Date YYYY-MM-DDTHH:mm:ss.Z] } ]
 ```
 
-### `model.bulkUpdate(update, keys[, opts])`
+### `model.bulkUpdate(data, keys[, opts])`
 
 - Apply the same update to up to 25 items at a time, specified by their [primary key](./Writing-Models.md#primary-index).
 - Applied in a transaction, so if one fails they all fail.
@@ -261,6 +322,13 @@ console.log(users);
 //     updatedAt: [Date YYYY-MM-DDTHH:mm:ss.Z] } ]
 ```
 
+`opts` is an optional object, passed to hooks & sets the following:
+
+| Option | Description |
+| ---- | ---- |
+| `bulkHooks` | Boolean to execute bulk-hooks, defaults to `true` |
+| `hooks` | Boolean to execute hooks, defaults to `false` |
+
 ### `model.bulkDelete(keys[, opts])`
 
 - Delete up to 25 items at a time, specified by their [primary key](./Writing-Models.md#primary-index).
@@ -276,6 +344,13 @@ const users = await users.bulkDelete([
 console.log(users);
 // true
 ```
+
+`opts` is an optional object, passed to hooks & sets the following:
+
+| Option | Description |
+| ---- | ---- |
+| `bulkHooks` | Boolean to execute bulk-hooks, defaults to `true` |
+| `hooks` | Boolean to execute hooks, defaults to `false` |
 
 ### `model.bulkUpsert(items[, opts])`
 
@@ -304,6 +379,13 @@ console.log(users);
 //     updatedAt: [Date YYYY-MM-DDTHH:mm:ss.Z] } ]
 ```
 
+`opts` is an optional object, passed to hooks & sets the following:
+
+| Option | Description |
+| ---- | ---- |
+| `bulkHooks` | Boolean to execute bulk-hooks, defaults to `true` |
+| `hooks` | Boolean to execute hooks, defaults to `false` |
+
 ## Query & Scans
 
 There are two concepts to understand when looking up values in DynamoDB: [`query`](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Query.html) & [`scan`](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Scan.html). The essential difference is a `query` searches for items using indexes) whereas a `scan` reads every item in a table to find results.
@@ -312,8 +394,37 @@ There are two concepts to understand when looking up values in DynamoDB: [`query
 
 - Searches across the DynamoDB table using the [primary index](./Writing-Models.md#primary-index) (by default) or [secondary indexes](./Writing-Models.md#secondary-indexes) (if `indexName` is specified).
 - You must provide the `hash` key with a single value, optionally you can include the `range` key with a comparison to refine the results.
+- You can optionally provide `opts.filter` to add [filter expressions](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Query.html#Query.FilterExpression) to a query.
+
+`opts` is an optional object, passed to hooks & sets the following:
+
+| Option | Description |
+| ---- | ---- |
+| `attributesToGet` | An array of properties to build a ProjectedExpression underneath. |
+| `consistentRead` | A boolean to [determine consistency](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/HowItWorks.ReadConsistency.html). |
+| `filter` | A [filter expression](#filter-expressions) to restrict results. |
+| `exclusiveStartKey` | An optional object to specify a start-key for pagination. |
+| `indexName` | An optional string to specify the index you'd like to query with. |
+| `limit` | An optional number to specify the number of results you want to be returned. |
+| `scanIndexForward` | A boolean to specify the order for index traversal, if `true` (default) sorts in ascending & `false` sorts in descending. |
 
 ### `model.scan(filter[, opts])`
+
+`opts` is an optional object, passed to hooks & sets the following:
+
+| Option | Description |
+| ---- | ---- |
+| `attributesToGet` | An array of properties to build a ProjectedExpression underneath. |
+| `consistentRead` | A boolean to [determine consistency](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/HowItWorks.ReadConsistency.html). |
+| `filter` | A [filter expression](#filter-expressions) to restrict results. |
+| `exclusiveStartKey` | An optional object to specify a start-key for pagination. |
+| `indexName` | An optional string to specify the index you'd like to query with. |
+| `limit` | An optional number to specify the number of results you want to be returned. |
+| `scanIndexForward` | A boolean to specify the order for index traversal, if `true` (default) sorts in ascending & `false` sorts in descending. |
+
+### Filter Expressions
+
+### Pagination
 
 ## Transactions
 
@@ -372,6 +483,13 @@ console.log(user);
 //   updatedAt: [Date YYYY-MM-DDTHH:mm:ss.Z] }
 ```
 
+`opts` is an optional object, passed to hooks & sets the following:
+
+| Option | Description |
+| ---- | ---- |
+| `bulkHooks` | Boolean to execute bulk-hooks, defaults to `true` |
+| `hooks` | Boolean to execute hooks, defaults to `false` |
+
 ### `model.transaction.get(key[, opts])`
 
 Get an item within a transaction.
@@ -391,7 +509,13 @@ console.log(user);
 //   updatedAt: [Date YYYY-MM-DDTHH:mm:ss.Z] }
 ```
 
-### `model.transaction.update(change, key[, opts])`
+`opts` is an optional object, passed to hooks & sets the following:
+
+| Option | Description |
+| `bulkHooks` | Boolean to execute bulk-hooks, defaults to `true` |
+| `hooks` | Boolean to execute hooks, defaults to `false` |
+
+### `model.transaction.update(data, key[, opts])`
 
 Update an item within a transaction.
 
@@ -413,6 +537,13 @@ console.log(user);
 //   updatedAt: [Date YYYY-MM-DDTHH:mm:ss.Z] }
 ```
 
+`opts` is an optional object, passed to hooks & sets the following:
+
+| Option | Description |
+| ---- | ---- |
+| `bulkHooks` | Boolean to execute bulk-hooks, defaults to `true` |
+| `hooks` | Boolean to execute hooks, defaults to `false` |
+
 ### `model.transaction.delete(key[, opts])`
 
 Delete an item within a transaction.
@@ -429,6 +560,13 @@ const [ user ] = await dynazord.transaction([
 console.log(user);
 // true
 ```
+
+`opts` is an optional object, passed to hooks & sets the following:
+
+| Option | Description |
+| ---- | ---- |
+| `bulkHooks` | Boolean to execute bulk-hooks, defaults to `true` |
+| `hooks` | Boolean to execute hooks, defaults to `false` |
 
 ### `model.transaction.upsert(item[, opts])`
 
@@ -449,3 +587,10 @@ console.log(user);
 //   createdAt: [Date YYYY-MM-DDTHH:mm:ss.Z],
 //   updatedAt: [Date YYYY-MM-DDTHH:mm:ss.Z] }
 ```
+
+`opts` is an optional object, passed to hooks & sets the following:
+
+| Option | Description |
+| ---- | ---- |
+| `bulkHooks` | Boolean to execute bulk-hooks, defaults to `true` |
+| `hooks` | Boolean to execute hooks, defaults to `false` |

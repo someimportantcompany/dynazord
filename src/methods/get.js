@@ -1,4 +1,5 @@
 const { assert, isPlainObject, marshall, unmarshall } = require('../utils');
+const { buildProjectionExpression } = require('../helpers/expressions');
 const { formatReadData, formatWriteData } = require('../helpers/data');
 
 module.exports = async function getDocument(key, opts) {
@@ -10,26 +11,26 @@ module.exports = async function getDocument(key, opts) {
 
   assert(isPlainObject(key), new TypeError('Expected argument to be a plain object'));
   assert(!opts || isPlainObject(opts), new TypeError('Expected opts to be a plain object'));
+  opts = { ...opts };
 
-  const {
-    attributesToGet = undefined,
-    consistentRead = undefined,
-  } = opts || {};
-  assert(attributesToGet === undefined || (Array.isArray(attributesToGet) && attributesToGet.length),
-    new TypeError('Expected attributesToGet to be an array'));
-  assert(consistentRead === undefined || typeof consistentRead === 'boolean',
-    new TypeError('Expected consistentRead to be a boolean'));
+  assert(opts.attributesToGet === undefined || (Array.isArray(opts.attributesToGet) && opts.attributesToGet.length),
+    new TypeError('Expected opts.attributesToGet to be an array'));
+  assert(opts.consistentRead === undefined || typeof opts.consistentRead === 'boolean',
+    new TypeError('Expected opts.consistentRead to be a boolean'));
 
   const { hash, range } = keySchema;
   assert(key.hasOwnProperty(hash), new Error(`Missing ${hash} hash property from argument`));
   assert(!range || key.hasOwnProperty(range), new Error(`Missing ${range} range property from argument`));
   await formatWriteData(properties, key);
 
+  const projected = opts.attributesToGet ? buildProjectionExpression(properties, opts.attributesToGet) : {};
+
   const params = {
     TableName: tableName,
     Key: marshall(key),
-    AttributesToGet: attributesToGet,
-    ConsistentRead: consistentRead,
+    ProjectionExpression: projected.expression || undefined,
+    ExpressionAttributeNames: projected.expression ? { ...projected.names } : undefined,
+    ConsistentRead: opts.consistentRead,
   };
 
   log.debug({ getItem: params });
