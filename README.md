@@ -84,4 +84,5 @@ npm install --save dynazord
 
 | Version | Links |
 | ---- | ---- |
-| [`v0.1.0`](https://github.com/jdrydn/dynazord/tree/master) (master) | [Documentation](https://github.com/jdrydn/dynazord/tree/master/docs) |
+| [`v1.0.0`](https://github.com/jdrydn/dynazord/tree/v1.0.0) (master) | [Documentation](https://github.com/jdrydn/dynazord/tree/v1.0.0/docs) |
+| [`v0.1.0`](https://github.com/jdrydn/dynazord/tree/v0.1.0) | [Documentation](https://github.com/jdrydn/dynazord/tree/v0.1.0/docs) |
