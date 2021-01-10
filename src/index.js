@@ -1,6 +1,6 @@
 const AWS = require('aws-sdk');
 const { assert, createLogger, isPlainObject } = require('./utils');
-const { assertValidProperties } = require('./helpers/validate');
+const { assertValidProperties } = require('./helpers/schema');
 const { createHooks } = require('./hooks');
 const { keys: typeKeys } = require('./types');
 const { methods, bulkMethods, transactionMethods, runTransaction } = require('./methods');
