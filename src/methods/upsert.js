@@ -1,7 +1,7 @@
 const { assert, isPlainObject, marshall, unmarshall } = require('../utils');
 const { assertRequiredCreateProps, appendCreateDefaultProps } = require('../helpers/create');
+const { buildUpsertExpression } = require('../helpers/expressions');
 const { formatReadData, formatWriteData, validateData } = require('../helpers/data');
-const { stringifyUpsertStatement } = require('../helpers/upsert');
 
 module.exports = async function upsertDocument(item, opts = undefined) {
   const { tableName, keySchema, properties, client, hooks, log } = this;
@@ -39,7 +39,7 @@ module.exports = async function upsertDocument(item, opts = undefined) {
 
   await formatWriteData.call(this, properties, key);
 
-  const { expression, names, values } = stringifyUpsertStatement.call(this, upsertValues, specifiedUpsertKeys) || {};
+  const { expression, names, values } = buildUpsertExpression.call(this, upsertValues, specifiedUpsertKeys) || {};
   assert(typeof expression === 'string', new TypeError('Expected update expression to be a string'));
   assert(isPlainObject(names), new TypeError('Expected update names to be a plain object'));
   assert(isPlainObject(values), new TypeError('Expected update values to be a plain object'));

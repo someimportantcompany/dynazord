@@ -1,5 +1,6 @@
 const { assert, isPlainObject, marshall, unmarshall } = require('../utils');
-const { assertRequiredUpdateProps, stringifyUpdateStatement } = require('../helpers/update');
+const { assertRequiredUpdateProps } = require('../helpers/update');
+const { buildUpdateExpression } = require('../helpers/expressions');
 const { formatReadData, formatWriteData, validateData } = require('../helpers/data');
 
 module.exports = async function updateDocument(update, key, opts = undefined) {
@@ -38,7 +39,7 @@ module.exports = async function updateDocument(update, key, opts = undefined) {
 
   await formatWriteData.call(this, properties, key);
 
-  const { expression, names, values } = stringifyUpdateStatement.call(this, update) || {};
+  const { expression, names, values } = buildUpdateExpression.call(this, update) || {};
   assert(typeof expression === 'string', new TypeError('Expected update expression to be a string'));
   assert(isPlainObject(names), new TypeError('Expected update names to be a plain object'));
   assert(isPlainObject(values), new TypeError('Expected update values to be a plain object'));

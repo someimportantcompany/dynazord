@@ -1,7 +1,7 @@
 const { assert, isPlainObject, marshall, unmarshall, promiseMapAll } = require('../utils');
 const { assertRequiredCreateProps, appendCreateDefaultProps } = require('../helpers/create');
+const { buildUpsertExpression } = require('../helpers/expressions');
 const { formatReadData, formatWriteData, validateData } = require('../helpers/data');
-const { stringifyUpsertStatement } = require('../helpers/upsert');
 
 const DEFAULT_OPTS = {
   bulkHooks: true,
@@ -55,7 +55,7 @@ module.exports = async function upsertBulkDocuments(items, opts = undefined) {
       const { [hash]: hashValue, [range || 'null']: rangeValue, ...upsertValues } = item;
       const key = { [hash]: hashValue, ...(range ? { [range]: rangeValue } : {}) };
 
-      const { expression, names, values } = stringifyUpsertStatement.call(this, upsertValues, specifiedUpsertKeys) || {};
+      const { expression, names, values } = buildUpsertExpression.call(this, upsertValues, specifiedUpsertKeys) || {};
       assert(typeof expression === 'string', new TypeError('Expected update expression to be a string'));
       assert(isPlainObject(names), new TypeError('Expected update names to be a plain object'));
       assert(isPlainObject(values), new TypeError('Expected update values to be a plain object'));

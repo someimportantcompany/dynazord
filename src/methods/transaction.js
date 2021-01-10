@@ -1,10 +1,10 @@
 const AWS = require('aws-sdk');
 const { assert, isPlainObject, marshall, unmarshall } = require('../utils');
 const { assertRequiredCreateProps, appendCreateDefaultProps } = require('../helpers/create');
-const { assertRequiredUpdateProps, stringifyUpdateStatement } = require('../helpers/update');
+const { assertRequiredUpdateProps } = require('../helpers/update');
+const { buildUpdateExpression, buildUpsertExpression } = require('../helpers/expressions');
 const { DynazordTransactionBlock } = require('../helpers/transaction');
 const { formatReadData, formatWriteData, validateData } = require('../helpers/data');
-const { stringifyUpsertStatement } = require('../helpers/upsert');
 /* eslint-disable no-invalid-this */
 
 function createTransaction(item, opts = undefined) {
@@ -132,7 +132,7 @@ function updateTransaction(update, key, opts = undefined) {
     await formatWriteData.call(this, properties, key);
     await hooks.emit('beforeUpdateWrite', this, opts.hooks === true, update, opts);
 
-    const { expression, names, values } = stringifyUpdateStatement.call(this, update) || {};
+    const { expression, names, values } = buildUpdateExpression.call(this, update) || {};
     assert(typeof expression === 'string', new TypeError('Expected update expression to be a string'));
     assert(isPlainObject(names), new TypeError('Expected update names to be a plain object'));
     assert(isPlainObject(values), new TypeError('Expected update values to be a plain object'));
@@ -226,7 +226,7 @@ function upsertTransaction(item, opts = undefined) {
     const { [hash]: hashValue, [range || 'null']: rangeValue, ...upsertValues } = item;
     const key = { [hash]: hashValue, ...(range ? { [range]: rangeValue } : {}) };
 
-    const { expression, names, values } = stringifyUpsertStatement.call(this, upsertValues, specifiedUpsertKeys) || {};
+    const { expression, names, values } = buildUpsertExpression.call(this, upsertValues, specifiedUpsertKeys) || {};
     assert(typeof expression === 'string', new TypeError('Expected update expression to be a string'));
     assert(isPlainObject(names), new TypeError('Expected update names to be a plain object'));
     assert(isPlainObject(values), new TypeError('Expected update values to be a plain object'));

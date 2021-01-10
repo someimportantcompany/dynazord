@@ -58,38 +58,6 @@ function assertRequiredUpdateProps(properties, data) {
   });
 }
 
-function stringifyUpdateStatement(data) {
-  assert(isPlainObject(data), new TypeError('Expected data to be a plain object'));
-
-  const changes = [];
-  const names = {};
-  const values = {};
-
-  let i = 0;
-
-  for (const key in data) {
-    /* istanbul ignore else */
-    if (data.hasOwnProperty(key)) {
-      i++; // eslint-disable-line no-plusplus
-      changes.push(`#u${i} = :u${i}`);
-      names[`#u${i}`] = key;
-      values[`:u${i}`] = data[key];
-    }
-  }
-
-  if (changes.length) {
-    return {
-      expression: `SET ${changes.join(', ')}`,
-      changes,
-      names,
-      values,
-    };
-  } else {
-    return null;
-  }
-}
-
 module.exports = {
   assertRequiredUpdateProps,
-  stringifyUpdateStatement,
 };
