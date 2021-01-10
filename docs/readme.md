@@ -9,7 +9,6 @@ Yet another [DynamoDB](https://aws.amazon.com/dynamodb) [NodeJS](https://nodejs.
 - [Getting Started](./Getting-Started.md)
 - [Writing Models](./Writing-Models.md)
 - [Using Models](./Using-Models.md)
-- [Using Hooks](./Using-Hooks.md)
 - [Examples](../examples/)
 
 ## Alternatives

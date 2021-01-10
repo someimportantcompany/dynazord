@@ -75,6 +75,11 @@ const entries = dynazord.createModel({
 // without littering your codebase with if-tests-then statements!
 ```
 
+## Further Reading
+
+- [An introduction to DynamoDB](https://gist.github.com/jlafon/d8f91086e3d00c4bff3b)
+- [Working with Tables](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/WorkingWithTables.Basics.html)
+
 ---
 
 Next, [start writing models](./Writing-Models.md).

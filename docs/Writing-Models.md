@@ -13,6 +13,7 @@ A "model" represents a table in DynamoDB, providing a collection of methods desi
 | [Additional Options](#additional-options) |
 | [Overwriting Methods](#overwriting-methods) |
 | [Kitchen Sink Example](#kitchen-sink-example) |
+| [Further Reading](#further-reading) |
 
 The `createModel` method is the starting point for all models: It is a synchronous method that builds a model from the provided configuration object that defines the keys, indexes & properties the model will support.
 
@@ -618,77 +619,109 @@ const formatDate = require('date-fns/format');
 
 Often referred to as "lifecycle events", hooks are functions which are called in between core library functions. You can use hooks to perform your own custom validation, for example validating combinations of properties or performing additional/other database lookups.
 
+All model methods have an optional `opts` which you can use to pass runtime variables direct to your hooks (e.g. `req/res` or GraphQL's `ctx`), available as the last argument to your hook.
+
 ### Order of operations
 
 ```
 create
-  beforeValidateCreate(create, options)
-  beforeValidate(create, options)
+  beforeValidateCreate(item, opts)
+  beforeValidate(item, opts)
   [ validate ]
-  afterValidateCreate(create, options) OR validateCreateFailed(create, options)
-  afterValidate(create, options) OR validateFailed(create, options)
-  beforeCreate(create, options)
+  afterValidateCreate(item, opts) OR validateCreateFailed(item, opts)
+  afterValidate(item, opts) OR validateFailed(item, opts)
+  beforeCreate(item, opts)
   [ formatWriteData ]
-  beforeCreateWrite(create, options)
+  beforeCreateWrite(item, opts)
   [ putItem ]
-  afterCreateWrite(create, options)
-  afterCreate(create, options)
+  afterCreateWrite(item, opts)
+  afterCreate(item, opts)
 
 update
-  beforeValidateUpdate(update, key, options)
-  beforeValidate(update, key, options)
+  beforeValidateUpdate(data, opts)
+  beforeValidate(data, opts)
   [ validate ]
-  afterValidateUpdate(update, key, options) OR validateUpdateFailed(update, key, options)
-  afterValidate(update, key, options) OR validateFailed(update, key, options)
-  beforeUpdate(update, key, options)
+  afterValidateUpdate(data, opts) OR validateUpdateFailed(data, opts)
+  afterValidate(data, opts) OR validateFailed(data, opts)
+  beforeUpdate(data, opts)
   [ formatWriteData ]
-  beforeUpdateWrite(update, key, options)
+  beforeUpdateWrite(data, opts)
   [ putItem ]
-  afterUpdateWrite(update, key, options)
-  afterUpdate(update, key, options)
+  afterUpdateWrite(item, opts)
+  afterUpdate(item, opts)
 
 delete
-  beforeDelete(key, options)
+  beforeDelete(key, opts)
   [ deleteItem ]
-  afterDelete(key, options)
+  afterDelete(key, opts)
 
 upsert
-  beforeValidateUpsert(upsert, options)
-  beforeValidate(upsert, options)
+  beforeValidateUpsert(item, opts)
+  beforeValidate(item, opts)
   [ validate ]
-  afterValidateUpsert(upsert, options) OR validateUpsertFailed(upsert, options)
-  afterValidate(upsert, options) OR validateFailed(upsert, options)
-  beforeUpsert(upsert, options)
+  afterValidateUpsert(item, opts) OR validateUpsertFailed(item, opts)
+  afterValidate(item, opts) OR validateFailed(item, opts)
+  beforeUpsert(item, opts)
   [ formatWriteData ]
-  beforeUpsertWrite(upsert, options)
+  beforeUpsertWrite(item, opts)
   [ putItem ]
-  afterUpsertWrite(upsert, options)
-  afterUpsert(upsert, options)
+  afterUpsertWrite(item, opts)
+  afterUpsert(item, opts)
 
 bulkCreate
-  beforeBulkCreate(bulk, options)
-  beforeValidateCreate(create, options)(*)
-  beforeValidate(create, options)(*)
+  beforeBulkCreate(items, opts)
+  beforeValidateCreate(item, opts)(*)
+  beforeValidate(item, opts)(*)
   [ validate ]
-  afterValidateCreate(create, options)(*) OR validateCreateFailed(create, options)(*)
-  afterValidate(create, options)(*) OR validateFailed(create, options)(*)
-  beforeCreate(create, options)(*)
+  afterValidateCreate(item, opts)(*) OR validateCreateFailed(item, opts)(*)
+  afterValidate(item, opts)(*) OR validateFailed(item, opts)(*)
+  beforeCreate(item, opts)(*)
   [ formatWriteData ]
-  beforeCreateWrite(create, options)(*)
+  beforeCreateWrite(item, opts)(*)
   [ transactWrite(Put) ]
-  afterCreateWrite(create, options)(*)
-  afterCreate(create, options)(*)
-  afterBulkCreate(bulk, options)
+  afterCreateWrite(item, opts)(*)
+  afterCreate(item, opts)(*)
+  afterBulkCreate(items, opts)
+
+bulkUpdate
+  beforeBulkUpdate(data, opts)
+  beforeValidateUpdate(data, opts)
+  beforeValidate(data, opts)
+  [ validate ]
+  afterValidateUpdate(data, opts) OR validateUpdateFailed(data, opts)
+  afterValidate(data, opts) OR validateFailed(data, opts)
+  beforeUpdate(data, opts)
+  [ formatWriteData ]
+  beforeUpdateWrite(data, opts)
+  [ putItem ]
+  afterUpdateWrite(data, opts)
+  afterUpdate(data, opts)
+  afterBulkUpdate(items, opts)
 
 bulkDelete
-  beforeBulkDelete(keys, options)
+  beforeBulkDelete(keys, opts)
   [ transactWrite(Delete) ]
-  afterBulkDelete(keys, options)
+  afterBulkDelete(keys, opts)
+
+bulkUpsert
+  beforeBulkUpsert(items, opts)
+  beforeValidateUpsert(item, opts)
+  beforeValidate(item, opts)(*)
+  [ validate ]
+  afterValidateUpsert(item, opts)(*) OR validateUpsertFailed(item, opts)(*)
+  afterValidate(item, opts)(*) OR validateFailed(item, opts)(*)
+  beforeUpsert(item, opts)(*)
+  [ formatWriteData ]
+  beforeUpsertWrite(item, opts)(*)
+  [ putItem ]
+  afterUpsertWrite(item, opts)(*)
+  afterUpsert(item, opts)(*)
+  afterBulkUpsert(items, opts)
 
 (*) Set { hooks: true } to enable per-entry hooks
 ```
 
-Either declare hooks when you create a model:
+You can either declare hooks when you create a model:
 
 ```js
 const _kebabCase = require('lodash/kebabCase');
@@ -742,6 +775,21 @@ entries.hooks.on('afterValidate', async function uniqueID(entry) {
     assert(!exists, 400, new Error(`Expected ID to be unique: ${id}`), { id, title });
   }
 });
+```
+
+Alternatively you can [trigger Lambda functions](https://docs.aws.amazon.com/lambda/latest/dg/with-ddb.html) in response to events actioned on your DynamoDB tables, and bypass `after` hooks altogether!
+
+For example, [defined by](https://www.serverless.com/framework/docs/providers/aws/events/streams/) the [serverless framework](https://www.serverless.com/):
+
+```yml
+functions:
+  syncDynamoToElasticSearch:
+    handler: sync-to-elasticsearch.handler
+    events:
+      - stream:
+          arn: arn:aws:dynamodb:region:XXXXXX:table/dynazord-example-users
+          type: dynamodb
+          batchSize: 25
 ```
 
 ## Additional Options

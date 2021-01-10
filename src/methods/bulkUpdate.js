@@ -95,7 +95,9 @@ module.exports = async function getBulkDocuments(update, keys, opts = undefined)
     items = await promiseMapAll(items, async item => {
       /* istanbul ignore else */
       if (item) {
-        await formatReadData(properties, item);
+        await hooks.emit('afterUpdateWrite', this, opts.hooks === true, item, opts);
+        await formatReadData.call(this, properties, item);
+        await hooks.emit('afterUpdate', this, opts.hooks === true, item, opts);
       }
     });
   }

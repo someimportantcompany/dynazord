@@ -1,6 +1,6 @@
 # Using Models
 
-So, you've [wrote your model](./Writing-Models), and now it's time to use it!
+So, you've [wrote your model](./Writing-Models.md), and now it's time to use it!
 
 **Important reminder:** All models work with native JS object, **instead of documents** as you'd expect from a more traditional ORM. Hence you'll find the documentation refers to **items**, not documents.
 
@@ -23,9 +23,10 @@ So, you've [wrote your model](./Writing-Models), and now it's time to use it!
 | [Transactions](#transactions) |
 | [`model.transaction.create(item[, opts])`](#modeltransactioncreateitem-opts) |
 | [`model.transaction.get(key[, opts])`](#modeltransactiongetkey-opts) |
-| [`model.transaction.update(data, key[, opts])`](#modeltransactionupdatedatakey-opts) |
+| [`model.transaction.update(data, key[, opts])`](#modeltransactionupdatedata-key-opts) |
 | [`model.transaction.delete(key[, opts])`](#modeltransactiondeletekey-opts) |
 | [`model.transaction.upsert(item[, opts])`](#modeltransactionupsertitem-opts) |
+| [Further Reading](#further-reading) |
 
 ```js
 const dynazord = require('dynazord');
@@ -594,3 +595,14 @@ console.log(user);
 | ---- | ---- |
 | `bulkHooks` | Boolean to execute bulk-hooks, defaults to `true` |
 | `hooks` | Boolean to execute hooks, defaults to `false` |
+
+## Further Reading
+
+- [Working with Queries in DynamoDB](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Query.html)
+- [Working with Scans in DynamoDB](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Scan.html)
+- [When to use (and when not to use) DynamoDB Filter Expressions](https://www.alexdebrie.com/posts/dynamodb-filter-expressions/)
+- [Improving data access with secondary indexes](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/SecondaryIndexes.html)
+
+---
+
+Next, check out some [examples](../examples/).
