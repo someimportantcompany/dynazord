@@ -377,6 +377,69 @@ describe('examples', () => describe('posts', () => {
     ]);
   });
 
+  it('should bulk-update some entries', async () => {
+    const [ id1, id2 ] = ids;
+    assert(typeof id1 === 'string' && id1.length, 'Expected id1 to be a string');
+    assert(typeof id2 === 'string' && id2.length, 'Expected id2 to be a string');
+
+    const entries = await posts.bulkUpdate({ status: 'DELETED' }, [ { id: id1 }, { id: id2 } ]);
+    assert.ok(Array.isArray(entries), 'Expected posts.bulkUpdate to return an array');
+
+    await assertItem(dynamodb, {
+      TableName: posts.tableName,
+      Key: { id: { S: id1 } },
+    }, {
+      id: { S: id1 },
+      title: { S: 'The best games of 2020' },
+      blogID: { S: 'theverge.com' },
+      publishedAt: { N: '1608390000000' },
+      slug: { S: 'the-best-games-of-2020' },
+      content: { L: [ { M: { embed: { M: { link: { S: link1 } } } } } ] },
+      status: { S: 'DELETED' },
+      createdAt: { S: currentDate.toISOString() },
+      updatedAt: { S: currentDate.toISOString() },
+    });
+    await assertItem(dynamodb, {
+      TableName: posts.tableName,
+      Key: { id: { S: id2 } },
+    }, {
+      id: { S: id2 },
+      title: { S: 'The best movies of 2020' },
+      blogID: { S: 'theverge.com' },
+      publishedAt: { N: '1608386400000' },
+      slug: { S: 'the-best-movies-of-2020' },
+      content: { L: [ { M: { embed: { M: { link: { S: link2 } } } } } ] },
+      status: { S: 'DELETED' },
+      createdAt: { S: currentDate.toISOString() },
+      updatedAt: { S: currentDate.toISOString() },
+    });
+
+    assert.deepStrictEqual(entries, [
+      {
+        id: id1,
+        title: 'The best games of 2020',
+        blogID: 'theverge.com',
+        publishedAt: new Date('2020-12-19T15:00:00.000Z'),
+        slug: 'the-best-games-of-2020',
+        content: [ { embed: { link: link1 } } ],
+        status: 'DELETED',
+        createdAt: currentDate,
+        updatedAt: currentDate,
+      },
+      {
+        id: id2,
+        title: 'The best movies of 2020',
+        blogID: 'theverge.com',
+        publishedAt: new Date('2020-12-19T14:00:00.000Z'),
+        slug: 'the-best-movies-of-2020',
+        content: [ { embed: { link: link2 } } ],
+        status: 'DELETED',
+        createdAt: currentDate,
+        updatedAt: currentDate,
+      },
+    ]);
+  });
+
   it('should bulk-delete some entries', async () => {
     const [ id1, id2 ] = ids;
     assert(typeof id1 === 'string' && id1.length, 'Expected id1 to be a string');

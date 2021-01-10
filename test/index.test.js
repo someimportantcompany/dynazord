@@ -202,14 +202,12 @@ describe('dynazord', () => {
         assert.deepStrictEqual([ first, second ], [ { id: ids[0], ...body[0] }, { id: ids[1], ...body[1] } ]);
       });
 
-      it.skip('should update entries', () => {
+      it('should update entries', async () => {
         assert(model, 'Failed to create the model');
         assert(ids.length, 'Failed to initially create entries');
 
-        assert.fail('Not implemented');
-
-        // const doc = await model.update({ avatar }, { id });
-        // assert.deepStrictEqual(doc, { id, email, name, avatar });
+        const docs = await model.bulkUpdate({ avatar }, ids.map(id => ({ id })));
+        assert.deepStrictEqual(docs, body.map((b, i) => ({ id: ids[i], ...b, avatar })));
       });
 
       it('should delete entries', async () => {

@@ -268,8 +268,8 @@ describe('examples', () => describe('sessions', () => {
     ]);
 
     assert.ok(Array.isArray(entries), 'Expected sessions.bulkGet to return an array');
-    assert.ok(entries[0] && entries[0].accessToken, 'Expected sessions.bulkGet [0] to return an accessToken');
-    assert.ok(entries[1] && entries[1].accessToken, 'Expected sessions.bulkGet [1] to return an accessToken');
+    assert.ok(entries[0] && entries[0].accessToken, 'Expected sessions.bulkGet[0] to return the accessToken');
+    assert.ok(entries[1] && entries[1].accessToken, 'Expected sessions.bulkGet[1] to return the accessToken');
 
     assert.deepStrictEqual(entries, [
       {
@@ -286,6 +286,63 @@ describe('examples', () => describe('sessions', () => {
         ipAddress: '127.0.0.1',
         userAgent,
         createdAt: currentDate,
+        updatedAt: currentDate,
+      },
+    ]);
+  });
+
+  it('should bulk-update some entries', async () => {
+    const entries = await sessions.bulkUpdate({ lastActiveAt: currentDate }, [
+      { email: 'jdrydn1@github.io', createdAt: currentDate },
+      { email: 'jdrydn2@github.io', createdAt: currentDate },
+    ]);
+
+    assert.ok(Array.isArray(entries), 'Expected sessions.bulkUpdate to return an array');
+    assert.ok(entries[0] && entries[0].accessToken, 'Expected sessions.bulkUpdate[0] to return the accessToken');
+    assert.ok(entries[1] && entries[1].accessToken, 'Expected sessions.bulkUpdate[1] to return the accessToken');
+
+    await assertItem(dynamodb, {
+      TableName: sessions.tableName,
+      Key: { email: { S: 'jdrydn1@github.io' }, createdAt: { N: currentDate.getTime().toString() } },
+    }, {
+      email: { S: 'jdrydn1@github.io' },
+      accessToken: { S: entries[0].accessToken },
+      ipAddress: { S: '127.0.0.1' },
+      userAgent: { S: userAgent },
+      createdAt: { N: currentDate.getTime().toString() },
+      lastActiveAt: { S: currentDate.toISOString() },
+      updatedAt: { S: currentDate.toISOString() },
+    });
+    await assertItem(dynamodb, {
+      TableName: sessions.tableName,
+      Key: { email: { S: 'jdrydn2@github.io' }, createdAt: { N: currentDate.getTime().toString() } },
+    }, {
+      email: { S: 'jdrydn2@github.io' },
+      accessToken: { S: entries[1].accessToken },
+      ipAddress: { S: '127.0.0.1' },
+      userAgent: { S: userAgent },
+      createdAt: { N: currentDate.getTime().toString() },
+      lastActiveAt: { S: currentDate.toISOString() },
+      updatedAt: { S: currentDate.toISOString() },
+    });
+
+    assert.deepStrictEqual(entries, [
+      {
+        email: 'jdrydn1@github.io',
+        accessToken: entries[0].accessToken,
+        ipAddress: '127.0.0.1',
+        userAgent,
+        createdAt: currentDate,
+        lastActiveAt: currentDate,
+        updatedAt: currentDate,
+      },
+      {
+        email: 'jdrydn2@github.io',
+        accessToken: entries[1].accessToken,
+        ipAddress: '127.0.0.1',
+        userAgent,
+        createdAt: currentDate,
+        lastActiveAt: currentDate,
         updatedAt: currentDate,
       },
     ]);
