@@ -57,8 +57,8 @@ module.exports = async function findDocument(where, opts = undefined) {
     Select: opts.select,
     ExpressionAttributeNames: { ...keyCondition.names, ...filter.names, ...projected.names },
     ExpressionAttributeValues: marshall({ ...keyCondition.values, ...filter.values }),
-    ConsistentRead: opts.consistentRead || true,
-    ScanIndexForward: opts.scanIndexForward || true,
+    ConsistentRead: opts.consistentRead,
+    ScanIndexForward: opts.scanIndexForward,
   };
 
   log.debug({ query: params });

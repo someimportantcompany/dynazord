@@ -6,6 +6,7 @@ const { dynamodb, assertItem, deleteThenCreateTable } = require('../utils');
 const { v4: uuid } = require('uuid');
 
 describe('examples', () => describe('posts', () => {
+  const dynazord = require('dynazord');
   const posts = rewire('../../examples/posts');
 
   const currentDate = new Date();
@@ -373,6 +374,57 @@ describe('examples', () => describe('posts', () => {
         status: 'PUBLISHED',
         createdAt: currentDate,
         updatedAt: currentDate,
+      },
+    ]);
+  });
+
+  it('should query entries by secondary index', async () => {
+    const [ id1, id2 ] = ids;
+    assert(typeof id1 === 'string' && id1.length, 'Expected id1 to be a string');
+    assert(typeof id2 === 'string' && id2.length, 'Expected id2 to be a string');
+
+    const entries = await posts.query({ blogID: 'theverge.com' }, { indexName: 'blogPostsByTime' });
+    assert.ok(Array.isArray(entries), 'Expected posts.bulkGet to return an array');
+
+    assert.deepStrictEqual(entries, [
+      {
+        id: id2,
+        blogID: 'theverge.com',
+        publishedAt: new Date('2020-12-19T14:00:00.000Z'),
+      },
+      {
+        id: id1,
+        blogID: 'theverge.com',
+        publishedAt: new Date('2020-12-19T15:00:00.000Z'),
+      },
+    ]);
+  });
+
+  it('should query entries by secondary index (reverse)', async () => {
+    const [ id1, id2 ] = ids;
+    assert(typeof id1 === 'string' && id1.length, 'Expected id1 to be a string');
+    assert(typeof id2 === 'string' && id2.length, 'Expected id2 to be a string');
+
+    const { gt } = dynazord.operators;
+    const entries = await posts.query({
+      blogID: 'theverge.com',
+      publishedAt: { [gt]: new Date('2020-12-19T10:00:00.000Z') },
+    }, {
+      indexName: 'blogPostsByTime',
+      scanIndexForward: false,
+    });
+    assert.ok(Array.isArray(entries), 'Expected posts.bulkGet to return an array');
+
+    assert.deepStrictEqual(entries, [
+      {
+        id: id1,
+        blogID: 'theverge.com',
+        publishedAt: new Date('2020-12-19T15:00:00.000Z'),
+      },
+      {
+        id: id2,
+        blogID: 'theverge.com',
+        publishedAt: new Date('2020-12-19T14:00:00.000Z'),
       },
     ]);
   });

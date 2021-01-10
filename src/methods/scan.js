@@ -40,14 +40,14 @@ module.exports = async function findDocument(where, opts = undefined) {
 
   const params = {
     TableName: tableName,
-    IndexName: opts.indexName || undefined,
+    IndexName: opts.indexName,
     FilterExpression: filters.expression || undefined,
     ProjectionExpression: projected.expression || undefined,
     ExpressionAttributeNames: { ...filters.names, ...projected.names },
     ExpressionAttributeValues: marshall({ ...filters.values }),
     ExclusiveStartKey: opts.exclusiveStartKey ? marshall(opts.exclusiveStartKey) : undefined,
-    ConsistentRead: opts.consistentRead || undefined,
-    Limit: opts.limit || undefined,
+    ConsistentRead: opts.consistentRead,
+    Limit: opts.limit,
   };
 
   log.debug({ scan: params });
