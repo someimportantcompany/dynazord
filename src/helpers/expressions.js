@@ -137,6 +137,7 @@ async function buildFilterExpression(properties, where) {
             });
             segments.push(`#${prefix}${i} IN (${vals.join(', ')})`);
           } else {
+            /* istanbul ignore next */
             assert(false, new TypeError(`Unsupported where syntax for ${key}`));
           }
         } else {
@@ -185,8 +186,15 @@ async function buildKeyExpression(properties, where) {
         assert(isPlainObject(property), new Error(`Expected ${key} to be a valid property`));
 
         if (isPlainObject(value)) {
-          assert(Object.keys(value).length === 1, new Error(`Expected ${key} only have one key underneath`));
           const { eq, gt, gte, lt, lte } = operators;
+
+          const count = (a => a.reduce((b, c) => b + (c ? 1 : 0), 0))([
+            value.hasOwnProperty(eq),
+            value.hasOwnProperty(lt), value.hasOwnProperty(lte),
+            value.hasOwnProperty(gt), value.hasOwnProperty(gte),
+          ]);
+          assert(count === 1, new Error(`Expected ${key} to have one property underneath`));
+
           if (value.hasOwnProperty(eq)) {
             assertValueType(value[eq]);
             segments.push(pushVariables(prefix, key, '=', await formatValue(property, value[eq])));
@@ -203,6 +211,7 @@ async function buildKeyExpression(properties, where) {
             assertValueType(value[gte]);
             segments.push(pushVariables(prefix, key, '>=', await formatValue(property, value[gte])));
           } else {
+            /* istanbul ignore next */
             assert(false, new TypeError(`Unsupported where syntax for ${key}`));
           }
         } else {
@@ -221,11 +230,9 @@ async function buildKeyExpression(properties, where) {
 }
 
 function buildProjectionExpression(attributes) {
-  assert(typeof prefix === 'string', new TypeError('Expected prefix to be a string'));
-  assert(Array.isArray(attributes) && attributes.length, new TypeError('Expected attributes to be an array'));
+  assert(Array.isArray(attributes), new TypeError('Expected attributes to be an array'));
   const names = attributes.reduce((r, v, i) => ({ ...r, [`#p${i + 1}`]: v }), {});
-  const expression = Object.keys(names).join(', ');
-  return { expression, names };
+  return Object.keys(names).length > 0 ? { expression: Object.keys(names).join(', '), names } : null;
 }
 
 module.exports = {
