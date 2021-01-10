@@ -202,6 +202,28 @@ describe('helpers', () => {
         values: { ':f1': currentTime.toISOString() },
       }));
 
+      it('should build a filter expression with { a.b.c: b }', assertFilter({
+        a: {
+          type: 'MAP',
+          properties: {
+            b: {
+              type: 'MAP',
+              properties: {
+                c: {
+                  type: 'STRING',
+                },
+              },
+            },
+          },
+        },
+      }, {
+        'a.b.c': 'b'
+      }, {
+        expression: '#f1 = :f1',
+        names: { '#f1': 'a.b.c' },
+        values: { ':f1': 'b' },
+      }));
+
       it('should return a NULL filter expression with {}', assertFilter({}, {}, null));
 
     });

@@ -69,7 +69,7 @@ async function formatWriteData(properties, data, opts = {}) {
       if (value !== undefined && type && typeof type.set === 'function') {
         value = await type.set.call(type, value, property); // eslint-disable-line no-useless-call
       }
-    } catch (err) {
+    } catch (err) /* istanbul ignore next */ {
       err.key = key;
       throw err;
     }
@@ -127,7 +127,7 @@ function getPropertyForKey(properties, path, prefix = '') {
     new Error(`Expected ${prefix}${key} to be an object since it has child keys: ${children.join('.')}`));
 
   if (isObjectProperty(property)) {
-    assert(children.length > 1, new Error(`Expected ${prefix}${key} to have child keys since it is an object property`));
+    assert(children.length > 0, new Error(`Expected ${prefix}${key} to have child keys since it is an object property`));
     if (property.properties) {
       assert(isPlainObject(properties), new TypeError(`Expected ${prefix}${key}.properties to be a plain object`));
       return getPropertyForKey(property.properties, children.join('.'), `${prefix}${key}.`);
