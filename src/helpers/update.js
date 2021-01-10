@@ -45,7 +45,7 @@ function assertRequiredUpdateProps(properties, data) {
     if (data.hasOwnProperty(key) && properties.hasOwnProperty(key)) {
       try {
         assertRequiredProperty(properties[key], key, data[key]);
-      } catch (err) {
+      } catch (err) /* istanbul ignore next */ {
         err.message = `[${err.key || key}]: ${err.message}`;
         throw err;
       }

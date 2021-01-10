@@ -206,7 +206,7 @@ async function validateData(properties, data) {
     if (data.hasOwnProperty(key) && properties.hasOwnProperty(key)) {
       try {
         await validateProperty(key, data[key], properties[key]);
-      } catch (err) {
+      } catch (err) /* istanbul ignore next */ {
         err.message = `[${err.key}]: ${err.message}`;
         throw err;
       }
