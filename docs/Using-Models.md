@@ -20,6 +20,8 @@ So, you've [wrote your model](./Writing-Models.md), and now it's time to use it!
 | [Query & Scans](#query--scans) |
 | [`model.query(key[, opts])`](#modelquerykey-opts) |
 | [`model.scan(filter[, opts])`](#modelscanfilter-opts) |
+| [Filter Expressions](#filter-expressions) |
+| [Pagination](#pagination) |
 | [Transactions](#transactions) |
 | [`model.transaction.create(item[, opts])`](#modeltransactioncreateitem-opts) |
 | [`model.transaction.get(key[, opts])`](#modeltransactiongetkey-opts) |
@@ -397,6 +399,23 @@ There are two concepts to understand when looking up values in DynamoDB: [`query
 - You must provide the `hash` key with a single value, optionally you can include the `range` key with a comparison to refine the results.
 - You can optionally provide `opts.filter` to add [filter expressions](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Query.html#Query.FilterExpression) to a query.
 
+```js
+const { gt } = dynazord.operators;
+const results = await posts.query({
+  blogID: 'theverge.com',
+  publishedAt: { [gt]: new Date('2020-01-01') },
+}, {
+  // Optionally set the index name
+  indexName: 'blogPublishedAt',
+  // Optionally filter unwanted entries
+  filter: { status: 'ACTIVE' },
+  // Optionally reverse the sort order to get latest posts first
+  scanIndexForward: false,
+  // And optionally fetch 10 results maximum
+  limit: 10,
+});
+```
+
 `opts` is an optional object, passed to hooks & sets the following:
 
 | Option | Description |
@@ -409,7 +428,43 @@ There are two concepts to understand when looking up values in DynamoDB: [`query
 | `limit` | An optional number to specify the number of results you want to be returned. |
 | `scanIndexForward` | A boolean to specify the order for index traversal, if `true` (default) sorts in ascending & `false` sorts in descending. |
 
+#### Key Conditions
+
+Key conditions are a subset of [filter expressions](#filter-expressions), allowing you to immediately query for a subset of items using the [primary index](./Writing-Models.md#primary-index) (by default) or [secondary indexes](./Writing-Models.md#secondary-indexes) (if `indexName` is specified):
+
+```js
+// Specify just the hash key (partition key)
+{ blogID: 'theverge.com' }
+
+// Specify the hash key (partition key) & the range key (sort key)
+{ blogID: 'theverge.com', publishedAt: { [gt]: new Date('2020-01-01') } }
+```
+
+Supported operators (exported as `dynazord.operators`) for key conditions are:
+
+| Symbol | Operator |
+| ---- | ---- |
+| `eq` | Equals |
+| `lt` | Less-Than |
+| `lte` | Less-Than-Or-Equals |
+| `gt` | Greater-Than |
+| `gte` | Greater-Than-Or-Equals |
+
 ### `model.scan(filter[, opts])`
+
+```js
+const { gt } = dynazord.operators;
+const results = await posts.scan({
+  blogID: 'theverge.com',
+  publishedAt: { [gt]: new Date('2020-01-01') },
+  status: 'ACTIVE',
+}, {
+  // Optionally set the index name
+  indexName: 'blogPublishedAt',
+  // And optionally fetch 10 results maximum
+  limit: 10,
+});
+```
 
 `opts` is an optional object, passed to hooks & sets the following:
 
@@ -417,15 +472,100 @@ There are two concepts to understand when looking up values in DynamoDB: [`query
 | ---- | ---- |
 | `attributesToGet` | An array of properties to build a ProjectedExpression underneath. |
 | `consistentRead` | A boolean to [determine consistency](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/HowItWorks.ReadConsistency.html). |
-| `filter` | A [filter expression](#filter-expressions) to restrict results. |
 | `exclusiveStartKey` | An optional object to specify a start-key for pagination. |
-| `indexName` | An optional string to specify the index you'd like to query with. |
+| `indexName` | An optional string to specify the index you'd like to scan with. |
 | `limit` | An optional number to specify the number of results you want to be returned. |
 | `scanIndexForward` | A boolean to specify the order for index traversal, if `true` (default) sorts in ascending & `false` sorts in descending. |
 
 ### Filter Expressions
 
+Filter expressions are objects that define filter statements.
+
+```js
+const { or, gt, lt } = dynazord.operators;
+
+{ blogID: 'theverge.com' }
+// blogID = "theverge.com"
+
+{ blogID: 'theverge.com', publishedAt: { [gt]: new Date('2020-01-01') } }
+// blogID = "theverge.com" AND publishedAt > 1577836800000
+
+{ blogID: 'theverge.com', publishedAt: { [gt]: new Date('2019-01-01'), [lt]: new Date('2020-01-01') } }
+// blogID = "theverge.com" AND publishedAt > 1546300800000 AND publishedAt < 1577836800000
+
+{ [or]: [ { blogID: 'carthrottle.com' }, { blogID: 'wtf1.com' } ], publishedAt: { [lt]: new Date('2020-01-01') } }
+// (blogID = "carthrottle.com" OR blogID = "wtf1.com") AND publishedAt < 1577836800000
+```
+
+Supported operators (exported as `dynazord.operators`) for filter conditions are:
+
+| Symbol | Operator |
+| ---- | ---- |
+| `and` | And |
+| `or` | Or |
+| `not` | Not |
+| `eq` | Equals |
+| `lt` | Less-Than |
+| `lte` | Less-Than-Or-Equals |
+| `gt` | Greater-Than |
+| `gte` | Greater-Than-Or-Equals |
+| `in` | In |
+
+`and`, `or` & `not` support nested expressions. `lt`/`lte` & `gt`/`gte` can be used together, but the rest are exclusive.
+
 ### Pagination
+
+You can iterate through pages by taking `results.lastEvaluatedKey` & passing it as `exclusiveStartKey` to future [`query`](#modelquerykey-opts)/[`scan`](#modelscanfilter-opts) calls:
+
+```js
+const page1 = await posts.query({ blogID: 'theverge.com' }, {
+  // Optionally set the index name
+  indexName: 'blogPublishedAt',
+  // Optionally filter unwanted entries
+  filter: { status: 'ACTIVE' },
+  // Optionally reverse the sort order to get latest posts first
+  scanIndexForward: false,
+  // And optionally fetch 10 results at a time
+  limit: 10,
+});
+
+console.log(page1);
+// [ { id: '73da08d1-3c23-4819-b37c-cde4c7fcca65',
+//     blogID: 'theverge.com'
+//     publishedAt: [Date YYYY-MM-DDTHH:mm:ss.Z],
+//     ...: ... },
+//   { ...: ... },
+//   { ...: ... },
+//   count: 10,
+//   scannedCount: 18,
+//   lastEvaluatedKey: Buffer<...> ]
+
+const page2 = await posts.query({ blogID: 'theverge.com' }, {
+  // Optionally set the index name
+  indexName: 'blogPublishedAt',
+  // Optionally filter unwanted entries
+  filter: { status: 'ACTIVE' },
+  // Optionally reverse the sort order to get latest posts first
+  scanIndexForward: false,
+  // And optionally fetch 10 results at a time
+  limit: 10,
+  // Passing through lastEvaluatedKey
+  exclusiveStartKey: page1.lastEvaluatedKey,
+});
+
+console.log(page1);
+// [ { id: '73da08d1-3c23-4819-b37c-cde4c7fcca65',
+//     blogID: 'theverge.com'
+//     publishedAt: [Date YYYY-MM-DDTHH:mm:ss.Z],
+//     ...: ... },
+//   { ...: ... },
+//   { ...: ... },
+//   count: 8,
+//   scannedCount: 18,
+//   lastEvaluatedKey: undefined ]
+```
+
+You can also use `lastEvaluatedKey` to work out if there are more items to fetch.
 
 ## Transactions
 
@@ -606,3 +746,5 @@ console.log(user);
 ---
 
 Next, check out some [examples](../examples/).
+
+<small>Any product names, logos, and brands are property of their respective owners, used for identification purposes only & does not imply endorsement.</small>

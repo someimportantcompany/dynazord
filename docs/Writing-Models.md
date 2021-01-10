@@ -952,3 +952,5 @@ const posts = dynazord.createModel({
 ---
 
 Next, [start using models](./Using-Models.md).
+
+<small>Any product names, logos, and brands are property of their respective owners, used for identification purposes only & does not imply endorsement.</small>

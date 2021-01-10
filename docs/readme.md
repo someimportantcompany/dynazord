@@ -26,3 +26,7 @@ Yet another [DynamoDB](https://aws.amazon.com/dynamodb) [NodeJS](https://nodejs.
   docker run --rm -d --name dynamodb -p 8000:8000 amazon/dynamodb-local
   ```
   - If you've not read through them, take note of [the differences](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/DynamoDBLocal.UsageNotes.html#DynamoDBLocal.Differences) between the production AWS DynamoDB platform & local Docker container.
+
+---
+
+<small>Any product names, logos, and brands are property of their respective owners, used for identification purposes only & does not imply endorsement.</small>
