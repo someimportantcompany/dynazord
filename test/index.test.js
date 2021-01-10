@@ -68,6 +68,14 @@ describe('dynazord', () => {
         assert.deepStrictEqual(doc, { id, email, name });
       });
 
+      it('should query for entries', async () => {
+        assert(model, 'Failed to create the model');
+        assert(id, 'Failed to initially create entries');
+
+        const docs = await model.query({ id });
+        assert.deepStrictEqual(docs, [ { id, email, name } ]);
+      });
+
       it('should scan for an entry', async () => {
         assert(model, 'Failed to create the model');
         assert(id, 'Failed to initially create the entry');
@@ -173,7 +181,7 @@ describe('dynazord', () => {
         assert.deepStrictEqual(docs, body.map((b, i) => ({ id: ids[i], ...b })));
       });
 
-      it('should find entries #1', async () => {
+      it('should scan for entries', async () => {
         assert(model, 'Failed to create the model');
         assert(ids.length, 'Failed to initially create entries');
 
@@ -181,13 +189,13 @@ describe('dynazord', () => {
         assert.deepStrictEqual(docs, [ { id: ids[0], ...body[0] } ]);
       });
 
-      it('should find entries #2', async () => {
+      it('should scan for entries (OR)', async () => {
         assert(model, 'Failed to create the model');
         assert(ids.length, 'Failed to initially create entries');
 
         const { or: $or } = dynazord.operators;
         const docs = await model.scan({ [$or]: [ { email: body[0].email }, { email: body[1].email } ] });
-        assert.strictEqual(docs.length, 2, 'Expected find to return 2 documents');
+        assert.strictEqual(docs.length, 2, 'Expected scan to return 2 documents');
 
         const first = docs.find(d => d && d.email === body[0].email);
         const second = docs.find(d => d && d.email === body[1].email);
@@ -269,7 +277,7 @@ describe('dynazord', () => {
   });
 
   describe('operators', () => {
-    const { operators } = require('../src/helpers/where');
+    const { operators } = require('../src/helpers/expressions');
 
     it('should export a static object of operators', () => {
       assert.deepStrictEqual(Object.keys(dynazord.operators), [

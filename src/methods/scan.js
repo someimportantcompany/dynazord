@@ -1,5 +1,5 @@
 const { assert, isPlainObject, marshall, unmarshall, promiseMapAll } = require('../utils');
-const { buildFilterExpression, buildAttributesExpression } = require('../helpers/where');
+const { buildFilterExpression, buildProjectionExpression } = require('../helpers/expressions');
 const { formatReadData } = require('../helpers/data');
 
 module.exports = async function findDocument(where, opts = undefined) {
@@ -35,14 +35,14 @@ module.exports = async function findDocument(where, opts = undefined) {
   assert(!opts.indexName || (secondaryIndexes && isPlainObject(secondaryIndexes[opts.indexName])),
     new Error(`Unknown secondary index ${opts.indexName}`));
 
-  const filters = (await buildFilterExpression('f', properties, where)) || {};
-  const projected = opts.attributesToGet ? buildAttributesExpression('p', opts.attributesToGet) : {};
+  const filters = (await buildFilterExpression(properties, where)) || {};
+  const projected = opts.attributesToGet ? buildProjectionExpression(properties, opts.attributesToGet) : {};
 
   const params = {
     TableName: tableName,
     IndexName: opts.indexName || undefined,
     FilterExpression: filters.expression || undefined,
-    ProjectionExpression: projected.expression,
+    ProjectionExpression: projected.expression || undefined,
     ExpressionAttributeNames: { ...filters.names, ...projected.names },
     ExpressionAttributeValues: marshall({ ...filters.values }),
     ExclusiveStartKey: opts.exclusiveStartKey ? marshall(opts.exclusiveStartKey) : undefined,

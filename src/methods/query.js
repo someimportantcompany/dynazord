@@ -1,5 +1,5 @@
 const { assert, isPlainObject, marshall, unmarshall, promiseMapAll } = require('../utils');
-const { buildFilterExpression, buildAttributesExpression } = require('../helpers/where');
+const { buildFilterExpression, buildKeyExpression, buildProjectionExpression } = require('../helpers/expressions');
 const { formatReadData } = require('../helpers/data');
 
 module.exports = async function findDocument(where, opts = undefined) {
@@ -38,13 +38,13 @@ module.exports = async function findDocument(where, opts = undefined) {
   assert(!opts.indexName || (secondaryIndexes && isPlainObject(secondaryIndexes[opts.indexName])),
     new Error(`Unknown secondary index ${opts.indexName}`));
 
-  const { hash, range } = opts.indexName ? secondaryIndexes[opts.indexName] : keySchema;
-  assert(where.hasOwnProperty(hash), new Error(`Missing ${hash} hash property from argument`));
-  assert(!range || where.hasOwnProperty(range), new Error(`Missing ${range} range property from argument`));
+  // const { hash, range } = opts.indexName ? secondaryIndexes[opts.indexName] : keySchema;
+  // assert(where.hasOwnProperty(hash), new Error(`Missing ${hash} hash property from argument`));
+  // assert(!range || where.hasOwnProperty(range), new Error(`Missing ${range} range property from argument`));
 
-  const keyCondition = (await buildFilterExpression('k', properties, where)) || {};
-  const filter = (opts.filter && (await buildFilterExpression('f', properties, opts.filter))) || {};
-  const projected = opts.attributesToGet ? buildAttributesExpression('a', opts.attributesToGet) : {};
+  const keyCondition = (await buildKeyExpression(properties, where)) || {};
+  const filter = (opts.filter && (await buildFilterExpression(properties, opts.filter))) || {};
+  const projected = opts.attributesToGet ? buildProjectionExpression(opts.attributesToGet) : {};
 
   const params = {
     TableName: tableName,

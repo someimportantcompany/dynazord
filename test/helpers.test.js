@@ -1,18 +1,18 @@
 const assert = require('assert');
-const where = require('../src/helpers/where');
+const expressions = require('../src/helpers/expressions');
 
 describe('helpers', () => {
-  describe('where', () => {
+  describe('expressions', () => {
 
     describe('buildFilterExpression', () => {
-      const { buildFilterExpression } = where;
-      const { and, or, not, eq, ne, lt, lte, gt, gte, in: $in } = where.operators;
+      const { buildFilterExpression } = expressions;
+      const { and, or, not, eq, ne, lt, lte, gt, gte, in: $in } = expressions.operators;
 
       const currentTime = new Date();
 
       function assertFilter(properties, args, expected) {
         return async () => {
-          const actual = await buildFilterExpression('f', properties, args);
+          const actual = await buildFilterExpression(properties, args);
           assert.deepStrictEqual(actual, expected);
         };
       }

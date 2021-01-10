@@ -4,7 +4,7 @@ const { assertValidProperties } = require('./helpers/validate');
 const { createHooks } = require('./hooks');
 const { keys: typeKeys } = require('./types');
 const { methods, bulkMethods, transactionMethods, runTransaction } = require('./methods');
-const { operators } = require('./helpers/where');
+const { operators } = require('./helpers/expressions');
 
 const { name: PACKAGE_NAME } = require('../package.json');
 
