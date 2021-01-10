@@ -2,11 +2,6 @@ const { assert, isPlainObject, marshall, promiseMapAll } = require('../utils');
 const { assertRequiredCreateProps, appendCreateDefaultProps } = require('../helpers/create');
 const { formatReadData, formatWriteData, validateData } = require('../helpers/data');
 
-const DEFAULT_OPTS = {
-  bulkHooks: true,
-  hooks: false,
-};
-
 module.exports = async function createBulkDocuments(items, opts = undefined) {
   const { tableName, keySchema, properties, client, hooks, log } = this;
   assert(client && typeof client.transactWriteItems === 'function', new TypeError('Expected client to be a DynamoDB client'));
@@ -17,7 +12,7 @@ module.exports = async function createBulkDocuments(items, opts = undefined) {
   assert(Array.isArray(items), new Error('Expected argument to be an array'));
   assert(items.length <= 25, new Error('Expected array argument to be less than 25 items'));
   assert(opts === undefined || isPlainObject(opts), new TypeError('Expected opts argument to be a plain object'));
-  opts = { ...DEFAULT_OPTS, ...opts };
+  opts = { bulkHooks: true, hooks: false, ...opts };
 
   await hooks.emit('beforeBulkCreate', this, opts.bulkHooks === true, items, opts);
 

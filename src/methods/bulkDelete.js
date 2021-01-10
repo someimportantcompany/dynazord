@@ -1,11 +1,6 @@
 const { assert, isPlainObject, marshall } = require('../utils');
 const { formatWriteData } = require('../helpers/data');
 
-const DEFAULT_OPTS = {
-  bulkHooks: true,
-  hooks: false,
-};
-
 module.exports = async function deleteBulkDocuments(keys, opts) {
   const { tableName, keySchema, properties, client, hooks, log } = this;
   assert(client && typeof client.transactWriteItems === 'function', new TypeError('Expected client to be a DynamoDB client'));
@@ -16,7 +11,7 @@ module.exports = async function deleteBulkDocuments(keys, opts) {
   assert(Array.isArray(keys), new Error('Expected argument to be an array'));
   assert(keys.length <= 25, new Error('Expected argument array to be less than 25 items'));
   assert(opts === undefined || isPlainObject(opts), new TypeError('Expected opts argument to be a plain object'));
-  opts = { ...DEFAULT_OPTS, ...opts };
+  opts = { bulkHooks: true, hooks: false, ...opts };
 
   keys.forEach((where, i) => {
     const { hash, range } = keySchema;
