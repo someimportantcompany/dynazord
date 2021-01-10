@@ -1,4 +1,4 @@
-const { assert, isPlainObject, marshall, unmarshall } = require('../utils');
+const { assert, isPlainObject, marshall, unmarshall, promiseMapAll } = require('../utils');
 const { formatReadData, formatWriteData } = require('../helpers/data');
 
 module.exports = async function getBulkDocuments(keys) {
@@ -29,15 +29,15 @@ module.exports = async function getBulkDocuments(keys) {
 
     assert(results && Array.isArray(results.Responses), new Error('Expected responses to be an array'));
 
-    return Promise.all(results.Responses.map(async ({ Item }) => {
-      if (Item) {
-        Item = unmarshall(Item);
-        await formatReadData(properties, Item);
-        return Item;
-      } else {
-        return null;
+    let items = results.Responses.map(({ Item }) => Item ? unmarshall(Item) : null);
+
+    items = await promiseMapAll(items, async item => {
+      if (item) {
+        await formatReadData(properties, item);
       }
-    }));
+    });
+
+    return items;
   } else {
     return [];
   }

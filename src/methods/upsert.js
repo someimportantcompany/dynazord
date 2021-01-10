@@ -21,11 +21,13 @@ module.exports = async function upsertDocument(item, opts = undefined) {
 
   await hooks.emit('beforeValidateUpsert', this, opts.hooks === true, item, opts);
   await hooks.emit('beforeValidate', this, opts.hooks === true, item, opts);
-  await validateData.call(this, properties, item).catch(async err => {
+  try {
+    await validateData.call(this, properties, item);
+  } catch (err) /* istanbul ignore next */ {
     await hooks.emit('validateUpsertFailed', this, opts.hooks === true, item, err, opts);
     await hooks.emit('validateFailed', this, opts.hooks === true, item, err, opts);
     throw err;
-  });
+  }
   await hooks.emit('afterValidateUpsert', this, opts.hooks === true, item, opts);
   await hooks.emit('afterValidate', this, opts.hooks === true, item, opts);
 
