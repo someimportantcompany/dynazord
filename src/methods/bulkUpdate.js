@@ -93,6 +93,7 @@ module.exports = async function getBulkDocuments(update, keys, opts = undefined)
     items = results.Responses.map(({ Item }) => Item ? unmarshall(Item) : null);
 
     items = await promiseMapAll(items, async item => {
+      /* istanbul ignore else */
       if (item) {
         await formatReadData(properties, item);
       }
