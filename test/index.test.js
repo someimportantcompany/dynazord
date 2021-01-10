@@ -251,7 +251,7 @@ describe('dynazord', () => {
       assert.ok(_.isPlainObject(dynazord.methods), 'Expected dynazord.methods to be a plain object');
       assert.deepStrictEqual(Object.keys(dynazord.methods), [
         'create', 'get', 'query', 'scan', 'update', 'delete', 'upsert',
-        'bulkCreate', 'bulkGet', /* 'bulkUpdate', */ 'bulkDelete', 'bulkUpsert',
+        'bulkCreate', 'bulkGet', 'bulkUpdate', 'bulkDelete', 'bulkUpsert',
         'transaction',
       ]);
       assert.deepStrictEqual(Object.keys(dynazord.methods.transaction), [

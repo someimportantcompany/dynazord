@@ -12,6 +12,7 @@ const methods = {
 const bulkMethods = {
   bulkCreate: require('./bulkCreate'),
   bulkGet: require('./bulkGet'),
+  bulkUpdate: require('./bulkUpdate'),
   bulkDelete: require('./bulkDelete'),
   bulkUpsert: require('./bulkUpsert'),
 };
