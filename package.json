@@ -1,7 +1,7 @@
 {
   "name": "dynazord",
   "description": "DynamoDB NodeJS ORM",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "main": "src/index.js",
   "scripts": {
     "lint": "eslint --ext .js .",
@@ -14,8 +14,18 @@
   "homepage": "https://someimportantcompany.com/dynazord/",
   "repository": "https://github.com/someimportantcompany/dynazord",
   "bugs": "https://github.com/someimportantcompany/dynazord/issues",
-  "files": [ "src" ],
-  "keywords": [ "amazon", "aws", "dynamodb", "dynamo", "model", "schema", "nosql" ],
+  "files": [
+    "src"
+  ],
+  "keywords": [
+    "amazon",
+    "aws",
+    "dynamodb",
+    "dynamo",
+    "model",
+    "schema",
+    "nosql"
+  ],
   "dependencies": {
     "aws-sdk": "^2.802.0",
     "lodash.isplainobject": "^4.0.6"
