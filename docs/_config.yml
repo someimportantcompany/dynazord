@@ -4,8 +4,10 @@ search_enabled: false
 logo: /icon-site.png
 
 aux_links:
-  Dynazord on GitHub:
-    - https://github.com/someimportantcompany/dynazord
+  GitHub:
+    - https://github.com/someimportantcompany/redyn
+  Some Important Company:
+    - https://someimportantcompany.com
 
 back_to_top: true
 back_to_top_text: "Back to top"
