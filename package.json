@@ -11,21 +11,11 @@
   },
   "author": "James D <james@jdrydn.com> (https://jdrydn.com)",
   "license": "MIT",
-  "homepage": "https://github.com/someimportantcompany/dynazord#readme",
+  "homepage": "https://someimportantcompany.com/dynazord/",
   "repository": "https://github.com/someimportantcompany/dynazord",
   "bugs": "https://github.com/someimportantcompany/dynazord/issues",
-  "files": [
-    "src"
-  ],
-  "keywords": [
-    "amazon",
-    "aws",
-    "dynamodb",
-    "dynamo",
-    "model",
-    "schema",
-    "nosql"
-  ],
+  "files": [ "src" ],
+  "keywords": [ "amazon", "aws", "dynamodb", "dynamo", "model", "schema", "nosql" ],
   "dependencies": {
     "aws-sdk": "^2.802.0",
     "lodash.isplainobject": "^4.0.6"
