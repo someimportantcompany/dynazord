@@ -1,7 +1,6 @@
 [![NPM](https://badge.fury.io/js/dynazord.svg)](https://npm.im/dynazord)
 [![CI](https://github.com/someimportantcompany/dynazord/workflows/Test/badge.svg?branch=master)](https://github.com/someimportantcompany/dynazord/actions?query=branch%3Amaster)
 <!-- [![Coverage](https://coveralls.io/repos/github/someimportantcompany/dynazord/badge.svg?branch=master)](https://coveralls.io/github/someimportantcompany/dynazord?branch=master) -->
-[![Documentation](https://img.shields.io/static/v1?label=Read&message=Documentation&color=blue&logo=read-the-docs)](https://someimportantcompany.com/dynazord/)
 
 [DynamoDB](https://aws.amazon.com/dynamodb) [NodeJS](https://nodejs.org) [ORM](https://en.wikipedia.org/wiki/Object–relational_mapping), inspired by similar ORMs like [Mongoose](https://mongoosejs.com) & [Sequelize](https://sequelize.org).
 
