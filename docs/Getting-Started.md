@@ -8,7 +8,7 @@ nav_order: 2
 
 Install through your preferred package manager:
 
-```sh
+```bash
 $ npm install --save dynazord
 # or
 $ yarn add dynazord

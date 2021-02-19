@@ -4,6 +4,7 @@ nav_order: 4
 ---
 
 # Using Models
+{: .no_toc }
 
 So, you've [wrote your model](./Writing-Models), and now it's time to use it!
 

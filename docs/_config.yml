@@ -4,7 +4,7 @@ search_enabled: false
 logo: /icon-site.png
 
 aux_links:
-  Redyn on GitHub:
+  Dynazord on GitHub:
     - https://github.com/someimportantcompany/dynazord
 
 back_to_top: true

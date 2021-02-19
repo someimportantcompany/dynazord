@@ -4,6 +4,7 @@ nav_order: 3
 ---
 
 # Writing Models
+{: .no_toc }
 
 A "model" represents a table in DynamoDB, providing a collection of methods designed to fetch, search, validate & write items following a specific schema.
 
