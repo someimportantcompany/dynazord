@@ -1,12 +1,9 @@
-<div align="center" style="margin-bottom: 50px">
-  <h1>dynazord</h1>
-  <a href="https://npm.im/dynazord"><img alt="NPM" src="https://badge.fury.io/js/dynazord.svg"/></a>
-  <a href="https://github.com/someimportantcompany/dynazord/actions?query=branch%3Amaster"><img alt="CI" src="https://github.com/someimportantcompany/dynazord/workflows/Test/badge.svg?branch=master"/></a>
-  <!-- <a href="https://coveralls.io/github/someimportantcompany/dynazord?branch=master"><img alt="Coverage" src="https://coveralls.io/repos/github/someimportantcompany/dynazord/badge.svg?branch=master"/></a> -->
-  <a href="./docs/"><img alt="Docs" src="https://img.shields.io/static/v1?label=Read&message=Documentation&color=blue&logo=read-the-docs"/></a>
-</div>
+[![NPM](https://badge.fury.io/js/dynazord.svg)](https://npm.im/dynazord)
+[![CI](https://github.com/someimportantcompany/dynazord/workflows/Test/badge.svg?branch=master)](https://github.com/someimportantcompany/dynazord/actions?query=branch%3Amaster)
+<!-- [![Coverage](https://coveralls.io/repos/github/someimportantcompany/dynazord/badge.svg?branch=master)](https://coveralls.io/github/someimportantcompany/dynazord?branch=master) -->
+[![Documentation](https://img.shields.io/static/v1?label=Read&message=Documentation&color=blue&logo=read-the-docs)](https://someimportantcompany.com/dynazord/)
 
-Yet another [DynamoDB](https://aws.amazon.com/dynamodb) [NodeJS](https://nodejs.org) [ORM](https://en.wikipedia.org/wiki/Object–relational_mapping), inspired by similar ORMs like [Mongoose](https://mongoosejs.com) & [Sequelize](https://sequelize.org).
+[DynamoDB](https://aws.amazon.com/dynamodb) [NodeJS](https://nodejs.org) [ORM](https://en.wikipedia.org/wiki/Object–relational_mapping), inspired by similar ORMs like [Mongoose](https://mongoosejs.com) & [Sequelize](https://sequelize.org).
 
 ```js
 const dynazord = require('dynazord');
@@ -70,19 +67,24 @@ This library is designed to simplify interaction with DynamoDB, offering more tr
 
 ## Installation
 
-```
-npm install --save dynazord
+```bash
+$ npm install --save dynazord
 ```
 
 ## Documentation
 
-- [Getting Started](https://github.com/someimportantcompany/dynazord/blob/v1.0.1/docs/Getting-Started.md)
-- [Writing Models](https://github.com/someimportantcompany/dynazord/blob/v1.0.1/docs/Writing-Models.md)
-- [Using Models](https://github.com/someimportantcompany/dynazord/blob/v1.0.1/docs/Using-Models.md)
-- [Examples](https://github.com/someimportantcompany/dynazord/blob/v1.0.1/examples/)
-- [Alternatives](https://github.com/someimportantcompany/dynazord/blob/v1.0.1/docs/#alternatives)
+- [Getting Started](https://someimportantcompany.com/dynazord/Getting-Started.html)
+- [Writing Models](https://someimportantcompany.com/dynazord/Writing-Models.html)
+- [Using Models](https://someimportantcompany.com/dynazord/Using-Models.html)
+- [Examples](https://github.com/someimportantcompany/dynazord/tree/master/examples/)
 
-| Release | Links |
-| ---- | ---- |
-| [`v1.0.1`](https://github.com/someimportantcompany/dynazord/tree/v1.0.1) (master) | [Documentation](https://github.com/someimportantcompany/dynazord/tree/v1.0.1/docs) |
-| [`v0.1.0`](https://github.com/someimportantcompany/dynazord/tree/v0.1.0) | [Documentation](https://github.com/someimportantcompany/dynazord/tree/v0.1.0/docs) |
+## Development
+
+- Documentation is stored in Git, alongside code, therefore as code changes so should the documentation!
+- This also means that documentation for older tags/versions is available at all times, and will be linked [from the repo's README](../README.md).
+- All major work should be in feature branches, include tests & finish with a PR into `master`.
+- To run tests, fire up [`amazon/dynamodb-local`](https://hub.docker.com/r/amazon/dynamodb-local)
+  ```
+  docker run --rm -d --name dynamodb -p 8000:8000 amazon/dynamodb-local
+  ```
+  - If you've not read through them, take note of [the differences](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/DynamoDBLocal.UsageNotes.html#DynamoDBLocal.Differences) between the production AWS DynamoDB platform & local Docker container.
