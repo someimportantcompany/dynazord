@@ -127,9 +127,9 @@ console.log(session);
 
 `opts` is an optional object, passed to hooks & sets the following:
 
-| Option | Description |
-| ---- | ---- |
-| `hooks` | Boolean to execute hooks, defaults to `true` |
+Option | Description
+---- | ----
+`hooks` | Boolean to execute hooks, defaults to `true`
 
 ### `model.get(key[, opts])`
 
@@ -149,10 +149,10 @@ console.log(user);
 
 `opts` is an optional object, sets the following:
 
-| Option | Description |
-| ---- | ---- |
-| `attributesToGet` | An array of properties to build a ProjectedExpression underneath. |
-| `consistentRead` | A boolean to [determine consistency](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/HowItWorks.ReadConsistency.html). |
+Option | Description
+---- | ----
+`attributesToGet` | An array of properties to build a ProjectedExpression underneath.
+`consistentRead` | A boolean to [determine consistency](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/HowItWorks.ReadConsistency.html).
 
 ### `model.update(data, key[, opts])`
 
@@ -172,9 +172,9 @@ console.log(user);
 
 `opts` is an optional object, passed to hooks & sets the following:
 
-| Option | Description |
-| ---- | ---- |
-| `hooks` | Boolean to execute hooks, defaults to `true` |
+Option | Description
+---- | ----
+`hooks` | Boolean to execute hooks, defaults to `true`
 
 ### `model.delete(key[, opts])`
 
@@ -187,9 +187,9 @@ console.log(user);
 
 `opts` is an optional object, passed to hooks & sets the following:
 
-| Option | Description |
-| ---- | ---- |
-| `hooks` | Boolean to execute hooks, defaults to `true` |
+Option | Description
+---- | ----
+`hooks` | Boolean to execute hooks, defaults to `true`
 
 ### `model.upsert(item[, opts])`
 
@@ -215,9 +215,9 @@ console.log(user);
 
 `opts` is an optional object, passed to hooks & sets the following:
 
-| Option | Description |
-| ---- | ---- |
-| `hooks` | Boolean to execute hooks, defaults to `true` |
+Option | Description
+---- | ----
+`hooks` | Boolean to execute hooks, defaults to `true`
 
 ## Bulk CRUD
 
@@ -249,10 +249,10 @@ console.log(users);
 
 `opts` is an optional object, passed to hooks & sets the following:
 
-| Option | Description |
-| ---- | ---- |
-| `bulkHooks` | Boolean to execute bulk-hooks, defaults to `true` |
-| `hooks` | Boolean to execute hooks, defaults to `false` |
+Option | Description
+---- | ----
+`bulkHooks` | Boolean to execute bulk-hooks, defaults to `true`
+`hooks` | Boolean to execute hooks, defaults to `false`
 
 ### `model.bulkGet(keys[, opts])`
 
@@ -310,10 +310,10 @@ console.log(users);
 
 `opts` is an optional object, passed to hooks & sets the following:
 
-| Option | Description |
-| ---- | ---- |
-| `bulkHooks` | Boolean to execute bulk-hooks, defaults to `true` |
-| `hooks` | Boolean to execute hooks, defaults to `false` |
+Option | Description
+---- | ----
+`bulkHooks` | Boolean to execute bulk-hooks, defaults to `true`
+`hooks` | Boolean to execute hooks, defaults to `false`
 
 ### `model.bulkDelete(keys[, opts])`
 
@@ -333,10 +333,10 @@ console.log(users);
 
 `opts` is an optional object, passed to hooks & sets the following:
 
-| Option | Description |
-| ---- | ---- |
-| `bulkHooks` | Boolean to execute bulk-hooks, defaults to `true` |
-| `hooks` | Boolean to execute hooks, defaults to `false` |
+Option | Description
+---- | ----
+`bulkHooks` | Boolean to execute bulk-hooks, defaults to `true`
+`hooks` | Boolean to execute hooks, defaults to `false`
 
 ### `model.bulkUpsert(items[, opts])`
 
@@ -367,10 +367,10 @@ console.log(users);
 
 `opts` is an optional object, passed to hooks & sets the following:
 
-| Option | Description |
-| ---- | ---- |
-| `bulkHooks` | Boolean to execute bulk-hooks, defaults to `true` |
-| `hooks` | Boolean to execute hooks, defaults to `false` |
+Option | Description
+---- | ----
+`bulkHooks` | Boolean to execute bulk-hooks, defaults to `true`
+`hooks` | Boolean to execute hooks, defaults to `false`
 
 ## Query & Scans
 
@@ -401,17 +401,18 @@ const results = await posts.query({
 
 `opts` is an optional object, passed to hooks & sets the following:
 
-| Option | Description |
-| ---- | ---- |
-| `attributesToGet` | An array of properties to build a ProjectedExpression underneath. |
-| `consistentRead` | A boolean to [determine consistency](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/HowItWorks.ReadConsistency.html). |
-| `filter` | A [filter expression](#filter-expressions) to restrict results. |
-| `exclusiveStartKey` | An optional object to specify a start-key for pagination. |
-| `indexName` | An optional string to specify the index you'd like to query with. |
-| `limit` | An optional number to specify the number of results you want to be returned. |
-| `scanIndexForward` | A boolean to specify the order for index traversal, if `true` (default) sorts in ascending & `false` sorts in descending. |
+Option | Description
+---- | ----
+`attributesToGet` | An array of properties to build a ProjectedExpression underneath.
+`consistentRead` | A boolean to [determine consistency](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/HowItWorks.ReadConsistency.html).
+`filter` | A [filter expression](#filter-expressions) to restrict results.
+`exclusiveStartKey` | An optional object to specify a start-key for pagination.
+`indexName` | An optional string to specify the index you'd like to query with.
+`limit` | An optional number to specify the number of results you want to be returned.
+`scanIndexForward` | A boolean to specify the order for index traversal, if `true` (default) sorts in ascending & `false` sorts in descending.
 
 #### Key Conditions
+{: .no_toc }
 
 Key conditions are a subset of [filter expressions](#filter-expressions), allowing you to immediately query for a subset of items using the [primary index](./Writing-Models.md#primary-index) (by default) or [secondary indexes](./Writing-Models.md#secondary-indexes) (if `indexName` is specified):
 
@@ -425,13 +426,13 @@ Key conditions are a subset of [filter expressions](#filter-expressions), allowi
 
 Supported operators (exported as `dynazord.operators`) for key conditions are:
 
-| Symbol | Operator |
-| ---- | ---- |
-| `eq` | Equals |
-| `lt` | Less-Than |
-| `lte` | Less-Than-Or-Equals |
-| `gt` | Greater-Than |
-| `gte` | Greater-Than-Or-Equals |
+Symbol | Operator
+---- | ----
+`eq` | Equals
+`lt` | Less-Than
+`lte` | Less-Than-Or-Equals
+`gt` | Greater-Than
+`gte` | Greater-Than-Or-Equals
 
 ### `model.scan(filter[, opts])`
 
@@ -451,14 +452,14 @@ const results = await posts.scan({
 
 `opts` is an optional object, passed to hooks & sets the following:
 
-| Option | Description |
-| ---- | ---- |
-| `attributesToGet` | An array of properties to build a ProjectedExpression underneath. |
-| `consistentRead` | A boolean to [determine consistency](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/HowItWorks.ReadConsistency.html). |
-| `exclusiveStartKey` | An optional object to specify a start-key for pagination. |
-| `indexName` | An optional string to specify the index you'd like to scan with. |
-| `limit` | An optional number to specify the number of results you want to be returned. |
-| `scanIndexForward` | A boolean to specify the order for index traversal, if `true` (default) sorts in ascending & `false` sorts in descending. |
+Option | Description
+---- | ----
+`attributesToGet` | An array of properties to build a ProjectedExpression underneath.
+`consistentRead` | A boolean to [determine consistency](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/HowItWorks.ReadConsistency.html).
+`exclusiveStartKey` | An optional object to specify a start-key for pagination.
+`indexName` | An optional string to specify the index you'd like to scan with.
+`limit` | An optional number to specify the number of results you want to be returned.
+`scanIndexForward` | A boolean to specify the order for index traversal, if `true` (default) sorts in ascending & `false` sorts in descending.
 
 ### Filter Expressions
 
@@ -482,21 +483,21 @@ const { or, gt, lt } = dynazord.operators;
 
 Supported operators (exported as `dynazord.operators`) for filter conditions are:
 
-| Symbol | Operator |
-| ---- | ---- |
-| `and` | And |
-| `or` | Or |
-| `not` | Not |
-| `eq` | Equals |
-| `lt` | Less-Than |
-| `lte` | Less-Than-Or-Equals |
-| `gt` | Greater-Than |
-| `gte` | Greater-Than-Or-Equals |
-| `in` | In |
+Symbol | Operator
+---- | ----
+`and` | And
+`or` | Or
+`not` | Not
+`eq` | Equals
+`lt` | Less-Than
+`lte` | Less-Than-Or-Equals
+`gt` | Greater-Than
+`gte` | Greater-Than-Or-Equals
+`in` | In
 
 `and`, `or` & `not` support nested expressions. `lt`/`lte` & `gt`/`gte` can be used together, but the rest are exclusive.
 
-### Pagination
+### Pagination
 
 You can iterate through pages by taking `results.lastEvaluatedKey` & passing it as `exclusiveStartKey` to future [`query`](#modelquerykey-opts)/[`scan`](#modelscanfilter-opts) calls:
 
@@ -609,10 +610,10 @@ console.log(user);
 
 `opts` is an optional object, passed to hooks & sets the following:
 
-| Option | Description |
-| ---- | ---- |
-| `bulkHooks` | Boolean to execute bulk-hooks, defaults to `true` |
-| `hooks` | Boolean to execute hooks, defaults to `false` |
+Option | Description
+---- | ----
+`bulkHooks` | Boolean to execute bulk-hooks, defaults to `true`
+`hooks` | Boolean to execute hooks, defaults to `false`
 
 ### `model.transaction.get(key[, opts])`
 
@@ -635,9 +636,9 @@ console.log(user);
 
 `opts` is an optional object, passed to hooks & sets the following:
 
-| Option | Description |
-| `bulkHooks` | Boolean to execute bulk-hooks, defaults to `true` |
-| `hooks` | Boolean to execute hooks, defaults to `false` |
+Option | Description
+`bulkHooks` | Boolean to execute bulk-hooks, defaults to `true`
+`hooks` | Boolean to execute hooks, defaults to `false`
 
 ### `model.transaction.update(data, key[, opts])`
 
@@ -663,10 +664,10 @@ console.log(user);
 
 `opts` is an optional object, passed to hooks & sets the following:
 
-| Option | Description |
-| ---- | ---- |
-| `bulkHooks` | Boolean to execute bulk-hooks, defaults to `true` |
-| `hooks` | Boolean to execute hooks, defaults to `false` |
+Option | Description
+---- | ----
+`bulkHooks` | Boolean to execute bulk-hooks, defaults to `true`
+`hooks` | Boolean to execute hooks, defaults to `false`
 
 ### `model.transaction.delete(key[, opts])`
 
@@ -687,10 +688,10 @@ console.log(user);
 
 `opts` is an optional object, passed to hooks & sets the following:
 
-| Option | Description |
-| ---- | ---- |
-| `bulkHooks` | Boolean to execute bulk-hooks, defaults to `true` |
-| `hooks` | Boolean to execute hooks, defaults to `false` |
+Option | Description
+---- | ----
+`bulkHooks` | Boolean to execute bulk-hooks, defaults to `true`
+`hooks` | Boolean to execute hooks, defaults to `false`
 
 ### `model.transaction.upsert(item[, opts])`
 
@@ -714,10 +715,10 @@ console.log(user);
 
 `opts` is an optional object, passed to hooks & sets the following:
 
-| Option | Description |
-| ---- | ---- |
-| `bulkHooks` | Boolean to execute bulk-hooks, defaults to `true` |
-| `hooks` | Boolean to execute hooks, defaults to `false` |
+Option | Description
+---- | ----
+`bulkHooks` | Boolean to execute bulk-hooks, defaults to `true`
+`hooks` | Boolean to execute hooks, defaults to `false`
 
 ## Further Reading
 

@@ -268,15 +268,15 @@ const entries = await sessions.query({
 
 Each property of a model should have a type, optionally enforced with getters/setters & validators.
 
-| Type | Native Type | DynamoDB Type |
-| ---- |---- | ---- |
-| [STRING](#string-type) | String | S |
-| [NUMBER](#number-type) | Number | N |
-| [BOOLEAN](#boolean-type) | Boolean | BOOL |
-| [DATE](#date-type) | Date | S/N |
-| [BINARY](#binary-type) | Buffer | B |
-| [ARRAY](#array-type) | Array | L |
-| [OBJECT](#object-type) | Object | M |
+Type | Native Type | DynamoDB Type
+---- |---- | ----
+[STRING](#string-type) | String | S
+[NUMBER](#number-type) | Number | N
+[BOOLEAN](#boolean-type) | Boolean | BOOL
+[DATE](#date-type) | Date | S/N
+[BINARY](#binary-type) | Buffer | B
+[ARRAY](#array-type) | Array | L
+[OBJECT](#object-type) | Object | M
 
 Each property should be an object with the following details:
 
@@ -874,10 +874,10 @@ Set additional options as the `options` object in the config:
 }
 ```
 
-| Option | Type | Default | Description |
-| ---- | ---- | ---- | ---- |
-| `createdAtTimestamp` | Boolean | `false` | See [Created/Updated Timestamps](#created-updated-timestamps) |
-| `updatedAtTimestamp` | Boolean | `false` | See [Created/Updated Timestamps](#created-updated-timestamps) |
+Option | Type | Default | Description
+---- | ---- | ---- | ----
+`createdAtTimestamp` | Boolean | `false` | See [Created/Updated Timestamps](#created-updated-timestamps)
+`updatedAtTimestamp` | Boolean | `false` | See [Created/Updated Timestamps](#created-updated-timestamps)
 
 ### Created/Updated Timestamps
 

@@ -27,14 +27,14 @@ import dynazord from 'dynazord';
 
 ## Configure
 
-| Exported | Description |
-| ---- | ---- |
-| `dynazord.createModel(config)` | A function used to [write models](./Writing-Models.md), taking a config object & transform it into a working model. |
-| `dynazord.setDynamoDB(client)` | A function to set the DynamoDB instance used in future `createModel` calls, see [Set DynamoDB](#set-dynamodb) below. |
-| `dynazord.setOptions(overwrite)` | A function to set default `options` for all future `createModel` calls. |
-| `dynazord.methods` | An object of raw methods, provided when [overwriting methods](#overwriting-methods). |
-| `dynazord.operators` | An object of symbols, used when querying/filtering to build complex where structures such as `and`, `or`, `gt`, `lt`, etc. |
-| `dynazord.types` | An object of strings, provided as alternatives to JS native types. |
+Exported | Description
+---- | ----
+`dynazord.createModel(config)` | A function used to [write models](./Writing-Models.md), taking a config object & transform it into a working model.
+`dynazord.setDynamoDB(client)` | A function to set the DynamoDB instance used in future `createModel` calls, see [Set DynamoDB](#set-dynamodb) below.
+`dynazord.setOptions(overwrite)` | A function to set default `options` for all future `createModel` calls.
+`dynazord.methods` | An object of raw methods, provided when [overwriting methods](#overwriting-methods).
+`dynazord.operators` | An object of symbols, used when querying/filtering to build complex where structures such as `and`, `or`, `gt`, `lt`, etc.
+`dynazord.types` | An object of strings, provided as alternatives to JS native types.
 
 ## Set DynamoDB
 
