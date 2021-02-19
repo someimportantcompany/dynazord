@@ -729,4 +729,4 @@ Option | Description
 
 ---
 
-Next, check out some [examples](../examples/).
+Next, check out some [examples]({{site.gh_edit_repository}}/tree/master/examples/).
