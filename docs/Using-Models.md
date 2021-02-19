@@ -1,34 +1,16 @@
+---
+title: Using Models
+nav_order: 4
+---
+
 # Using Models
 
-So, you've [wrote your model](./Writing-Models.md), and now it's time to use it!
+So, you've [wrote your model](./Writing-Models), and now it's time to use it!
 
 **Important reminder:** All models work with native JS object, **instead of documents** as you'd expect from a more traditional ORM. Hence you'll find the documentation refers to **items**, not documents.
 
-| Table of Contents |
-| ---- |
-| [Singular CRUD](#singular-crud) |
-| [`model.create(item[, opts])`](#modelcreateitem-opts) |
-| [`model.get(key[, opts])`](#modelgetkey-opts) |
-| [`model.update(data, key[, opts])`](#modelupdatedata-key-opts) |
-| [`model.upsert(item[, opts])`](#modelupsertitem-opts) |
-| [Bulk CRUD](#bulk-crud) |
-| [`model.bulkCreate(items[, opts])`](#modelbulkcreateitems-opts) |
-| [`model.bulkGet(keys[, opts])`](#modelbulkgetkeys-opts) |
-| [`model.bulkUpdate(data, keys[, opts])`](#modelbulkupdatedata-keys-opts) |
-| [`model.bulkDelete(keys[, opts])`](#modelbulkdeletekeys-opts) |
-| [`model.bulkUpsert(items[, opts])`](#modelbulkupsertitems-opts) |
-| [Query & Scans](#query--scans) |
-| [`model.query(key[, opts])`](#modelquerykey-opts) |
-| [`model.scan(filter[, opts])`](#modelscanfilter-opts) |
-| [Filter Expressions](#filter-expressions) |
-| [Pagination](#pagination) |
-| [Transactions](#transactions) |
-| [`model.transaction.create(item[, opts])`](#modeltransactioncreateitem-opts) |
-| [`model.transaction.get(key[, opts])`](#modeltransactiongetkey-opts) |
-| [`model.transaction.update(data, key[, opts])`](#modeltransactionupdatedata-key-opts) |
-| [`model.transaction.delete(key[, opts])`](#modeltransactiondeletekey-opts) |
-| [`model.transaction.upsert(item[, opts])`](#modeltransactionupsertitem-opts) |
-| [Further Reading](#further-reading) |
+1. TOC
+{:toc}
 
 ```js
 const dynazord = require('dynazord');

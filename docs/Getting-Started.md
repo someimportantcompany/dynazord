@@ -1,6 +1,12 @@
-# Getting Started
+---
+title: Getting Started
+nav_order: 2
+---
 
-To kick things off, install _dynazord_ as you would any other dependency:
+# Getting Started
+{: .no_toc }
+
+Install through your preferred package manager:
 
 ```sh
 $ npm install --save dynazord
@@ -8,15 +14,16 @@ $ npm install --save dynazord
 $ yarn add dynazord
 ```
 
-## Import
-
-Import or require _dynazord_ into your project:
+Then import/require _dynazord_ into your project:
 
 ```js
 const dynazord = require('dynazord');
 // or
 import dynazord from 'dynazord';
 ```
+
+1. TOC
+{:toc}
 
 ## Configure
 
@@ -29,7 +36,7 @@ import dynazord from 'dynazord';
 | `dynazord.operators` | An object of symbols, used when querying/filtering to build complex where structures such as `and`, `or`, `gt`, `lt`, etc. |
 | `dynazord.types` | An object of strings, provided as alternatives to JS native types. |
 
-### Set DynamoDB
+## Set DynamoDB
 
 _dynazord_ interacts with the AWS-SDK, by default it creates a new `AWS.DynamoDB` instance when you create a model. Check out AWS's "[Setting credentials in Node.js](https://docs.aws.amazon.com/sdk-for-javascript/v2/developer-guide/setting-credentials-node.html)" documentation for more details. Since underneath DynamoDB is a handful of HTTPS calls, you can theoretically create as many instances as you like.
 
@@ -82,4 +89,4 @@ const entries = dynazord.createModel({
 
 ---
 
-Next, [start writing models](./Writing-Models.md).
+Next, [start writing models](./Writing-Models).

@@ -1,18 +1,16 @@
+---
+title: Writing Models
+nav_order: 3
+---
+
 # Writing Models
 
 A "model" represents a table in DynamoDB, providing a collection of methods designed to fetch, search, validate & write items following a specific schema.
 
 **Important reminder:** All models work with native JS object, **instead of documents** as you'd expect from a more traditional ORM. Hence you'll find the documentation refers to **items**, not documents.
 
-| Table of Contents |
-| ---- |
-| [Primary Index](#primary-index) |
-| [Secondary Indexes](#secondary-indexes) |
-| [Properties & Types](#properties--types) |
-| [Hooks](#hooks) |
-| [Additional Options](#additional-options) |
-| [Kitchen Sink Example](#kitchen-sink-example) |
-| [Further Reading](#further-reading) |
+1. TOC
+{:toc}
 
 The `createModel` method is the starting point for all models: It is a synchronous method that builds a model from the provided configuration object that defines the keys, indexes & properties the model will support.
 
