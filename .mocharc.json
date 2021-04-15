@@ -1,7 +1,7 @@
 {
   "exit": true,
   "recursive": true,
-  "require": [ "./test/bootstrap.js" ],
+  "require": [ "module-alias/register", "./test/bootstrap.js" ],
   "ignore": [ "*node_modules*" ],
   "spec": [ "./test/*.test.js", "./test/**/*.test.js" ]
 }

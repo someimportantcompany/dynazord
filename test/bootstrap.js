@@ -1,18 +1,8 @@
-require('dotenv/config');
-require('module-alias/register');
+/* eslint-disable global-require */
+const dotenv = require('dotenv');
+const path = require('path');
+dotenv.config({ path: path.resolve(__dirname, '../.env.ci') });
 
-(() => {
-  const moduleAlias = require('module-alias');
-  const path = require('path');
-
-  moduleAlias.addAliases({
-    dynazord: path.resolve(__dirname, '../'),
-  });
-})();
-
-(() => {
-  const dynazord = require('dynazord');
-  const { dynamodb } = require('./utils');
-
-  dynazord.setDynamoDB(dynamodb);
-})();
+const dynazord = require('dynazord');
+const { dynamodb } = require('./utils');
+dynazord.setDynamoDB(dynamodb);

@@ -14,6 +14,9 @@
   "homepage": "https://someimportantcompany.com/dynazord/",
   "repository": "https://github.com/someimportantcompany/dynazord",
   "bugs": "https://github.com/someimportantcompany/dynazord/issues",
+  "_moduleAliases": {
+    "dynazord": "./"
+  },
   "files": [
     "src"
   ],

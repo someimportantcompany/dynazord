@@ -5,9 +5,6 @@ jobs:
   build:
     runs-on: ubuntu-latest
     env:
-      AWS_ACCESS_KEY_ID: some-important-access-key
-      AWS_SECRET_ACCESS_KEY: some-important-secret-key
-      AWS_REGION: us-east-1
       AWS_DYNAMODB_ENDPOINT: http://localhost:8000
       NODE_ENV: testing
     services:
