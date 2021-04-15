@@ -71,6 +71,7 @@ async function deleteThenCreateTable(dynamodb, opts) {
   try {
     logger.debug({ deleteTable: { TableName } });
     await dynamodb.deleteTable({ TableName }).promise();
+    await dynamodb.waitFor('tableNotExists', { TableName }).promise();
   } catch (err) {
     if (!`${err.message}`.includes('Cannot do operations on a non-existent table')) {
       err.message = `Failed to delete ${TableName}: ${err.message}`;
@@ -81,6 +82,7 @@ async function deleteThenCreateTable(dynamodb, opts) {
   try {
     logger.debug({ createTable: { TableName, ...createTableParams } });
     await dynamodb.createTable({ TableName, ...createTableParams }).promise();
+    await dynamodb.waitFor('tableExists', { TableName }).promise();
   } catch (err) {
     err.message = `Failed to create ${TableName}: ${err.message}`;
     throw err;
