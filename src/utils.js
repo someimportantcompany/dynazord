@@ -1,6 +1,4 @@
 const AWS = require('aws-sdk');
-const isPlainObject = require('lodash.isplainobject');
-
 const { marshall, unmarshall } = AWS.DynamoDB.Converter;
 
 function assert(value, err, additional = {}) {
@@ -52,6 +50,10 @@ function isArrayProperty(property) {
 
 function isObjectProperty(property) {
   return property && (property.type === Object || `${property.type}`.toUpperCase() === 'MAP');
+}
+
+function isPlainObject(input) {
+  return Object.prototype.toString.call(input) === '[object Object]';
 }
 
 function promiseMapAll(a, fn) {

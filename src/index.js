@@ -117,14 +117,13 @@ function createModel(opts) {
 }
 
 function validateDynamoDB(client) {
-  if (isPlainObject(client)) {
-    return new AWS.DynamoDB({ ...client });
-  } else if (client) {
-    assert(!(client instanceof AWS.DynamoDB.DocumentClient),
-      new TypeError(`Sorry, ${PACKAGE_NAME} doesn't support AWS.DynamoDB.DocumentClient`));
-    assert(client instanceof AWS.DynamoDB,
-      new TypeError('Expected { dynamodb } to be an instance of AWS.DynamoDB'));
+  assert(!(client instanceof AWS.DynamoDB.DocumentClient),
+    new TypeError(`Sorry, ${PACKAGE_NAME} doesn't support AWS.DynamoDB.DocumentClient`));
+
+  if (client instanceof AWS.DynamoDB) {
     return client;
+  } else if (isPlainObject(client)) {
+    return new AWS.DynamoDB({ ...client });
   } else {
     return null;
   }
