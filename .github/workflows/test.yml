@@ -5,7 +5,6 @@ jobs:
   build:
     runs-on: ubuntu-latest
     env:
-      AWS_DYNAMODB_ENDPOINT: http://localhost:8000
       NODE_ENV: testing
     services:
       dynamodb:
@@ -14,12 +13,11 @@ jobs:
           - 8000:8000
     steps:
       - uses: actions/checkout@v2
-      - name: Use Node.js 12.x
-        uses: actions/setup-node@v1
+
+      - uses: actions/setup-node@v1
         with:
           node-version: 12.x
-      - name: Cache node_modules
-        uses: actions/cache@v2
+      - uses: actions/cache@v2
         with:
           path: ~/.npm # npm cache files are stored in `~/.npm` on Linux/macOS
           key: ${{ runner.os }}-build-${{ github.repository }}-${{ hashFiles('**/package-lock.json') }}
@@ -27,6 +25,11 @@ jobs:
             ${{ runner.os }}-build-${{ github.repository }}-
             ${{ runner.os }}-build-
             ${{ runner.os }}-
+
       - run: npm ci
       - run: npm run lint
       - run: npm test
+
+      - uses: coverallsapp/github-action@master
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
