@@ -1,6 +1,6 @@
 [![NPM](https://badge.fury.io/js/dynazord.svg)](https://npm.im/dynazord)
 [![CI](https://github.com/someimportantcompany/dynazord/workflows/Test/badge.svg?branch=master)](https://github.com/someimportantcompany/dynazord/actions?query=branch%3Amaster)
-<!-- [![Coverage](https://coveralls.io/repos/github/someimportantcompany/dynazord/badge.svg?branch=master)](https://coveralls.io/github/someimportantcompany/dynazord?branch=master) -->
+[![Coverage](https://coveralls.io/repos/github/someimportantcompany/dynazord/badge.svg)](https://coveralls.io/github/someimportantcompany/dynazord)
 
 [DynamoDB](https://aws.amazon.com/dynamodb) [NodeJS](https://nodejs.org) [ORM](https://en.wikipedia.org/wiki/Object–relational_mapping), inspired by similar ORMs like [Mongoose](https://mongoosejs.com) & [Sequelize](https://sequelize.org).
 
@@ -87,3 +87,7 @@ $ npm install --save dynazord
   docker run --rm -d --name dynamodb -p 8000:8000 amazon/dynamodb-local
   ```
   - If you've not read through them, take note of [the differences](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/DynamoDBLocal.UsageNotes.html#DynamoDBLocal.Differences) between the production AWS DynamoDB platform & local Docker container.
+
+---
+
+Any questions or suggestions please [open an issue](https://github.com/someimportantcompany/dynazord/issues).
