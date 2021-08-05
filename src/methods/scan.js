@@ -36,7 +36,7 @@ module.exports = async function findDocument(where, opts = undefined) {
     new TypeError('Cannot use attributesToGet with select'));
 
   const filter = (await buildFilterExpression(properties, where)) || {};
-  const projected = opts.attributesToGet ? buildProjectionExpression(properties, opts.attributesToGet) : {};
+  const projected = opts.attributesToGet ? buildProjectionExpression(opts.attributesToGet) : {};
 
   const params = {
     TableName: tableName,

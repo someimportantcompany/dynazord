@@ -23,7 +23,7 @@ module.exports = async function getDocument(key, opts) {
   assert(!range || key.hasOwnProperty(range), new Error(`Missing ${range} range property from argument`));
   await formatWriteData(properties, key);
 
-  const projected = opts.attributesToGet ? buildProjectionExpression(properties, opts.attributesToGet) : {};
+  const projected = opts.attributesToGet ? buildProjectionExpression(opts.attributesToGet) : {};
 
   const params = {
     TableName: tableName,
