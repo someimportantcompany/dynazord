@@ -109,6 +109,12 @@ const posts = dynazord.createModel({
         notEmpty: true,
       },
     },
+    pageViews: {
+      type: Number,
+      validate: {
+        isUnsigned: true,
+      },
+    },
     publishedAt: {
       type: Date,
       // Optionally set the underlying format to a Number to assist with sorting

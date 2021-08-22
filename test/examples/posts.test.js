@@ -174,6 +174,41 @@ describe('examples', () => describe('posts', () => {
     });
   });
 
+  it('should increment the entry\'s page views', async () => {
+    const [ id ] = ids;
+    assert.ok(typeof id === 'string' && id.length, 'Expected posts.create to have succeeded');
+
+    const updated = await posts.updateProperty({
+      expression: 'SET #pageViews = if_not_exists(#pageViews, :start) + :diff',
+      names: { '#pageViews': 'pageViews' },
+      values: { ':start': 0, ':diff': 1 },
+    }, {
+      id,
+    });
+
+    assert.deepStrictEqual(updated, { pageViews: 1 }, 'Expected posts.updateProperty to return the new values');
+
+    await assertItem(dynamodb, {
+      TableName: posts.tableName,
+      Key: { id: { S: id } },
+    }, {
+      id: { S: id },
+      blogID: { S: 'jdrydn.com' },
+      title: { S: 'Hello, world!' },
+      slug: { S: 'hello-world' },
+      content: {
+        L: [
+          { M: { html: { S: '<p>Hello, world!</p>' } } },
+          { M: { embed: { M: { title: { S: 'Hello, world!' } } } } },
+        ],
+      },
+      pageViews: { N: '1' },
+      status: { S: 'PUBLISHED' },
+      createdAt: { S: currentDate.toISOString() },
+      updatedAt: { S: currentDate.toISOString() },
+    });
+  });
+
   it('should delete the entry', async () => {
     const [ id ] = ids;
     assert.ok(typeof id === 'string' && id.length, 'Expected posts.create to have succeeded');
