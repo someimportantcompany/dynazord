@@ -1,6 +1,7 @@
 remote_theme: pmarsceill/just-the-docs
 search_enabled: false
 
+title: Dynazord
 logo: /icon-site.png
 
 aux_links:

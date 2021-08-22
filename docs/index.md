@@ -1,5 +1,9 @@
 ---
-title: Home
+title: Introduction
+description: >
+  DynamoDB NodeJS ORM designed to simplify interation with DynamoDB.
+  Offers more traditional CRUD methods instead of learning DynamoDB native methods.
+  Includes structure validations, type validations, custom validations & hooks.
 nav_order: 1
 ---
 
