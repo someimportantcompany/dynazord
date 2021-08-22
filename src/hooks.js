@@ -80,6 +80,7 @@ const validHooks = [
   'afterBulkCreate',
   'afterBulkUpdate',
   'afterBulkDelete',
+  'afterBulkUpsert',
 ];
 
 module.exports = {
