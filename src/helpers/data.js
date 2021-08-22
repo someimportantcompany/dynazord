@@ -154,18 +154,20 @@ async function validateData(properties, data) {
       typeof assertValidType === 'function' && assertValidType(value, property);
 
       for (const vkey in propertyValidators) {
-        /* istanbul ignore else */
-        if (propertyValidators.hasOwnProperty(vkey)) {
-          if (typeof propertyValidators[vkey] === 'function') {
+        if (propertyValidators.hasOwnProperty(vkey) && typeof typeValidators[vkey] === 'function' &&
+          typeof propertyValidators[vkey] !== 'function') {
+            const { [vkey]: validate } = typeValidators;
+            const valid = await validate.call(property, value, propertyValidators[vkey]);
+            assert(valid !== false, new Error(`Expected ${vkey} to pass`), { key });
+        }
+      }
+
+      for (const vkey in propertyValidators) {
+        if (propertyValidators.hasOwnProperty(vkey) && typeof propertyValidators[vkey] === 'function' &&
+          (value !== null || value !== undefined)) {
             const { [vkey]: validate } = propertyValidators;
             const valid = await validate.call(property, value);
             assert(valid !== false, new Error(`Expected ${key} validator ${vkey} to pass`), { key });
-          } else {
-            const { [vkey]: validate } = typeValidators;
-            assert(typeof validate === 'function', new Error(`Expected validator ${vkey} to be a function`), { key });
-            const valid = await validate.call(property, value, propertyValidators[vkey]);
-            assert(valid !== false, new Error(`Expected ${vkey} to pass`), { key });
-          }
         }
       }
     } catch (err) /* istanbul ignore next */ {
