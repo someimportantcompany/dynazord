@@ -271,7 +271,7 @@ describe('examples', () => describe('posts', () => {
       status: 'PUBLISHED',
     });
 
-    assert.ok(_.isPlainObject(entry2), 'Expected posts.update to return a plain object');
+    assert.ok(_.isPlainObject(entry2), 'Expected posts.upsert to return a plain object');
 
     await assertItem(dynamodb, {
       TableName: posts.tableName,
