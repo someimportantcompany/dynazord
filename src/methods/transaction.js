@@ -1,15 +1,15 @@
-const AWS = require('aws-sdk');
+/* eslint-disable no-invalid-this */
 const { assert, isPlainObject, marshall, unmarshall } = require('../utils');
 const { assertRequiredCreateProps, appendCreateDefaultProps } = require('../helpers/create');
 const { assertRequiredUpdateProps } = require('../helpers/update');
 const { buildUpdateExpression, buildUpsertExpression } = require('../helpers/expressions');
+const { DynamoDB } = require('aws-sdk');
 const { DynazordTransactionBlock } = require('../helpers/transaction');
 const { formatReadData, formatWriteData, validateData } = require('../helpers/data');
-/* eslint-disable no-invalid-this */
 
 function createTransaction(item, opts = undefined) {
   const { tableName, keySchema, properties, client, hooks } = this;
-  assert(client && typeof client.putItem === 'function', new TypeError('Expected client to be a DynamoDB client'));
+  assert(client && typeof client.transactWriteItems === 'function', new TypeError('Expected client to be a DynamoDB client'));
   assert(typeof tableName === 'string', new TypeError('Invalid tableName to be a string'));
   assert(isPlainObject(keySchema), new TypeError('Expected keySchema to be a plain object'));
   assert(isPlainObject(properties), new TypeError('Expected properties to be a plain object'));
@@ -68,7 +68,7 @@ function createTransaction(item, opts = undefined) {
 
 function getTransaction(key, opts = undefined) {
   const { tableName, keySchema, properties, client } = this;
-  assert(client && typeof client.putItem === 'function', new TypeError('Expected client to be a DynamoDB client'));
+  assert(client && typeof client.transactGetItems === 'function', new TypeError('Expected client to be a DynamoDB client'));
   assert(typeof tableName === 'string', new TypeError('Invalid tableName to be a string'));
   assert(isPlainObject(keySchema), new TypeError('Expected keySchema to be a plain object'));
   assert(isPlainObject(properties), new TypeError('Expected properties to be a plain object'));
@@ -98,7 +98,7 @@ function getTransaction(key, opts = undefined) {
 
 function updateTransaction(update, key, opts = undefined) {
   const { tableName, keySchema, properties, client, hooks } = this;
-  assert(client && typeof client.putItem === 'function', new TypeError('Expected client to be a DynamoDB client'));
+  assert(client && typeof client.transactWriteItems === 'function', new TypeError('Expected client to be a DynamoDB client'));
   assert(typeof tableName === 'string', new TypeError('Invalid tableName to be a string'));
   assert(isPlainObject(keySchema), new TypeError('Expected keySchema to be a plain object'));
   assert(isPlainObject(properties), new TypeError('Expected properties to be a plain object'));
@@ -162,9 +162,51 @@ function updateTransaction(update, key, opts = undefined) {
   });
 }
 
+function updatePropertyTransaction(update) {
+  const { tableName, keySchema, properties, client } = this;
+  assert(client && typeof client.transactWriteItems === 'function', new TypeError('Expected client to be a DynamoDB client'));
+  assert(typeof tableName === 'string', new TypeError('Invalid tableName to be a string'));
+  assert(isPlainObject(keySchema), new TypeError('Expected keySchema to be a plain object'));
+  assert(isPlainObject(properties), new TypeError('Expected properties to be a plain object'));
+
+  assert(isPlainObject(update), new TypeError('Expected update arg to be a plain object'));
+
+  const { key, expression, expressionAttributeNames: names, expressionAttributeValues: values } = update;
+  assert(isPlainObject(key), new TypeError('Expected key to be a plain object'));
+  assert(typeof expression === 'string' && expression.length, new TypeError('Expected expression to be a string'));
+  assert(!names || isPlainObject(names), new TypeError('Expected expressionAttributeNames to be a plain object'));
+  assert(!values || isPlainObject(values), new TypeError('Expected expressionAttributeValues to be a plain object'));
+
+  return new DynazordTransactionBlock(this, async () => {
+    const { hash, range } = keySchema;
+    assert(key.hasOwnProperty(hash), new Error(`Missing ${hash} hash property from key`));
+    assert(!range || key.hasOwnProperty(range), new Error(`Missing ${range} range property from key`));
+
+    await formatWriteData.call(this, properties, key);
+
+    return {
+      Update: {
+        TableName: tableName,
+        Key: marshall(key),
+        ConditionExpression: hash && range
+          ? 'attribute_exists(#_hash_key) AND attribute_exists(#_range_key)'
+          : 'attribute_exists(#_hash_key)',
+        UpdateExpression: expression,
+        ExpressionAttributeNames: {
+          ...(hash && range
+            ? { '#_hash_key': hash, '#_range_key': range }
+            : { '#_hash_key': hash }),
+          ...names,
+        },
+        ExpressionAttributeValues: marshall(values),
+      },
+    };
+  });
+}
+
 function deleteTransaction(key, opts = undefined) {
   const { tableName, keySchema, properties, client } = this;
-  assert(client && typeof client.putItem === 'function', new TypeError('Expected client to be a DynamoDB client'));
+  assert(client && typeof client.transactWriteItems === 'function', new TypeError('Expected client to be a DynamoDB client'));
   assert(typeof tableName === 'string', new TypeError('Invalid tableName to be a string'));
   assert(isPlainObject(keySchema), new TypeError('Expected keySchema to be a plain object'));
   assert(isPlainObject(properties), new TypeError('Expected properties to be a plain object'));
@@ -191,7 +233,7 @@ function deleteTransaction(key, opts = undefined) {
 
 function upsertTransaction(item, opts = undefined) {
   const { tableName, keySchema, properties, client, hooks } = this;
-  assert(client && typeof client.putItem === 'function', new TypeError('Expected client to be a DynamoDB client'));
+  assert(client && typeof client.transactWriteItems === 'function', new TypeError('Expected client to be a DynamoDB client'));
   assert(typeof tableName === 'string', new TypeError('Invalid tableName to be a string'));
   assert(isPlainObject(keySchema), new TypeError('Expected keySchema to be a plain object'));
   assert(isPlainObject(properties), new TypeError('Expected properties to be a plain object'));
@@ -251,13 +293,13 @@ function upsertTransaction(item, opts = undefined) {
 
 /**
  * Runs a transaction.
- * @param {AWS.DynamoDB} client
+ * @param {DynamoDB} client
  * @param {Array<DynazordTransactionBlock>} blocks
  * @param {Object|undefined} opts
  * @return {Array<Object|null>}
  */
 async function runTransaction(client, blocks, opts = undefined) {
-  assert(client instanceof AWS.DynamoDB, new TypeError('Expected client to be an instance of AWS.DynamoDB'));
+  assert(client instanceof DynamoDB, new TypeError('Expected client to be an instance of AWS.DynamoDB'));
   assert(Array.isArray(blocks), new TypeError('Expected transaction blocks to be an array'));
   assert(blocks.length <= 25, new Error('Expected transaction blocks to contain less than or equal to 25 items'));
   assert(opts === undefined || isPlainObject(opts), new TypeError('Expected opts argument to be a plain object'));
@@ -366,6 +408,7 @@ module.exports = {
   create: createTransaction,
   get: getTransaction,
   update: updateTransaction,
+  updateProperty: updatePropertyTransaction,
   delete: deleteTransaction,
   upsert: upsertTransaction,
   runTransaction,

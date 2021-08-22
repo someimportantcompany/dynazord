@@ -5,6 +5,7 @@ const methods = {
   query: require('./query'),
   scan: require('./scan'),
   update: require('./update'),
+  updateProperty: require('./updateProperty'),
   delete: require('./delete'),
   upsert: require('./upsert'),
 };
