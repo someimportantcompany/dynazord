@@ -1,7 +1,7 @@
 {
   "name": "dynazord",
   "description": "DynamoDB NodeJS ORM",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "main": "src/index.js",
   "scripts": {
     "lint": "eslint --ext .js .",
@@ -62,11 +62,22 @@
   "mocha": {
     "exit": true,
     "recursive": true,
-    "require": [ "module-alias/register", "./test/bootstrap.js" ],
-    "ignore": [ "*node_modules*" ],
-    "spec": [ "./test/*.test.js", "./test/**/*.test.js" ]
+    "require": [
+      "module-alias/register",
+      "./test/bootstrap.js"
+    ],
+    "ignore": [
+      "*node_modules*"
+    ],
+    "spec": [
+      "./test/*.test.js",
+      "./test/**/*.test.js"
+    ]
   },
   "nyc": {
-    "reporter": [ "lcov", "text" ]
+    "reporter": [
+      "lcov",
+      "text"
+    ]
   }
 }
