@@ -1,4 +1,4 @@
-const { assert, isArrayProperty, isObjectProperty, isPlainObject } = require('../utils');
+const { assert, isArrayProperty, isEmpty, isObjectProperty, isPlainObject } = require('../utils');
 const { types } = require('../types');
 
 async function formatReadData(properties, data) {
@@ -8,10 +8,10 @@ async function formatReadData(properties, data) {
   const formatProperty = async (property, key, value) => {
     const { [property ? property.type : 'null']: type } = types;
 
-    if (type && typeof type.get === 'function') {
+    if (type && typeof type.get === 'function' && !isEmpty(value)) {
       value = await type.get.call(type, value, property); // eslint-disable-line no-useless-call
     }
-    if (typeof property.get === 'function') {
+    if (typeof property.get === 'function' && !isEmpty(value)) {
       value = await property.get.call(property, value); // eslint-disable-line no-useless-call
     }
 
