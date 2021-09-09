@@ -6,37 +6,43 @@ async function formatReadData(properties, data) {
   assert(isPlainObject(data), new TypeError('Expected data to be a plain object'));
 
   const formatProperty = async (property, key, value) => {
-    const { [property ? property.type : 'null']: type } = types;
+    try {
+      const { [property ? property.type : 'null']: type } = types;
 
-    if (type && typeof type.get === 'function' && !isEmpty(value)) {
-      value = await type.get.call(type, value, property); // eslint-disable-line no-useless-call
-    }
-    if (typeof property.get === 'function' && !isEmpty(value)) {
-      value = await property.get.call(property, value); // eslint-disable-line no-useless-call
-    }
-
-    if (isArrayProperty(property) && property.properties && value) {
-      assert(isPlainObject(property.properties), new TypeError('Expected Array properties to be a plain object'), { key });
-      assert(Array.isArray(value), new TypeError('Expected value to be an array'), { key });
-
-      for (let i = 0; i < value.length; i++) { // eslint-disable-line no-plusplus
-        value[i] = await formatProperty(property.properties, key, value[i]);
+      if (type && typeof type.get === 'function' && !isEmpty(value)) {
+        value = await type.get.call(type, value, property); // eslint-disable-line no-useless-call
       }
-    }
+      if (typeof property.get === 'function' && !isEmpty(value)) {
+        value = await property.get.call(property, value); // eslint-disable-line no-useless-call
+      }
 
-    if (isObjectProperty(property) && property.properties && value) {
-      assert(isPlainObject(property.properties), new TypeError('Expected Object properties to be a plain object'), { key });
-      assert(isPlainObject(value), new TypeError('Expected value to be a plain object'), { key });
+      if (isArrayProperty(property) && property.properties && value) {
+        assert(isPlainObject(property.properties), new TypeError('Expected Array properties to be a plain object'));
+        assert(Array.isArray(value), new TypeError('Expected value to be an array'));
 
-      for (const key2 in value) {
-        /* istanbul ignore else */
-        if (value.hasOwnProperty(key2) && property.properties.hasOwnProperty(key2)) {
-          value[key2] = await formatProperty(property.properties[key2], `${key}[${key2}]`, value[key2]);
+        for (let i = 0; i < value.length; i++) { // eslint-disable-line no-plusplus
+          value[i] = await formatProperty(property.properties, key, value[i]);
         }
       }
-    }
 
-    return value;
+      if (isObjectProperty(property) && property.properties && value) {
+        assert(isPlainObject(property.properties), new TypeError('Expected Object properties to be a plain object'));
+        assert(isPlainObject(value), new TypeError('Expected value to be a plain object'));
+
+        for (const key2 in value) {
+          /* istanbul ignore else */
+          if (value.hasOwnProperty(key2) && property.properties.hasOwnProperty(key2)) {
+            value[key2] = await formatProperty(property.properties[key2], `${key}[${key2}]`, value[key2]);
+          }
+        }
+      }
+
+      return value;
+    } catch (err) {
+      err.key = key;
+      err.value = value;
+      throw err;
+    }
   };
 
   for (const key in properties) {
