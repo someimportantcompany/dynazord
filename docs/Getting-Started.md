@@ -1,10 +1,4 @@
----
-title: Getting Started
-nav_order: 2
----
-
 # Getting Started
-{: .no_toc }
 
 Install through your preferred package manager:
 
@@ -21,9 +15,6 @@ const dynazord = require('dynazord');
 // or
 import dynazord from 'dynazord';
 ```
-
-1. TOC
-{:toc}
 
 ## Configure
 
@@ -89,4 +80,4 @@ const entries = dynazord.createModel({
 
 ---
 
-Next, [start writing models](./Writing-Models).
+Up next, [start writing models](./Writing-Models.md).

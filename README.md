@@ -1,3 +1,5 @@
+![Dynazord logo](./docs/logo.png)
+
 [![NPM](https://badge.fury.io/js/dynazord.svg)](https://npm.im/dynazord)
 [![CI](https://github.com/someimportantcompany/dynazord/workflows/Test/badge.svg?branch=master)](https://github.com/someimportantcompany/dynazord/actions?query=branch%3Amaster)
 [![Coverage](https://coveralls.io/repos/github/someimportantcompany/dynazord/badge.svg)](https://coveralls.io/github/someimportantcompany/dynazord)
@@ -72,15 +74,14 @@ $ npm install --save dynazord
 
 ## Documentation
 
-- [Getting Started](https://someimportantcompany.com/dynazord/Getting-Started.html)
-- [Writing Models](https://someimportantcompany.com/dynazord/Writing-Models.html)
-- [Using Models](https://someimportantcompany.com/dynazord/Using-Models.html)
-- [Examples](https://github.com/someimportantcompany/dynazord/tree/master/examples/)
+- [Getting Started](./docs/Getting-Started.md)
+- [Writing Models](./docs/Writing-Models.md)
+- [Using Models](./docs/Using-Models.md)
+- [Examples](./examples/)
 
 ## Development
 
 - Documentation is stored in Git, alongside code, therefore as code changes so should the documentation!
-- This also means that documentation for older tags/versions is available at all times, and will be linked [from the repo's README](../README.md).
 - All major work should be in feature branches, include tests & finish with a PR into `master`.
 - To run tests, fire up [`amazon/dynamodb-local`](https://hub.docker.com/r/amazon/dynamodb-local)
   ```

@@ -1,17 +1,8 @@
----
-title: Using Models
-nav_order: 4
----
-
 # Using Models
-{: .no_toc }
 
 So, you've [wrote your model](./Writing-Models), and now it's time to use it!
 
 **Important reminder:** All models work with native JS object, **instead of documents** as you'd expect from a more traditional ORM. Hence you'll find the documentation refers to **items**, not documents.
-
-1. TOC
-{:toc}
 
 ```js
 const dynazord = require('dynazord');
@@ -729,4 +720,4 @@ Option | Description
 
 ---
 
-Next, check out some [examples]({{site.gh_edit_repository}}/tree/master/examples/).
+Finally, check out some [examples](../examples/).

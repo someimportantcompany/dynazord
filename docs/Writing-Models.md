@@ -1,17 +1,8 @@
----
-title: Writing Models
-nav_order: 3
----
-
 # Writing Models
-{: .no_toc }
 
 A "model" represents a table in DynamoDB, providing a collection of methods designed to fetch, search, validate & write items following a specific schema.
 
 **Important reminder:** All models work with native JS object, **instead of documents** as you'd expect from a more traditional ORM. Hence you'll find the documentation refers to **items**, not documents.
-
-1. TOC
-{:toc}
 
 The `createModel` method is the starting point for all models: It is a synchronous method that builds a model from the provided configuration object that defines the keys, indexes & properties the model will support.
 
@@ -52,7 +43,7 @@ const model = dynazord.createModel({
 });
 ```
 
-The `config` object requires & allows the following options:
+The `config` object requires/allows the following options:
 
 - `tableName` (**Required**) String setting the table name which will be used to read/write documents from/to.
 - `properties` (**Required**) Object defining each model property. See [Property Types](#property--types) for more details on the types, validators & other options.
@@ -112,11 +103,14 @@ And configure the `keySchema` to match in your model:
 const users = dynazord.createModel({
   tableName: 'dynazord-example-users',
 
-  // In this example, the `email` is the "primary key" so "email" is the hash key
+  // In this example, the `email` is the "primary key" so "email" is
+  // the hash key
   keySchema: { hash: 'email' },
-  // Or you could set the keySchema to a string, since there's only a hash key
+  // Or you could set the keySchema to a string, since there's only a
+  // hash key
   keySchema: 'email',
-  // Or you could omit keySchema altogether since email is the first property defined
+  // Or you could omit keySchema altogether since email is the first
+  // property defined
 
   properties: {
     email: {
@@ -132,8 +126,8 @@ const users = dynazord.createModel({
 const sessions = dynazord.createModel({
   tableName: 'dynazord-example-sessions',
 
-  // In this example, both a hash key & range key are required to match the DynamoDB
-  // description, so both must be provided here.
+  // In this example, both a hash key & range key are required to meet
+  // the DynamoDB table definition, so both must be provided here.
   keySchema: {
     hash: 'email',
     range: 'createdAt',
@@ -238,8 +232,6 @@ const sessions = dynazord.createModel({
     },
     createdAt: {
       type: Date,
-      // This sets the underlying `createdAt` property to a number format underneath
-      format: Number,
     },
     lastActiveAt: {
       type: Date,
@@ -402,7 +394,7 @@ Each property should be an object with the following details:
 ```
 
 - Translates to DynamoDB number (`N`) type.
-- Can be referenced as `NUMBER` string or JS's native `Number` constructor.
+- Can be referenced as `'NUMBER'` or JS's native `Number` constructor.
 
 ### Boolean Type
 
@@ -423,7 +415,7 @@ Each property should be an object with the following details:
 ```
 
 - Translates to DynamoDB boolean (`BOOL`) type.
-- Can be referenced as `BOOLEAN` string or JS's native `Boolean` constructor.
+- Can be referenced as `'BOOLEAN'` or JS's native `Boolean` constructor.
 
 ### Date Type
 
@@ -459,8 +451,8 @@ Each property should be an object with the following details:
 }
 ```
 
-- By default translates to DynamoDB string (`S`) type, or set the `format` to `Number` to translate to DynamoDB's number type.
-- Can be referenced as `DATE` string or JS's native `Date` constructor.
+- By default translates to DynamoDB string type (`S`) (as [`Date.prototype.toISOString`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/toISOString)), or set the `format` to `Number` to translate to DynamoDB's number type (`N`) (as [`Date.prototype.getTime`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/getTime)).
+- Can be referenced as `'DATE'` or JS's native `Date` constructor.
 
 If you want to store a custom Date format, use a [string type](#string-type) with custom get/set/validate functions:
 
@@ -512,7 +504,7 @@ const formatDate = require('date-fns/format');
 ```
 
 - Translates to DynamoDB binary (`B`) type.
-- Can be referenced as `BINARY` string or JS's native `Buffer` constructor.
+- Can be referenced as `'BINARY'` or JS's native `Buffer` constructor.
 
 ### Array Type
 
@@ -553,7 +545,7 @@ const formatDate = require('date-fns/format');
 ```
 
 - Translates to DynamoDB list (`L`) type.
-- Can be referenced as `LIST` string or JS's native `Array` constructor.
+- Can be referenced as `'LIST'` or JS's native `Array` constructor.
 
 ### Object Type
 
@@ -614,7 +606,7 @@ const formatDate = require('date-fns/format');
 ```
 
 - Translates to DynamoDB map (`M`) type.
-- Can be referenced as `MAP` string or JS's native `Object` constructor.
+- Can be referenced as `'MAP'` or JS's native `Object` constructor.
 - Omit the object's `properties` descriptor to skip property validation for the nested object.
 
 ## Hooks
@@ -1007,4 +999,4 @@ const posts = dynazord.createModel({
 
 ---
 
-Next, [start using models](./Using-Models.md).
+Next up, [start using models](./Using-Models.md).
