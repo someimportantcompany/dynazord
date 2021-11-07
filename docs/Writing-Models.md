@@ -900,7 +900,7 @@ Setting either `createdAtTimestamp` or `updatedAtTimestamp` to `true` will add a
 
 If `createdAtTimestamp` or `updatedAtTimestamp` is set to `true` and you already have `createdAt`/`updatedAt` keys in your `properties` object, they will be merged into the auto-updating definitions that _dynazord_ uses.
 
-A common DynamoDB use-case is to use a hash-key (partition key) & range key (sort key), where you'd like your range key to be the automatically-generated `createdAt`. By default, [the `Date` type](#date-type) stores dates as a string, but to better suit the range key usage you should configure the `createdAt` property to be a number underneath:
+A common DynamoDB use-case is to use a hash-key (partition key) & range key (sort key), where you'd like your range key to be the automatically-generated `createdAt`. By default, [the `Date` type](#date-type) stores dates as an ISO string - which is fine for the range key - but if preferred you can configure the `createdAt` property to be a number underneath:
 
 ```js
 const sessions = dynazord.createModel({

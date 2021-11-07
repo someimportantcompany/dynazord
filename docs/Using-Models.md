@@ -1,6 +1,6 @@
 # Using Models
 
-So, you've [wrote your model](./Writing-Models), and now it's time to use it!
+So you've [written your model](./Writing-Models.md), and now it's time to use it!
 
 **Important reminder:** All models work with native JS object, **instead of documents** as you'd expect from a more traditional ORM. Hence you'll find the documentation refers to **items**, not documents.
 
