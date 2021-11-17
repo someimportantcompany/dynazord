@@ -89,8 +89,8 @@ function createModel(opts) {
         const { hash: shash, range: srange } = opts.secondaryIndexes[name];
         assert(typeof shash === 'string', new TypeError(`Expected secondaryIndexes ${name} hash property to be a string`));
         assert(properties[shash], new TypeError(`Expected ${hash} to be a property`));
-        assert(typeof srange === 'string', new TypeError(`Expected secondaryIndexes ${name} range property to be a string`));
-        assert(properties[srange], new TypeError(`Expected ${range} to be a property`));
+        assert(typeof srange === 'string' || srange === undefined, new TypeError(`Expected secondaryIndexes ${name} range property to be a string`));
+        assert(!srange || properties[srange], new TypeError(`Expected ${range} to be a property`));
       }
     }
   }
