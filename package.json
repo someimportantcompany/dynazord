@@ -11,7 +11,7 @@
   },
   "author": "James D <james@jdrydn.com> (https://jdrydn.com)",
   "license": "MIT",
-  "homepage": "https://someimportantcompany.com/dynazord/",
+  "homepage": "https://github.com/someimportantcompany/dynazord",
   "repository": "https://github.com/someimportantcompany/dynazord",
   "bugs": "https://github.com/someimportantcompany/dynazord/issues",
   "_moduleAliases": {
