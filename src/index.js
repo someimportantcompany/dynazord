@@ -78,9 +78,11 @@ function createModel(opts) {
   assert(typeof hash === 'string', new TypeError('Expected keySchema hash property to be a string'));
   assert(properties[hash], new TypeError(`Expected ${hash} to be a property`));
   assert(properties[hash].required === true, new TypeError(`Expected ${hash} property to be required`));
+  assert(isValidKeyScalar(properties[hash]), new TypeError(`Expected ${hash} property to be a valid key scalar`));
   assert(!range || typeof range === 'string', new TypeError('Expected keySchema range property to be a string'));
   assert(!range || properties[range], new TypeError(`Expected ${range} to be a property`));
   assert(!range || properties[range].required === true, new TypeError(`Expected ${range} property to be required`));
+  assert(!range || isValidKeyScalar(properties[range]), new TypeError(`Expected ${range} property to be a valid key scalar`));
 
   if (opts.secondaryIndexes) {
     for (const name in opts.secondaryIndexes) {
@@ -89,8 +91,10 @@ function createModel(opts) {
         const { hash: shash, range: srange } = opts.secondaryIndexes[name];
         assert(typeof shash === 'string', new TypeError(`Expected secondaryIndexes ${name} hash property to be a string`));
         assert(properties[shash], new TypeError(`Expected ${hash} to be a property`));
+        assert(isValidKeyScalar(properties[shash]), new TypeError(`Expected ${shash} property to be a valid key scalar`));
         assert(typeof srange === 'string' || srange === undefined, new TypeError(`Expected secondaryIndexes ${name} range property to be a string`));
         assert(!srange || properties[srange], new TypeError(`Expected ${range} to be a property`));
+        assert(!srange || isValidKeyScalar(properties[srange]), new TypeError(`Expected ${srange} property to be a valid key scalar`));
       }
     }
   }
@@ -114,6 +118,18 @@ function createModel(opts) {
       },
     },
   });
+}
+
+function isValidKeyScalar(field) {
+  return field && field.type && (checks => checks.filter(a => a === true).length === 1)([
+    // "The only data types allowed for key attributes are string, number, or binary"
+    // @link https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/HowItWorks.CoreComponents.html
+    field.type === 'STRING', field.type === String,
+    field.type === 'NUMBER', field.type === Number,
+    field.type === 'BINARY', field.type === Buffer,
+    // Technically, Dynazord "Date" types are String/Number underneath
+    field.type === 'DATE', field.type === Date,
+  ]);
 }
 
 function validateDynamoDB(client) {
