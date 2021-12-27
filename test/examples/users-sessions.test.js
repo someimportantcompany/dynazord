@@ -75,6 +75,36 @@ describe('examples', () => describe('users + sessions', () => {
     });
   });
 
+  it('should get a user & create a new session in a single transaction', async () => {
+    const results = await dynazord.transaction([
+      users.transaction.get({ email: 'jdrydn@github.io' }),
+      sessions.transaction.upsert({ email: 'jdrydn@github.io', ipAddress: '127.0.0.1', userAgent }),
+    ]);
+
+    assert.ok(Array.isArray(results), 'Expected transaction to return an array');
+    const [ user, session ] = results;
+    assert.ok(_.isPlainObject(user), 'Expected users.transaction.get to return a plain object');
+    assert.ok(_.isPlainObject(session), 'Expected sessions.transaction.get to return a plain object');
+
+    assert.ok(typeof session.accessToken === 'string', 'Expected sessions.transaction.get to return an access token');
+
+    assert.deepStrictEqual(user, {
+      email: 'jdrydn@github.io',
+      name: 'James',
+      role: 'USER',
+      createdAt: currentDate,
+      updatedAt: currentDate,
+    });
+    assert.deepStrictEqual(session, {
+      email: 'jdrydn@github.io',
+      accessToken: session.accessToken,
+      ipAddress: '127.0.0.1',
+      userAgent,
+      createdAt: currentDate,
+      updatedAt: currentDate,
+    });
+  });
+
   it('should get a user & a session in a single transaction', async () => {
     const results = await dynazord.transaction([
       users.transaction.get({ email: 'jdrydn@github.io' }),
