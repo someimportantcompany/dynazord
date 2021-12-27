@@ -54,8 +54,9 @@ const sessions = dynazord.createModel({
     },
     createdAt: {
       type: Date,
-      // In this example, to effectively use createdAt as a range key you should store it as a Number
+      // In this example, the createdAt range key is stored as a UNIX timestamp instead of an ISO8601 string
       format: Number,
+      // Functionally they act the same - ISO8601 is sortable too - it's a personal preference
     },
     lastActiveAt: {
       type: Date,
