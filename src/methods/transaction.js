@@ -45,7 +45,7 @@ function createTransaction(item, opts = undefined) {
     return {
       Put: {
         TableName: tableName,
-        Key: marshall(key),
+        Key: marshall(key), // Secretly injected here to read items after the transaction is written
         Item: marshall(item),
         // Specify a condition to ensure this doesn't write an item that already exists
         ConditionExpression: hash && range
@@ -309,80 +309,68 @@ async function runTransaction(client, blocks, opts = undefined) {
   blocks.forEach(block => assert(block instanceof DynazordTransactionBlock,
     new TypeError('Expected each transaction block to be from a model')));
 
-  let TransactItems = await Promise.all(blocks.map(block => block.before()));
-  TransactItems.forEach(block => {
+  const transactItems = await Promise.all(blocks.map(block => block.before()));
+  transactItems.forEach(block => {
     assert(isPlainObject(block), new TypeError('Expected block to be a plain object'));
     assert(Object.keys(block).length === 1, new TypeError('Expected each block to have a single key'));
   });
 
-  const countGetTransacts = TransactItems.filter(block => block.hasOwnProperty('Get')).length;
-  let transactGetIndexes = [];
+  const { results, readItems, readMapIndexes, writeItems } = transactItems.reduce((list, block, i) => {
+    list.results.push(null);
 
-  if (countGetTransacts === 0) {
-    // Capture which transaction items have keys to return values
-    transactGetIndexes = TransactItems.map(block => {
-      if (block.hasOwnProperty('Put')) {
-        const { Put: { TableName, Key } } = block;
-        return JSON.stringify({ TableName, Key });
-      } else if (block.hasOwnProperty('Update')) {
-        const { Update: { TableName, Key } } = block;
-        return JSON.stringify({ TableName, Key });
-      } else {
-        return null;
-      }
-    });
+    if (block.hasOwnProperty('Get')) {
+      const { Get: { TableName, Key } } = block;
+      list.readItems.push({ Get: { TableName, Key } });
+      list.readMapIndexes.push(i);
+    } else if (block.hasOwnProperty('Put')) {
+      const { Put: { TableName, Key, ...rest } } = block;
+      list.readItems.push({ Get: { TableName, Key } });
+      list.readMapIndexes.push(i);
+      list.writeItems.push({ Put: { TableName, ...rest } });
+    } else if (block.hasOwnProperty('Update')) {
+      const { Update: { TableName, Key } } = block;
+      list.readItems.push({ Get: { TableName, Key } });
+      list.readMapIndexes.push(i);
+      list.writeItems.push(block);
+    } else if (block.hasOwnProperty('Delete')) {
+      list.writeItems.push(block);
+    }
 
-    // Remove Put.Key (since it's invalid) - but we needed it for above
-    TransactItems = TransactItems.map(block => {
-      if (block.hasOwnProperty('Put')) {
-        delete block.Put.Key;
-      }
-      return block;
-    });
+    return list;
+  }, {
+    results: [],
+    readItems: [],
+    readMapIndexes: [],
+    writeItems: [],
+  });
 
+  if (writeItems.length > 0) {
     try {
       // Write items in a transaction
-      await client.transactWriteItems({ TransactItems }).promise();
+      await client.transactWriteItems({ TransactItems: writeItems }).promise();
     } catch (err) /* istanbul ignore next */ {
       // console.error(JSON.stringify({ transactWriteItems: TransactItems, err: { ...err } }, null, 2));
       err.message = `TransactionError: ${err.message}`;
       throw err;
     }
-
-    // Remove lookups for transactions that don't return any values (e.g. Delete)
-    TransactItems = transactGetIndexes.reduce((items, lookup) => {
-      if (typeof lookup === 'string' && lookup.startsWith('{') && lookup.endsWith('}')) {
-        items.push({ Get: JSON.parse(lookup) });
-      }
-      return items;
-    }, []);
-  } else {
-    assert(countGetTransacts === TransactItems.length, new Error('Only all-GET or no-GET statements in a transaction'));
-
-    transactGetIndexes = TransactItems.map(block => {
-      const { Get: { TableName, Key } } = block;
-      return JSON.stringify({ TableName, Key });
-    });
   }
 
-  const results = transactGetIndexes.map(() => null);
-
-  if (TransactItems.length) {
-    let transactGetResults = null;
+  if (readItems.length) {
+    let Responses = null;
     try {
       // If we have items to fetch (complete list if CRU but empty if D)
-      transactGetResults = await client.transactGetItems({ TransactItems }).promise();
+      ({ Responses } = await client.transactGetItems({ TransactItems: readItems }).promise());
     } catch (err) /* istanbul ignore next */ {
       // console.error(JSON.stringify({ transactGetItems: TransactItems, err: { ...err } }, null, 2));
       err.message = `TransactionError: ${err.message}`;
       throw err;
     }
-    assert(transactGetResults && Array.isArray(transactGetResults.Responses),
-      new TypeError('Expected transactGetItems results to be an array'));
 
-    await Promise.all(transactGetResults.Responses.map(async ({ Item }, i) => {
+    assert(Array.isArray(Responses), new TypeError('Expected transactGetItems results to be an array'));
+
+    await Promise.all(Responses.map(async ({ Item }, i) => {
       // Lookup the "actual" index for this result
-      const gi = transactGetIndexes.indexOf(JSON.stringify(TransactItems[i].Get));
+      const gi = readMapIndexes[i];
 
       /* istanbul ignore else */
       if (Item) {
