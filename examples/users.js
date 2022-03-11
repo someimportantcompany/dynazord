@@ -14,7 +14,7 @@ const createTable = {
 };
 
 const users = dynazord.createModel({
-  tableName: 'dynazord-example-users',
+  tableName: createTable.TableName,
   // keySchema: { hash: 'email' }, // Defaults to `email` since it's the first property
   properties: {
     email: {

@@ -28,7 +28,7 @@ const createTable = {
 };
 
 const posts = dynazord.createModel({
-  tableName: 'dynazord-example-posts',
+  tableName: createTable.TableName,
   keySchema: {
     hash: 'id',
   },
