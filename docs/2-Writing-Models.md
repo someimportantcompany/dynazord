@@ -939,8 +939,41 @@ const sessions = dynazord.createModel({
 A common DynamoDB use-case is to store multiple datasets in a single table, using the partition key to accurately store data under a partition & the sort key to hold similar data together. This library has support for this pattern, by adding a `value` property with variables for interpolation.
 
 ```js
+const tableName = 'dynazord-example';
+
+const users = dynazord.createModel({
+  tableName,
+  keySchema: { hash: 'pk', range: 'sk' },
+  properties: {
+    pk: {
+      type: String,
+      value: 'USER:{userID}',
+    },
+    sk: {
+      type: String,
+      value: 'USER',
+    },
+    id: {
+      type: String,
+      required: true,
+      default: () => 'A-USER-ID',
+    },
+    name: {
+      type: String,
+      required: true,
+    },
+    email: {
+      type: String,
+      required: true,
+    },
+  },
+  options: {
+    createdAtTimestamp: true,
+  },
+});
+
 const sessions = dynazord.createModel({
-  tableName: 'dynazord-example-sessions',
+  tableName,
   keySchema: { hash: 'pk', range: 'sk' },
   properties: {
     pk: {
@@ -958,6 +991,7 @@ const sessions = dynazord.createModel({
     id: {
       type: String,
       required: true,
+      // In real scenarios, this would be a ULID or UUID
       default: () => 'A-SESSION-ID',
     },
     ipAddress: {
@@ -974,16 +1008,28 @@ const sessions = dynazord.createModel({
 });
 ```
 
-In this example, the `pk` & `sk` properties include the `userID` & `id` properties to build their values.
+In this example, the `pk` & `sk` properties include the other properties. Only top-level properties can only be "virtual" - this is not supported for nested properties.
 
 ```js
-// To create a new entry, use `userID` & `id` as you usually would:
-const entry = await sessions.create({
+// To create a new entry, use properties as you usually would:
+const user = await users.create({
+  name: 'James',
+  email: 'jdrydn@github.io',
+});
+const session = await sessions.create({
   userID: 'A-USER-ID',
   ipAddress: '127.0.0.1',
 });
 
 // Which would then write to DynamoDB:
+{
+  "pk": "USER:A-USER-ID",
+  "sk": "USER",
+  "id": "A-USER-ID",
+  "name": "James",
+  "email": "jdrydn@github.io",
+  "createdAt": "2022-03-12T22:00:00.000Z"
+}
 {
   "pk": "USER:A-USER-ID",
   "sk": "SESSION:A-SESSION-ID",
@@ -993,8 +1039,11 @@ const entry = await sessions.create({
   "createdAt": "2022-03-12T22:00:00.000Z"
 }
 
-// And then to get the entry, use `userID` & `id` again:
-const entry = await sessions.get({
+// And then to get the entry, use those variables again:
+const user = await users.get({
+  id: 'A-USER-ID',
+});
+const session = await sessions.get({
   userID: 'A-USER-ID',
   id: 'A-SESSION-ID',
 });
