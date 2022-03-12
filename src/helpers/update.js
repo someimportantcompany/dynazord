@@ -12,6 +12,10 @@ function assertRequiredUpdateProps(properties, data) {
     assert(value !== undefined || property.required !== true || property.hasOwnProperty('default'),
       new Error('Expected required field to be set'), { code: 'MISSING_REQUIRED_FIELD', key, value });
 
+    if (property.hasOwnProperty('value') && typeof property.default === 'function') {
+      data[key] = property.default(null, data);
+    }
+
     if (isArrayProperty(property) && property.properties && value) {
       assert(isPlainObject(property.properties), new TypeError('Expected Array properties to be a plain object'), { key });
       assert(Array.isArray(value), new TypeError('Expected value to be an array'), { key });

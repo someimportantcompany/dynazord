@@ -37,9 +37,8 @@ module.exports = async function upsertDocument(item, opts = undefined) {
 
   await hooks.emit('beforeUpsert', this, opts.hooks === true, upsertValues, opts);
   await formatWriteData.call(this, properties, upsertValues, { fieldHook: 'onUpsert' });
-  await hooks.emit('beforeUpsertWrite', this, opts.hooks === true, upsertValues, opts);
-
   await formatWriteData.call(this, properties, key);
+  await hooks.emit('beforeUpsertWrite', this, opts.hooks === true, upsertValues, opts);
 
   const { expression, names, values } = buildUpsertExpression.call(this, upsertValues, specifiedUpsertKeys) || {};
   assert(typeof expression === 'string', new TypeError('Expected update expression to be a string'));

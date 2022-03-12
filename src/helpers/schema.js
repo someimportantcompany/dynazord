@@ -4,10 +4,18 @@ const { types } = require('../types');
 function assertValidProperties(properties) {
   const assertEachProperty = (key, property) => {
     assert(isPlainObject(property), new TypeError('Expected property to be a plain object'), { key });
-
     const { [property.type]: type } = types;
-    assert(isPlainObject(type), new TypeError('Expected property.type to be a valid type'),
-      { key, type: `${property.type}` });
+
+    // String.value properties should only be assigned to string types, and should not be on a nested object
+    assert(!property.hasOwnProperty('value') || (property.type === String || property.type === 'STRING'),
+      new TypeError('Expected value property to be assigned to string types'));
+    assert(!property.hasOwnProperty('value') || typeof property.value === 'string',
+      new TypeError('Expected value property to be a string'));
+    assert(!property.hasOwnProperty('value') || !key.includes('.'),
+      new TypeError('Nested properties cannot have value properties'));
+    if (property.hasOwnProperty('value')) {
+      Object.assign(property, buildTemplateValue(properties, property.value));
+    }
 
     assert(!property.hasOwnProperty('enum') || Array.isArray(property.enum),
       new Error('Expected enum to be an array of values'), { key });
@@ -58,6 +66,79 @@ function assertValidProperties(properties) {
   }
 }
 
+function buildTemplateValue(properties, template) {
+  assert(typeof template === 'string', new TypeError('Expected template to be a string'));
+
+  const pattern = /\{(.*?)\}/g;
+  const valueKeys = Array.from(template.matchAll(pattern)).map(match => match[1]);
+
+  const set = (v, entry) => template.replace(pattern, (m, key) => entry.hasOwnProperty(key) ? entry[key] : '');
+
+  return {
+    variableProperties: valueKeys.reduce(((list, key) => {
+      const { type, default: d, required } = properties[key];
+      return { ...list, [key]: { type, default: d, required } };
+    }), {}),
+    default: set,
+    onCreate: set,
+    // onUpdate: set,
+    // onUpsert: set,
+  };
+}
+
+function isValidKeyScalar(field) {
+  return field && field.type && (checks => checks.filter(a => a === true).length === 1)([
+    // "The only data types allowed for key attributes are string, number, or binary"
+    // @link https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/HowItWorks.CoreComponents.html
+    field.type === 'STRING', field.type === String,
+    field.type === 'NUMBER', field.type === Number,
+    field.type === 'BINARY', field.type === Buffer,
+    // Technically, Dynazord "Date" types are String/Number underneath
+    field.type === 'DATE', field.type === Date,
+  ]);
+}
+
+function validateIndexProperties(properties, ref, { hash, range }) {
+  assert(typeof hash === 'string', new TypeError(`Expected ${ref} hash property to be a string`));
+  assert(properties[hash], new TypeError(`Expected ${ref} ${hash} to be a property`));
+  assert(isValidKeyScalar(properties[hash]), new TypeError(`Expected ${ref} ${hash} property to be a valid key scalar`));
+  if (ref === 'keySchema') {
+    const { required, value } = properties[hash];
+    if (typeof value === 'string') {
+      const { variableProperties: variables } = properties[hash];
+      assert(isPlainObject(variables), new TypeError(`Expected variables to exist for ${ref} ${hash}`));
+      for (const key in variables) {
+        if (variables.hasOwnProperty(key)) {
+          assert(properties[key].required === true, new TypeError(`Expected ${ref} ${hash} variable ${key} to be required`));
+        }
+      }
+    } else {
+      assert(required === true, new TypeError(`Expected ${ref} ${hash} property to be required`));
+    }
+  }
+
+  assert(!range || typeof range === 'string', new TypeError(`Expected ${ref} range property to be a string`));
+  assert(!range || properties[range], new TypeError(`Expected ${ref} ${range} to be a property`));
+  assert(!range || isValidKeyScalar(properties[range]), new TypeError(`Expected ${ref} ${range} property to be a valid key scalar`));
+  if (ref === 'keySchema' && range) {
+    const { required, value } = properties[range];
+    if (typeof value === 'string') {
+      const { variableProperties: variables } = properties[range];
+      assert(isPlainObject(variables), new TypeError(`Expected variables to exist for ${ref} ${range}`));
+      for (const key in variables) {
+        if (variables.hasOwnProperty(key)) {
+          assert(properties[key].required === true, new TypeError(`Expected ${ref} ${range} variable ${key} to be required`));
+        }
+      }
+    } else {
+      assert(required === true, new TypeError(`Expected ${ref} ${range} property to be required`));
+    }
+  }
+}
+
 module.exports = {
   assertValidProperties,
+  buildTemplateValue,
+  isValidKeyScalar,
+  validateIndexProperties,
 };

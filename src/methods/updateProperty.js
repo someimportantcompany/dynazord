@@ -1,5 +1,5 @@
 const { assert, isPlainObject, marshall, unmarshall } = require('../utils');
-const { formatReadData, formatWriteData } = require('../helpers/data');
+const { formatReadData, formatWriteData, formatKeySchemaKey } = require('../helpers/data');
 
 module.exports = async function updateProperty(update, key) {
   const { tableName, keySchema, properties, client, log } = this;
@@ -17,6 +17,7 @@ module.exports = async function updateProperty(update, key) {
   assert(!values || isPlainObject(values), new TypeError('Expected expressionAttributeValues to be a plain object'));
 
   const { hash, range } = keySchema;
+  key = formatKeySchemaKey.call(this, properties, keySchema, key);
   assert(key.hasOwnProperty(hash), new Error(`Missing ${hash} hash property from key`));
   assert(!range || key.hasOwnProperty(range), new Error(`Missing ${range} range property from key`));
 

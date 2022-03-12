@@ -1,5 +1,5 @@
 const { assert, isPlainObject, marshall } = require('../utils');
-const { formatWriteData } = require('../helpers/data');
+const { formatWriteData, formatKeySchemaKey } = require('../helpers/data');
 
 module.exports = async function deleteBulkDocuments(keys, opts) {
   const { tableName, keySchema, properties, client, hooks, log } = this;
@@ -13,10 +13,11 @@ module.exports = async function deleteBulkDocuments(keys, opts) {
   assert(opts === undefined || isPlainObject(opts), new TypeError('Expected opts argument to be a plain object'));
   opts = { bulkHooks: true, hooks: false, ...opts };
 
-  keys.forEach((where, i) => {
+  keys.forEach((key, i) => {
     const { hash, range } = keySchema;
-    assert(where.hasOwnProperty(hash), new Error(`Missing ${hash} hash property from where #${i}`));
-    assert(!range || where.hasOwnProperty(range), new Error(`Missing ${range} range property from where #${i}`));
+    key = keys[i] = formatKeySchemaKey.call(this, properties, keySchema, key);
+    assert(key.hasOwnProperty(hash), new Error(`Missing ${hash} hash property from key #${i}`));
+    assert(!range || key.hasOwnProperty(range), new Error(`Missing ${range} range property from key #${i}`));
   });
 
   if (keys.length) {

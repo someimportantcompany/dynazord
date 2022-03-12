@@ -1,5 +1,5 @@
 const { assert, isPlainObject, marshall } = require('../utils');
-const { formatWriteData } = require('../helpers/data');
+const { formatWriteData, formatKeySchemaKey } = require('../helpers/data');
 
 module.exports = async function deleteDocument(key, opts = undefined) {
   const { tableName, keySchema, properties, client, hooks, log } = this;
@@ -13,6 +13,7 @@ module.exports = async function deleteDocument(key, opts = undefined) {
   opts = { hooks: true, ...opts };
 
   const { hash, range } = keySchema;
+  key = formatKeySchemaKey.call(this, properties, keySchema, key);
   assert(key.hasOwnProperty(hash), new Error(`Missing ${hash} hash property from key`));
   assert(!range || key.hasOwnProperty(range), new Error(`Missing ${range} range property from key`));
 

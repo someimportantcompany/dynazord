@@ -1,7 +1,7 @@
 const { assert, isPlainObject, marshall, unmarshall } = require('../utils');
 const { assertRequiredUpdateProps } = require('../helpers/update');
 const { buildUpdateExpression } = require('../helpers/expressions');
-const { formatReadData, formatWriteData, validateData } = require('../helpers/data');
+const { formatReadData, formatWriteData, formatKeySchemaKey, validateData } = require('../helpers/data');
 
 module.exports = async function updateDocument(update, key, opts = undefined) {
   const { tableName, keySchema, properties, client, hooks, log } = this;
@@ -16,6 +16,7 @@ module.exports = async function updateDocument(update, key, opts = undefined) {
   opts = { hooks: true, ...opts };
 
   const { hash, range } = keySchema;
+  key = formatKeySchemaKey.call(this, properties, keySchema, key);
   assert(key.hasOwnProperty(hash), new Error(`Missing ${hash} hash property from key`));
   assert(!range || key.hasOwnProperty(range), new Error(`Missing ${range} range property from key`));
 
@@ -35,9 +36,8 @@ module.exports = async function updateDocument(update, key, opts = undefined) {
 
   await hooks.emit('beforeUpdate', this, opts.hooks === true, update, opts);
   await formatWriteData.call(this, properties, update, { fieldHook: 'onUpdate' });
-  await hooks.emit('beforeUpdateWrite', this, opts.hooks === true, update, opts);
-
   await formatWriteData.call(this, properties, key);
+  await hooks.emit('beforeUpdateWrite', this, opts.hooks === true, update, opts);
 
   const { expression, names, values } = buildUpdateExpression.call(this, update) || {};
   assert(typeof expression === 'string', new TypeError('Expected update expression to be a string'));

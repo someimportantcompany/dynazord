@@ -1,5 +1,5 @@
 const { assert, isPlainObject, marshall, unmarshall, promiseMapAll } = require('../utils');
-const { formatReadData, formatWriteData } = require('../helpers/data');
+const { formatReadData, formatWriteData, formatKeySchemaKey } = require('../helpers/data');
 
 module.exports = async function getBulkDocuments(keys) {
   const { client, tableName, keySchema, properties, log } = this;
@@ -11,10 +11,11 @@ module.exports = async function getBulkDocuments(keys) {
   assert(Array.isArray(keys), new Error('Expected argument to be an array'));
   assert(keys.length <= 25, new Error('Expected keys argument to be less than 25 items'));
 
-  keys.forEach((where, i) => {
+  keys.forEach((key, i) => {
     const { hash, range } = keySchema;
-    assert(where.hasOwnProperty(hash), new Error(`Missing ${hash} hash property from where #${i}`));
-    assert(!range || where.hasOwnProperty(range), new Error(`Missing ${range} range property from where #${i}`));
+    key = keys[i] = formatKeySchemaKey.call(this, properties, keySchema, key);
+    assert(key.hasOwnProperty(hash), new Error(`Missing ${hash} hash property from key #${i}`));
+    assert(!range || key.hasOwnProperty(range), new Error(`Missing ${range} range property from key #${i}`));
   });
 
   if (keys.length) {

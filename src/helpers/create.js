@@ -65,7 +65,11 @@ async function appendCreateDefaultProps(properties, data) {
     assert(isPlainObject(property), new Error('Expected property descriptor to be a plain object'), { key });
 
     if (property.hasOwnProperty('default') && !object.hasOwnProperty(key)) {
-      object[key] = typeof property.default === 'function' ? (await property.default()) : property.default;
+      if (property.hasOwnProperty('value') && typeof property.default === 'function') {
+        object[key] = property.default(null, object);
+      } else {
+        object[key] = typeof property.default === 'function' ? (await property.default()) : property.default;
+      }
     }
 
     if (isArrayProperty(property) && property.properties && object[key]) {

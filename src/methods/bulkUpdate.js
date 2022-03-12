@@ -1,7 +1,7 @@
 const { assert, isPlainObject, marshall, unmarshall, promiseMapAll } = require('../utils');
 const { assertRequiredUpdateProps } = require('../helpers/update');
 const { buildUpdateExpression } = require('../helpers/expressions');
-const { formatReadData, formatWriteData, validateData } = require('../helpers/data');
+const { formatReadData, formatWriteData, formatKeySchemaKey, validateData } = require('../helpers/data');
 
 module.exports = async function getBulkDocuments(update, keys, opts = undefined) {
   const { tableName, keySchema, properties, client, hooks, log } = this;
@@ -18,6 +18,7 @@ module.exports = async function getBulkDocuments(update, keys, opts = undefined)
 
   keys.forEach((key, i) => {
     const { hash, range } = keySchema;
+    key = keys[i] = formatKeySchemaKey.call(this, properties, keySchema, key);
     assert(key.hasOwnProperty(hash), new Error(`Missing ${hash} hash property from key #${i}`));
     assert(!range || key.hasOwnProperty(range), new Error(`Missing ${range} range property from key #${i}`));
   });
