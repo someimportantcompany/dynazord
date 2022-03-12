@@ -1008,7 +1008,7 @@ const sessions = dynazord.createModel({
 });
 ```
 
-In this example, the `pk` & `sk` properties include the other properties. Only top-level properties can only be "virtual" - this is not supported for nested properties.
+In this example, the `pk` & `sk` properties are "virtual", referencing the other properties to build their final value. Only top-level properties can only be "virtual" - this is not supported for nested properties.
 
 ```js
 // To create a new entry, use properties as you usually would:
@@ -1039,7 +1039,7 @@ const session = await sessions.create({
   "createdAt": "2022-03-12T22:00:00.000Z"
 }
 
-// And then to get the entry, use those variables again:
+// And then to get the entry, use those properties again:
 const user = await users.get({
   id: 'A-USER-ID',
 });
