@@ -1,6 +1,6 @@
 const AWS = require('aws-sdk');
 const { assert, createLogger, isPlainObject } = require('./utils');
-const { assertValidProperties } = require('./helpers/schema');
+const { assertValidProperties, validateIndexProperties } = require('./helpers/schema');
 const { createHooks } = require('./hooks');
 const { keys: typeKeys } = require('./types');
 const { methods, bulkMethods, transactionMethods, runTransaction } = require('./methods');
@@ -74,27 +74,14 @@ function createModel(opts) {
     throw err;
   }
 
-  const { hash, range, ...keySchemaOpts } = isPlainObject(opts.keySchema) ? opts.keySchema : { hash: opts.keySchema };
-  assert(typeof hash === 'string', new TypeError('Expected keySchema hash property to be a string'));
-  assert(properties[hash], new TypeError(`Expected ${hash} to be a property`));
-  assert(properties[hash].required === true, new TypeError(`Expected ${hash} property to be required`));
-  assert(isValidKeyScalar(properties[hash]), new TypeError(`Expected ${hash} property to be a valid key scalar`));
-  assert(!range || typeof range === 'string', new TypeError('Expected keySchema range property to be a string'));
-  assert(!range || properties[range], new TypeError(`Expected ${range} to be a property`));
-  assert(!range || properties[range].required === true, new TypeError(`Expected ${range} property to be required`));
-  assert(!range || isValidKeyScalar(properties[range]), new TypeError(`Expected ${range} property to be a valid key scalar`));
+  opts.keySchema = isPlainObject(opts.keySchema) ? opts.keySchema : { hash: opts.keySchema };
+  validateIndexProperties(properties, 'keySchema', opts.keySchema);
 
   if (opts.secondaryIndexes) {
     for (const name in opts.secondaryIndexes) {
       if (opts.secondaryIndexes.hasOwnProperty(name)) {
-        assert(isPlainObject(opts.secondaryIndexes[name]), new TypeError(`Expected secondaryIndexes.${name} to be an object`));
-        const { hash: shash, range: srange } = opts.secondaryIndexes[name];
-        assert(typeof shash === 'string', new TypeError(`Expected secondaryIndexes ${name} hash property to be a string`));
-        assert(properties[shash], new TypeError(`Expected ${hash} to be a property`));
-        assert(isValidKeyScalar(properties[shash]), new TypeError(`Expected ${shash} property to be a valid key scalar`));
-        assert(typeof srange === 'string' || srange === undefined, new TypeError(`Expected secondaryIndexes ${name} range property to be a string`));
-        assert(!srange || properties[srange], new TypeError(`Expected ${range} to be a property`));
-        assert(!srange || isValidKeyScalar(properties[srange]), new TypeError(`Expected ${srange} property to be a valid key scalar`));
+        assert(isPlainObject(opts.secondaryIndexes[name]), new TypeError(`Expected secondaryIndexes.${name} to be a plain object`));
+        validateIndexProperties(properties, `secondaryIndex ${name}`, opts.secondaryIndexes[name]);
       }
     }
   }
@@ -103,7 +90,7 @@ function createModel(opts) {
 
   return Object.create({ ...methods, ...bulkMethods }, {
     tableName: { enumerable: true, value: tableName },
-    keySchema: { enumerable: true, value: { hash, range, ...keySchemaOpts } },
+    keySchema: { enumerable: true, value: opts.keySchema },
     secondaryIndexes: { enumerable: true, value: opts.secondaryIndexes },
     properties: { enumerable: true, value: opts.properties },
     client: { value: validateDynamoDB(opts.dynamodb) || overwriteDynamoDB || new AWS.DynamoDB() },
@@ -118,18 +105,6 @@ function createModel(opts) {
       },
     },
   });
-}
-
-function isValidKeyScalar(field) {
-  return field && field.type && (checks => checks.filter(a => a === true).length === 1)([
-    // "The only data types allowed for key attributes are string, number, or binary"
-    // @link https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/HowItWorks.CoreComponents.html
-    field.type === 'STRING', field.type === String,
-    field.type === 'NUMBER', field.type === Number,
-    field.type === 'BINARY', field.type === Buffer,
-    // Technically, Dynazord "Date" types are String/Number underneath
-    field.type === 'DATE', field.type === Date,
-  ]);
 }
 
 function validateDynamoDB(client) {

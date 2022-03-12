@@ -64,11 +64,11 @@ async function formatWriteData(properties, data, opts = {}) {
   const formatProperty = async (property, key, value) => {
     try {
       if (fieldHook && typeof property[fieldHook] === 'function') {
-        value = await property[fieldHook].call(property, value); // eslint-disable-line no-useless-call
+        value = await property[fieldHook].call(property, value, data); // eslint-disable-line no-useless-call
       }
 
       if (value !== undefined && typeof property.set === 'function') {
-        value = await property.set.call(property, value); // eslint-disable-line no-useless-call
+        value = await property.set.call(property, value, data); // eslint-disable-line no-useless-call
       }
 
       const { [property ? property.type : 'null']: type } = types;
@@ -118,6 +118,37 @@ async function formatWriteData(properties, data, opts = {}) {
       }
     }
   }
+}
+
+function formatKeySchemaKey(properties, { hash, range }, key) {
+  const { [hash]: hashProp, [range]: rangeProp } = properties;
+  const made = {};
+
+  if (hashProp && hashProp.value) {
+    const { variableProperties: variables, onCreate } = hashProp;
+    assert(Object.keys(variables).filter(k => !key.hasOwnProperty(k)).length === 0,
+      new TypeError('Missing variables for hash key'));
+    made[hash] = onCreate(null, key);
+  } else {
+    made[hash] = key[hash];
+  }
+
+  if (range && rangeProp) {
+    if (rangeProp.value) {
+      const { variableProperties: variables, onCreate } = rangeProp;
+      assert(Object.keys(variables).filter(k => !key.hasOwnProperty(k)).length === 0,
+        new TypeError('Missing variables for range key'));
+      made[range] = onCreate(null, key);
+    } else {
+      made[range] = key[range];
+    }
+
+    if (made[range] === undefined) {
+      delete made[range];
+    }
+  }
+
+  return made;
 }
 
 function getPropertyForKey(properties, path, prefix = '') {
@@ -225,6 +256,7 @@ async function validateData(properties, data) {
 module.exports = {
   formatReadData,
   formatWriteData,
+  formatKeySchemaKey,
   getPropertyForKey,
   validateData,
 };

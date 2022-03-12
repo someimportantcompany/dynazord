@@ -934,6 +934,123 @@ const sessions = dynazord.createModel({
 });
 ```
 
+## One Table Support
+
+A common DynamoDB use-case is to store multiple datasets in a single table, using the partition key to accurately store data under a partition & the sort key to hold similar data together. This library has support for this pattern, by adding a `value` property with variables for interpolation.
+
+```js
+const tableName = 'dynazord-example';
+
+const users = dynazord.createModel({
+  tableName,
+  keySchema: { hash: 'pk', range: 'sk' },
+  properties: {
+    pk: {
+      type: String,
+      value: 'USER:{userID}',
+    },
+    sk: {
+      type: String,
+      value: 'USER',
+    },
+    id: {
+      type: String,
+      required: true,
+      default: () => 'A-USER-ID',
+    },
+    name: {
+      type: String,
+      required: true,
+    },
+    email: {
+      type: String,
+      required: true,
+    },
+  },
+  options: {
+    createdAtTimestamp: true,
+  },
+});
+
+const sessions = dynazord.createModel({
+  tableName,
+  keySchema: { hash: 'pk', range: 'sk' },
+  properties: {
+    pk: {
+      type: String,
+      value: 'USER:{userID}',
+    },
+    sk: {
+      type: String,
+      value: 'SESSION:{id}',
+    },
+    userID: {
+      type: String,
+      required: true,
+    },
+    id: {
+      type: String,
+      required: true,
+      // In real scenarios, this would be a ULID or UUID
+      default: () => 'A-SESSION-ID',
+    },
+    ipAddress: {
+      type: String,
+      required: true,
+    },
+    userAgent: {
+      type: String,
+    },
+  },
+  options: {
+    createdAtTimestamp: true,
+  },
+});
+```
+
+In this example, the `pk` & `sk` properties are "virtual", referencing the other properties to build their final value. Only top-level properties can only be "virtual" - this is not supported for nested properties.
+
+```js
+// To create a new entry, use properties as you usually would:
+const user = await users.create({
+  name: 'James',
+  email: 'jdrydn@github.io',
+});
+const session = await sessions.create({
+  userID: 'A-USER-ID',
+  ipAddress: '127.0.0.1',
+});
+
+// Which would then write to DynamoDB:
+{
+  "pk": "USER:A-USER-ID",
+  "sk": "USER",
+  "id": "A-USER-ID",
+  "name": "James",
+  "email": "jdrydn@github.io",
+  "createdAt": "2022-03-12T22:00:00.000Z"
+}
+{
+  "pk": "USER:A-USER-ID",
+  "sk": "SESSION:A-SESSION-ID",
+  "userID": "A-USER-ID",
+  "id": "A-SESSION-ID",
+  "ipAddress": "127.0.0.1",
+  "createdAt": "2022-03-12T22:00:00.000Z"
+}
+
+// And then to get the entry, use those properties again:
+const user = await users.get({
+  id: 'A-USER-ID',
+});
+const session = await sessions.get({
+  userID: 'A-USER-ID',
+  id: 'A-SESSION-ID',
+});
+```
+
+See [the single table example](../examples/single-table-design.js) a complete & more complex example.
+
 ## Kitchen Sink Example
 
 ```js

@@ -1,6 +1,6 @@
 const { assert, isPlainObject, marshall, unmarshall } = require('../utils');
 const { buildProjectionExpression } = require('../helpers/expressions');
-const { formatReadData, formatWriteData } = require('../helpers/data');
+const { formatReadData, formatWriteData, formatKeySchemaKey } = require('../helpers/data');
 
 module.exports = async function getDocument(key, opts) {
   const { client, tableName, keySchema, properties, log } = this;
@@ -19,6 +19,7 @@ module.exports = async function getDocument(key, opts) {
     new TypeError('Expected opts.consistentRead to be a boolean'));
 
   const { hash, range } = keySchema;
+  key = formatKeySchemaKey.call(this, properties, keySchema, key);
   assert(key.hasOwnProperty(hash), new Error(`Missing ${hash} hash property from argument`));
   assert(!range || key.hasOwnProperty(range), new Error(`Missing ${range} range property from argument`));
   await formatWriteData(properties, key);

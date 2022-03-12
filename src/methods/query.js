@@ -1,6 +1,6 @@
 const { assert, isPlainObject, marshall, unmarshall, promiseMapAll } = require('../utils');
 const { buildFilterExpression, buildKeyExpression, buildProjectionExpression } = require('../helpers/expressions');
-const { formatReadData } = require('../helpers/data');
+const { formatReadData, formatKeySchemaKey } = require('../helpers/data');
 
 module.exports = async function findDocument(where, opts = undefined) {
   const { client, tableName, keySchema, secondaryIndexes, properties, log } = this;
@@ -42,6 +42,7 @@ module.exports = async function findDocument(where, opts = undefined) {
   // assert(where.hasOwnProperty(hash), new Error(`Missing ${hash} hash property from argument`));
   // assert(!range || where.hasOwnProperty(range), new Error(`Missing ${range} range property from argument`));
 
+  where = formatKeySchemaKey.call(this, properties, opts.indexName ? secondaryIndexes[opts.indexName] : keySchema, where);
   const keyCondition = (await buildKeyExpression(properties, where)) || {};
   const filter = (opts.filter && (await buildFilterExpression(properties, opts.filter))) || {};
   const projected = opts.attributesToGet ? buildProjectionExpression(opts.attributesToGet) : {};

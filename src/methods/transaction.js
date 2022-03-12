@@ -5,7 +5,7 @@ const { assertRequiredUpdateProps } = require('../helpers/update');
 const { buildUpdateExpression, buildUpsertExpression } = require('../helpers/expressions');
 const { DynamoDB } = require('aws-sdk');
 const { DynazordTransactionBlock } = require('../helpers/transaction');
-const { formatReadData, formatWriteData, validateData } = require('../helpers/data');
+const { formatReadData, formatWriteData, formatKeySchemaKey, validateData } = require('../helpers/data');
 
 function createTransaction(item, opts = undefined) {
   const { tableName, keySchema, properties, client, hooks } = this;
@@ -79,6 +79,7 @@ function getTransaction(key, opts = undefined) {
 
   return new DynazordTransactionBlock(this, async () => {
     const { hash, range } = keySchema;
+    key = formatKeySchemaKey.call(this, properties, keySchema, key);
     assert(key.hasOwnProperty(hash), new Error(`Missing ${hash} hash property from key`));
     assert(!range || key.hasOwnProperty(range), new Error(`Missing ${range} range property from key`));
 
@@ -110,6 +111,7 @@ function updateTransaction(update, key, opts = undefined) {
 
   return new DynazordTransactionBlock(this, async () => {
     const { hash, range } = keySchema;
+    key = formatKeySchemaKey.call(this, properties, keySchema, key);
     assert(key.hasOwnProperty(hash), new Error(`Missing ${hash} hash property from key`));
     assert(!range || key.hasOwnProperty(range), new Error(`Missing ${range} range property from key`));
 
@@ -179,6 +181,7 @@ function updatePropertyTransaction(update, key) {
 
   return new DynazordTransactionBlock(this, async () => {
     const { hash, range } = keySchema;
+    key = formatKeySchemaKey.call(this, properties, keySchema, key);
     assert(key.hasOwnProperty(hash), new Error(`Missing ${hash} hash property from key`));
     assert(!range || key.hasOwnProperty(range), new Error(`Missing ${range} range property from key`));
 
@@ -217,6 +220,7 @@ function deleteTransaction(key, opts = undefined) {
 
   return new DynazordTransactionBlock(this, async () => {
     const { hash, range } = keySchema;
+    key = formatKeySchemaKey.call(this, properties, keySchema, key);
     assert(key.hasOwnProperty(hash), new Error(`Missing ${hash} hash property from key`));
     assert(!range || key.hasOwnProperty(range), new Error(`Missing ${range} range property from key`));
 

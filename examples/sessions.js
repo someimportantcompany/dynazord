@@ -18,7 +18,7 @@ const createTable = {
 };
 
 const sessions = dynazord.createModel({
-  tableName: 'dynazord-example-sessions',
+  tableName: createTable.TableName,
   keySchema: {
     hash: 'email',
     range: 'createdAt',

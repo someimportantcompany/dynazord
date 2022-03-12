@@ -34,7 +34,7 @@ const createTable = {
 };
 
 const assets = dynazord.createModel({
-  tableName: 'dynazord-example-assets',
+  tableName: createTable.TableName,
   keySchema: 'id',
   properties: {
     id: {
