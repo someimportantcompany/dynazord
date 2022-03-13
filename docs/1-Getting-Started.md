@@ -80,4 +80,4 @@ const entries = dynazord.createModel({
 
 ---
 
-Up next, [start writing models](./Writing-Models.md).
+Up next, [start writing models](./2-Writing-Models.md).

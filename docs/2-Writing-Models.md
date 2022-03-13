@@ -1116,4 +1116,4 @@ const posts = dynazord.createModel({
 
 ---
 
-Next up, [start using models](./Using-Models.md).
+Next up, [start using models](./3-Using-Models.md).

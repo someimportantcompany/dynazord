@@ -66,6 +66,15 @@ console.log(user);
 
 This library is designed to simplify interaction with DynamoDB, offering more traditional CRUD methods instead of learning DynamoDB's [`getItem`](https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB.html#getItem-property)/[`putItem`](https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB.html#putItem-property) methods. You can also write functions to validate properties on objects & add other hooks to transform data to suit your needs.
 
+### Features
+
+- Create schemas for items in DynamoDB, with validation & hooks to transform data on read & write.
+- Read/write methods supporting create, read, update, delete & upsert.
+- Bulk read/write methods supporting create, read, update, delete & upsert.
+- Transactional read/write methods supporting create, read, update, delete & upsert.
+- Query & scan support, following DynamoDB principles.
+- "OneTable" support, where models can share the same DynamoDB table underneath.
+
 ## Installation
 
 ```bash
@@ -87,7 +96,7 @@ $ npm install --save dynazord
   ```
   docker run --rm -d --name dynamodb -p 8000:8000 amazon/dynamodb-local
   ```
-  - If you've not read through them, take note of [the differences](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/DynamoDBLocal.UsageNotes.html#DynamoDBLocal.Differences) between the production AWS DynamoDB platform & local Docker container.
+  - Please take note of [the differences](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/DynamoDBLocal.UsageNotes.html#DynamoDBLocal.Differences) between the production AWS DynamoDB platform & local Docker container.
 
 ---
 
