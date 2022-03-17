@@ -51,10 +51,10 @@ const users = dynazord.createModel({
     ls1: { hash: 'pk', range: 'createdAt' },
   },
   properties: {
-    pk: { type: String, value: 'USER' },
-    sk: { type: String, value: 'USER:{id}' },
-    gs1pk: { type: String, value: 'USER-EMAILS' },
-    gs1sk: { type: String, value: 'EMAIL:{email}' },
+    pk: { type: String, composite: 'USER' },
+    sk: { type: String, composite: 'USER:{id}' },
+    gs1pk: { type: String, composite: 'USER-EMAILS' },
+    gs1sk: { type: String, composite: 'EMAIL:{email}' },
     id: {
       type: String,
       required: true,
@@ -110,10 +110,10 @@ const sessions = dynazord.createModel({
     ls1: { hash: 'pk', range: 'createdAt' },
   },
   properties: {
-    pk: { type: String, value: 'USER:{userID}' },
-    sk: { type: String, value: 'SESSION:{id}' },
-    gs1pk: { type: String, value: 'USER-SESSIONS' },
-    gs1sk: { type: String, value: 'SESSION:{id}' },
+    pk: { type: String, composite: 'USER:{userID}' },
+    sk: { type: String, composite: 'SESSION:{id}' },
+    gs1pk: { type: String, composite: 'USER-SESSIONS' },
+    gs1sk: { type: String, composite: 'SESSION:{id}' },
     userID: {
       type: String,
       required: true,
@@ -151,8 +151,8 @@ const posts = dynazord.createModel({
     ls1: { hash: 'pk', range: 'createdAt' },
   },
   properties: {
-    pk: { type: String, value: 'POST' },
-    sk: { type: String, value: 'POST:{id}' },
+    pk: { type: String, composite: 'POST' },
+    sk: { type: String, composite: 'POST:{id}' },
     id: {
       type: String,
       required: true,

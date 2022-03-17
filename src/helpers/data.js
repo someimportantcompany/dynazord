@@ -124,7 +124,7 @@ function formatKeySchemaKey(properties, { hash, range }, key) {
   const { [hash]: hashProp, [range]: rangeProp } = properties;
   const made = {};
 
-  if (hashProp && hashProp.value) {
+  if (hashProp && hashProp.composite) {
     const { variableProperties: variables, onCreate } = hashProp;
     assert(Object.keys(variables).filter(k => !key.hasOwnProperty(k)).length === 0,
       new TypeError('Missing variables for hash key'));
@@ -134,7 +134,7 @@ function formatKeySchemaKey(properties, { hash, range }, key) {
   }
 
   if (range && rangeProp) {
-    if (rangeProp.value) {
+    if (rangeProp.composite) {
       const { variableProperties: variables, onCreate } = rangeProp;
       assert(Object.keys(variables).filter(k => !key.hasOwnProperty(k)).length === 0,
         new TypeError('Missing variables for range key'));

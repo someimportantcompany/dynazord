@@ -7,14 +7,14 @@ function assertValidProperties(properties) {
     const { [property.type]: type } = types;
 
     // String.value properties should only be assigned to string types, and should not be on a nested object
-    assert(!property.hasOwnProperty('value') || (property.type === String || property.type === 'STRING'),
-      new TypeError('Expected value property to be assigned to string types'));
-    assert(!property.hasOwnProperty('value') || typeof property.value === 'string',
-      new TypeError('Expected value property to be a string'));
-    assert(!property.hasOwnProperty('value') || !key.includes('.'),
-      new TypeError('Nested properties cannot have value properties'));
-    if (property.hasOwnProperty('value')) {
-      Object.assign(property, buildTemplateValue(properties, property.value));
+    assert(!property.hasOwnProperty('composite') || (property.type === String || property.type === 'STRING'),
+      new TypeError('Expected composite property to be assigned to string types'));
+    assert(!property.hasOwnProperty('composite') || typeof property.composite === 'string',
+      new TypeError('Expected composite property to be a string'));
+    assert(!property.hasOwnProperty('composite') || !key.includes('.'),
+      new TypeError('Nested properties cannot have a composite property'));
+    if (property.hasOwnProperty('composite')) {
+      Object.assign(property, buildCompositeValue(properties, property.composite));
     }
 
     assert(!property.hasOwnProperty('enum') || Array.isArray(property.enum),
@@ -66,13 +66,13 @@ function assertValidProperties(properties) {
   }
 }
 
-function buildTemplateValue(properties, template) {
-  assert(typeof template === 'string', new TypeError('Expected template to be a string'));
+function buildCompositeValue(properties, composite) {
+  assert(typeof composite === 'string', new TypeError('Expected composite to be a string'));
 
   const pattern = /\{(.*?)\}/g;
-  const valueKeys = Array.from(template.matchAll(pattern)).map(match => match[1]);
+  const valueKeys = Array.from(composite.matchAll(pattern)).map(match => match[1]);
 
-  const set = (v, entry) => template.replace(pattern, (m, key) => entry.hasOwnProperty(key) ? entry[key] : '');
+  const set = (v, entry) => composite.replace(pattern, (m, key) => entry.hasOwnProperty(key) ? entry[key] : '');
 
   return {
     variableProperties: valueKeys.reduce(((list, key) => {
@@ -103,8 +103,8 @@ function validateIndexProperties(properties, ref, { hash, range }) {
   assert(properties[hash], new TypeError(`Expected ${ref} ${hash} to be a property`));
   assert(isValidKeyScalar(properties[hash]), new TypeError(`Expected ${ref} ${hash} property to be a valid key scalar`));
   if (ref === 'keySchema') {
-    const { required, value } = properties[hash];
-    if (typeof value === 'string') {
+    const { required, composite } = properties[hash];
+    if (typeof composite === 'string') {
       const { variableProperties: variables } = properties[hash];
       assert(isPlainObject(variables), new TypeError(`Expected variables to exist for ${ref} ${hash}`));
       for (const key in variables) {
@@ -121,8 +121,8 @@ function validateIndexProperties(properties, ref, { hash, range }) {
   assert(!range || properties[range], new TypeError(`Expected ${ref} ${range} to be a property`));
   assert(!range || isValidKeyScalar(properties[range]), new TypeError(`Expected ${ref} ${range} property to be a valid key scalar`));
   if (ref === 'keySchema' && range) {
-    const { required, value } = properties[range];
-    if (typeof value === 'string') {
+    const { required, composite } = properties[range];
+    if (typeof composite === 'string') {
       const { variableProperties: variables } = properties[range];
       assert(isPlainObject(variables), new TypeError(`Expected variables to exist for ${ref} ${range}`));
       for (const key in variables) {
@@ -138,7 +138,7 @@ function validateIndexProperties(properties, ref, { hash, range }) {
 
 module.exports = {
   assertValidProperties,
-  buildTemplateValue,
+  buildCompositeValue,
   isValidKeyScalar,
   validateIndexProperties,
 };
