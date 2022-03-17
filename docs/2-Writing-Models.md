@@ -936,7 +936,7 @@ const sessions = dynazord.createModel({
 
 ## One Table Support
 
-A common DynamoDB use-case is to store multiple datasets in a single table, using the partition key to accurately store data under a partition & the sort key to hold similar data together. This library has support for this pattern, by adding a `value` property with variables for interpolation.
+A common DynamoDB use-case is to store multiple datasets in a single table, using the partition key to accurately store data under a partition & the sort key to hold similar data together. This library has support for composite keys, by adding a `composite` property with variables for interpolation.
 
 ```js
 const tableName = 'dynazord-example';
@@ -947,11 +947,11 @@ const users = dynazord.createModel({
   properties: {
     pk: {
       type: String,
-      value: 'USER:{userID}',
+      composite: 'USER:{userID}',
     },
     sk: {
       type: String,
-      value: 'USER',
+      composite: 'USER',
     },
     id: {
       type: String,
@@ -978,11 +978,11 @@ const sessions = dynazord.createModel({
   properties: {
     pk: {
       type: String,
-      value: 'USER:{userID}',
+      composite: 'USER:{userID}',
     },
     sk: {
       type: String,
-      value: 'SESSION:{id}',
+      composite: 'SESSION:{id}',
     },
     userID: {
       type: String,
@@ -1008,7 +1008,7 @@ const sessions = dynazord.createModel({
 });
 ```
 
-In this example, the `pk` & `sk` properties are "virtual", referencing the other properties to build their final value. Only top-level properties can only be "virtual" - this is not supported for nested properties.
+In this example, the `pk` & `sk` properties are "virtual", referencing the other properties to build their final composite value. Only top-level properties can only have composite values - nested properties are not supported.
 
 ```js
 // To create a new entry, use properties as you usually would:
