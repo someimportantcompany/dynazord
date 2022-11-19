@@ -305,7 +305,7 @@ function upsertTransaction(item, opts = undefined) {
 async function runTransaction(client, blocks, opts = undefined) {
   assert(client instanceof DynamoDB, new TypeError('Expected client to be an instance of AWS.DynamoDB'));
   assert(Array.isArray(blocks), new TypeError('Expected transaction blocks to be an array'));
-  assert(blocks.length <= 25, new Error('Expected transaction blocks to contain less than or equal to 25 items'));
+  assert(blocks.length <= 100, new Error('Expected transaction blocks to contain less than or equal to 100 items'));
   assert(opts === undefined || isPlainObject(opts), new TypeError('Expected opts argument to be a plain object'));
 
   // Look after our own - if the developer wants to do manual DynamoDB transactions...

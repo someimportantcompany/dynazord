@@ -214,7 +214,7 @@ Option | Description
 
 ### `model.bulkCreate(items[, opts])`
 
-- Creates up to 25 items, throwing an error if a [primary key](./Writing-Models.md#primary-index) already exists.
+- Creates up to 100 items, throwing an error if a [primary key](./Writing-Models.md#primary-index) already exists.
 - Each item must include the [primary key](./Writing-Models.md#primary-index) properties.
 - Applied in a transaction, so if one fails they all fail.
 - This method uses [`DynamoDB.transactWriteItems`](https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB.html#transactWriteItems-property) underneath, so you are also bound by `transactWriteItems` limitations too.
@@ -247,7 +247,7 @@ Option | Description
 
 ### `model.bulkGet(keys[, opts])`
 
-- Fetch up to 25 items at a time, specified by their [primary key](./Writing-Models.md#primary-index), returning `null` if they do not exist.
+- Fetch up to 100 items at a time, specified by their [primary key](./Writing-Models.md#primary-index), returning `null` if they do not exist.
 - Applied in a transaction, so if one fails they all fail.
 - This method uses [`DynamoDB.transactGetItems`](https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB.html#transactGetItems-property) underneath, so you are also bound by `transactGetItems` limitations too.
 
@@ -272,7 +272,7 @@ console.log(users);
 
 ### `model.bulkUpdate(data, keys[, opts])`
 
-- Apply the same update to up to 25 items at a time, specified by their [primary key](./Writing-Models.md#primary-index).
+- Apply the same update to up to 100 items at a time, specified by their [primary key](./Writing-Models.md#primary-index).
 - Applied in a transaction, so if one fails they all fail.
 - This method uses [`DynamoDB.transactWriteItems`](https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB.html#transactWriteItems-property) underneath, so you are also bound by `transactWriteItems` limitations too.
 
@@ -308,7 +308,7 @@ Option | Description
 
 ### `model.bulkDelete(keys[, opts])`
 
-- Delete up to 25 items at a time, specified by their [primary key](./Writing-Models.md#primary-index).
+- Delete up to 100 items at a time, specified by their [primary key](./Writing-Models.md#primary-index).
 - Applied in a transaction, so if one fails they all fail.
 - This method uses [`DynamoDB.transactWriteItems`](https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB.html#transactWriteItems-property) underneath, so you are also bound by `transactWriteItems` limitations too.
 
@@ -331,7 +331,7 @@ Option | Description
 
 ### `model.bulkUpsert(items[, opts])`
 
-- Create-or-update up to 25 items at a time, regardless of if their [primary key](./Writing-Models.md#primary-index) already exists.
+- Create-or-update up to 100 items at a time, regardless of if their [primary key](./Writing-Models.md#primary-index) already exists.
 - Each item must include the [primary key](./Writing-Models.md#primary-index) properties.
 - Applied in a transaction, so if one fails they all fail.
 - This method uses [`DynamoDB.transactWriteItems`](https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB.html#transactWriteItems-property) underneath, so you are also bound by `transactWriteItems` limitations too.
@@ -575,9 +575,9 @@ console.log(session);
 //   updatedAt: [Date YYYY-MM-DDTHH:mm:ss.Z] }
 ```
 
-- Executes up to 25 transaction statements with `dynazord.transaction` at a time, across all your models.
+- Executes up to 100 transaction statements with `dynazord.transaction` at a time, across all your models.
 - This doesn't support models that are created with explicit `dynamodb` clients passed to it.
-- You cannot mix reads & writes - you can read up to 25 items or write up to 25 items, not both.
+- You cannot mix reads & writes - you can read up to 100 items or write up to 100 items, not both.
 
 ### `model.transaction.create(item[, opts])`
 
