@@ -279,8 +279,8 @@ describe('dynazord', () => {
 
     it('should export a static object of operators', () => {
       assert.deepStrictEqual(Object.keys(dynazord.operators), [
-        'and', 'or', 'not',
-        'eq', 'ne', 'gt', 'gte', 'lt', 'lte', 'in',
+        'and', 'or', 'not', 'eq', 'gt', 'gte', 'lt', 'lte',
+        'beginsWith', 'between', 'ne', 'in', 'contains', 'attributeExists',
       ]);
       assert.deepStrictEqual(dynazord.operators, operators);
     });

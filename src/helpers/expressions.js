@@ -2,18 +2,26 @@ const { assert, isPlainObject } = require('../utils');
 const { getPropertyForKey } = require('./data');
 const { types } = require('../types');
 
-const operators = {
-  and: Symbol('AND'),
-  or: Symbol('OR'),
-  not: Symbol('NOT'),
-
+const keyConditionOperators = {
   eq: Symbol('EQUALS'),
-  ne: Symbol('NOT-EQUALS'),
   gt: Symbol('GREATER-THAN'),
   gte: Symbol('GREATER-THAN-OR-EQUALS'),
   lt: Symbol('LESS-THAN'),
   lte: Symbol('LESS-THAN-OR-EQUALS'),
+  beginsWith: Symbol('BEGINS-WITH'),
+  between: Symbol('BETWEEN'),
+};
+const conditionOperators = {
+  and: Symbol('AND'),
+  or: Symbol('OR'),
+  not: Symbol('NOT'),
+
+  ...keyConditionOperators,
+
+  ne: Symbol('NOT-EQUALS'),
   in: Symbol('IN'),
+  contains: Symbol('CONTAINS'),
+  attributeExists: Symbol('ATTRIBUTE-EXISTS'),
 };
 
 function assertValueType(value) {
@@ -51,7 +59,7 @@ async function buildFilterExpression(properties, where) {
   };
 
   const buildSegment = async (prefix, block) => {
-    const { [operators.and]: and, [operators.or]: or, [operators.not]: not, ...rest } = block;
+    const { [conditionOperators.and]: and, [conditionOperators.or]: or, [conditionOperators.not]: not, ...rest } = block;
     const segments = [];
 
     if (and) {
@@ -92,7 +100,7 @@ async function buildFilterExpression(properties, where) {
         assert(isPlainObject(property), new Error(`Expected ${key} to be a valid property`));
 
         if (isPlainObject(value)) {
-          const { eq, ne, gt, gte, lt, lte, in: $in } = operators;
+          const { eq, ne, gt, gte, lt, lte, in: $in } = conditionOperators;
           if (value.hasOwnProperty(eq)) {
             assertValueType(value[eq]);
             segments.push(pushVariables(prefix, key, '=', await formatValue(property, value[eq])));
@@ -174,9 +182,9 @@ async function buildKeyExpression(properties, where) {
   const buildSegment = async (prefix, block) => {
     const segments = [];
 
-    assert(!block[operators.and], new TypeError('You cannot use the AND operator with keyCondition'));
-    assert(!block[operators.or], new TypeError('You cannot use the OR operator with keyCondition'));
-    assert(!block[operators.not], new TypeError('You cannot use the NOT operator with keyCondition'));
+    assert(!block[conditionOperators.and], new TypeError('You cannot use the AND operator with keyCondition'));
+    assert(!block[conditionOperators.or], new TypeError('You cannot use the OR operator with keyCondition'));
+    assert(!block[conditionOperators.not], new TypeError('You cannot use the NOT operator with keyCondition'));
 
     for (const key in block) {
       /* istanbul ignore else */
@@ -186,7 +194,7 @@ async function buildKeyExpression(properties, where) {
         assert(isPlainObject(property), new Error(`Expected ${key} to be a valid property`));
 
         if (isPlainObject(value)) {
-          const { eq, gt, gte, lt, lte } = operators;
+          const { eq, gt, gte, lt, lte } = keyConditionOperators;
 
           const count = (a => a.reduce((b, c) => b + (c ? 1 : 0), 0))([
             value.hasOwnProperty(eq),
@@ -299,7 +307,7 @@ function buildUpsertExpression(data, exactKeys) {
 }
 
 module.exports = {
-  operators,
+  operators: conditionOperators,
   buildFilterExpression,
   buildKeyExpression,
   buildProjectionExpression,
