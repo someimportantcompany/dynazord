@@ -93,7 +93,7 @@ function createModel(opts) {
     keySchema: { enumerable: true, value: opts.keySchema },
     secondaryIndexes: { enumerable: true, value: opts.secondaryIndexes },
     properties: { enumerable: true, value: opts.properties },
-    client: { value: validateDynamoDB(opts.dynamodb) || overwriteDynamoDB || new AWS.DynamoDB() },
+    client: { value: validateDynamoDB(opts.dynamodb) || overwriteDynamoDB || createDynamoDB() },
     hooks: { enumerable: true, value: hooks },
     log: { value: opts.log || createLogger(opts.logLevel) },
     options: { enumerable: true, value: options },
@@ -104,6 +104,14 @@ function createModel(opts) {
         return (tm => Object.keys(tm).reduce((r, k) => ({ ...r, [k]: tm[k].bind(this) }), []))(transactionMethods);
       },
     },
+  });
+}
+
+function createDynamoDB() {
+  const { AWS_DYNAMODB_ENDPOINT, AWS_REGION } = process.env;
+  return new AWS.DynamoDB({
+    ...(AWS_DYNAMODB_ENDPOINT ? { endpoint: AWS_DYNAMODB_ENDPOINT } : null),
+    ...(AWS_REGION ? { region: AWS_REGION } : null),
   });
 }
 
