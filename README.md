@@ -4,6 +4,9 @@
 [![CI](https://github.com/someimportantcompany/dynazord/workflows/Test/badge.svg?branch=master)](https://github.com/someimportantcompany/dynazord/actions?query=branch%3Amaster)
 [![Coverage](https://coveralls.io/repos/github/someimportantcompany/dynazord/badge.svg)](https://coveralls.io/github/someimportantcompany/dynazord)
 
+> [!WARNING]
+> **No longer maintained** - replaced with <https://www.npmjs.com/package/electrodb>
+
 [DynamoDB](https://aws.amazon.com/dynamodb) [NodeJS](https://nodejs.org) [ORM](https://en.wikipedia.org/wiki/Object–relational_mapping), inspired by similar ORMs like [Mongoose](https://mongoosejs.com) & [Sequelize](https://sequelize.org).
 
 ```js
